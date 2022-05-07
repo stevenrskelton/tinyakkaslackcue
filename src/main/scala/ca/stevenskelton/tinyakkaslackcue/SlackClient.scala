@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue
 
+import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackcue.blocks.SlackTaskThread
 import ca.stevenskelton.tinyakkaslackcue.blocks.SlackTaskThread.Fields
 import com.slack.api.Slack
@@ -10,24 +11,26 @@ import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateR
 import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse}
+import com.typesafe.config.Config
+import play.api.libs.ws.StandaloneWSClient
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
-//object SlackClient {
-//  val Default = new SlackClient(
-//    botOAuthToken = BotOAuthToken,
-//    botUserId = BotUserId,
-//    botChannelId = BotChannelId
-//  )
-//  def taskFactories(implicit materializer: Materializer, session: SlickSession, wsClient: StandaloneWSClient, scraperDirectories: ScraperDirectories): SlackTaskFactories = {
-//    implicit val client = Default
-//    SlackTaskFactories(Seq(
-//        new ExchangeListingsSlackTaskFactory,
-//        new TestSlackTaskFactory,
-//        new YahooPricesSlackTaskFactory
-//      ))
-//  }
-//}
+object SlackClient {
+  def apply(config: Config): SlackClient = {
+    val botOAuthToken = config.getString("secrets.botOAuthToken")
+    val botUserId = SlackUserId(config.getString("secrets.botUserId"))
+    val botChannelId = config.getString("secrets.botChannelId")
+    new SlackClient(botOAuthToken, botUserId, botChannelId)
+  }
+
+  def taskFactories(implicit config: Config, materializer: Materializer, wsClient: StandaloneWSClient): SlackTaskFactories = {
+    implicit val client = SlackClient(config)
+    SlackTaskFactories(Seq(
+
+    ))
+  }
+}
 
 case class SlackTaskFactories(factories: Seq[SlackTaskFactory]) extends AnyVal
 
