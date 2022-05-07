@@ -18,9 +18,7 @@ lazy val app = (project in file("."))
   )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-ahc-ws-standalone" % "2.1.7",
-  "com.typesafe.play" %% "play-ws-standalone-json" % "2.1.7",
-  "org.scala-lang.modules" %% "scala-xml" % "2.1.0",
+  "com.typesafe.play" %% "play-json" % "2.8.2",
   "ch.qos.logback" % "logback-classic" % "1.2.11",
   "com.slack.api" % "slack-api-client" % "1.21.1",
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,

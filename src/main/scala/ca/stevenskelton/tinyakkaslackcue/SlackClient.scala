@@ -12,7 +12,6 @@ import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse}
 import com.typesafe.config.Config
-import play.api.libs.ws.StandaloneWSClient
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
@@ -24,7 +23,7 @@ object SlackClient {
     new SlackClient(botOAuthToken, botUserId, botChannelId)
   }
 
-  def taskFactories(implicit config: Config, materializer: Materializer, wsClient: StandaloneWSClient): SlackTaskFactories = {
+  def taskFactories(implicit config: Config, materializer: Materializer): SlackTaskFactories = {
     implicit val client = SlackClient(config)
     SlackTaskFactories(Seq(
 
