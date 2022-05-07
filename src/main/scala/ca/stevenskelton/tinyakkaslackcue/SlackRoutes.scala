@@ -34,6 +34,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
       case ("url_verification", jsObject) => complete((jsObject \ "challenge").as[String])
       case ("event_callback", jsObject) =>
         val eventObject = (jsObject \ "event").as[JsObject]
+        logger.info(s"EventCallback ${Json.stringify(eventObject)}")
         val flow = (eventObject \ "type").as[String] match {
           case "app_home_opened" => AppHomeOpened(slackClient, slackTaskFactories, eventObject)
           case unknown => throw new NotImplementedError(s"Slack event $unknown not implemented: ${Json.stringify(jsObject)}")
@@ -47,8 +48,10 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
   }
 
   val slackActionRoute: Route = Directives.post {
-    formField("payload") { payload => {
-      for {
+    formField("payload") { payload =>
+      logger.info(s"Action payload: $payload")
+
+      val handler = for {
         jsObject <- Json.parse(payload).asOpt[JsObject]
         actionType <- (jsObject \ "type").asOpt[String]
         viewType <- (jsObject \ "view" \ "type").asOpt[String]
@@ -59,13 +62,13 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
         case ("view_submission", "modal") => HomeTab.handleSubmission(triggerId, slackUser, jsObject)
         case (x, y) => throw new NotImplementedError(s"Slack payload $x, for view $y not implemented: $payload")
       }
-    } map {
-      _ => complete(HttpResponse(OK))
-    } getOrElse {
-      logger.error(s"SA:\n```$payload```")
-      throw new NotImplementedError(s"Slack message unknown type $payload")
-    }
+
+      handler.map {
+        _ => complete(HttpResponse(OK))
+      } getOrElse {
+        logger.error(s"SA:\n```$payload```")
+        throw new NotImplementedError(s"Slack message unknown type $payload")
+      }
     }
   }
-
 }
