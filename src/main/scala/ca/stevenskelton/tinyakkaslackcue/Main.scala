@@ -28,7 +28,9 @@ class Main extends App {
   val port = config.getInt("env.http.port")
 
   implicit val slackClient = SlackClient(config)
-  implicit val slackTaskFactories = SlackClient.taskFactories(config, materializer)
+  implicit val slackTaskFactories = new SlackTaskFactories {
+    override def factories: Seq[SlackTaskFactory] = Nil
+  }
 
   val slackRoutes = new SlackRoutes()
 

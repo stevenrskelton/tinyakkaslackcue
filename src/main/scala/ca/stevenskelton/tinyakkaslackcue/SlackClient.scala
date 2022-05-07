@@ -22,21 +22,6 @@ object SlackClient {
     val botChannelId = config.getString("secrets.botChannelId")
     new SlackClient(botOAuthToken, botUserId, botChannelId)
   }
-
-  def taskFactories(implicit config: Config, materializer: Materializer): SlackTaskFactories = {
-    implicit val client = SlackClient(config)
-    SlackTaskFactories(Seq(
-
-    ))
-  }
-}
-
-case class SlackTaskFactories(factories: Seq[SlackTaskFactory]) extends AnyVal
-
-object SlackTaskFactories {
-  val Test = "test"
-  val Exchange = "Exchange Listings"
-  val Price = "Yahoo 2min Prices"
 }
 
 class SlackClient(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String) {
