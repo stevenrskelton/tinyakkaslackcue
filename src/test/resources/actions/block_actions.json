@@ -1,0 +1,289 @@
+{
+  "type": "block_actions",
+  "user": {
+    "id": "U039T9DUHGT",
+    "username": "tradeauditapp",
+    "name": "tradeauditapp",
+    "team_id": "T039T9D2CD8"
+  },
+  "api_app_id": "A03B812RGT0",
+  "token": "Fo38CPu8Atf2KtR1DBlUceMb",
+  "container": {
+    "type": "view",
+    "view_id": "V03DKDHNJKD"
+  },
+  "trigger_id": "3465006717299.3333319080450.a3c4b2183ead741156278d627d0b5ebc",
+  "team": {
+    "id": "T039T9D2CD8",
+    "domain": "tradeaudit"
+  },
+  "enterprise": null,
+  "is_enterprise_install": false,
+  "view": {
+    "id": "V03DKDHNJKD",
+    "team_id": "T039T9D2CD8",
+    "type": "home",
+    "blocks": [
+      {
+        "type": "header",
+        "block_id": "3sN",
+        "text": {
+          "type": "plain_text",
+          "text": "Exchange Listings",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "J0ps",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Updates active stock and ETF listings on the NYSE and Nasdaq exchanges",
+          "verbatim": false
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "xwlP",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Type:*\nComputer (laptop)",
+            "verbatim": false
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*When:*\nSubmitted Aut 10",
+            "verbatim": false
+          }
+        ]
+      },
+      {
+        "type": "actions",
+        "block_id": "BfC",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "7uP",
+            "text": {
+              "type": "plain_text",
+              "text": "Run",
+              "emoji": true
+            },
+            "style": "primary",
+            "value": "run_click_me_123_Exchange Listings"
+          },
+          {
+            "type": "button",
+            "action_id": "uANo",
+            "text": {
+              "type": "plain_text",
+              "text": "Schedule",
+              "emoji": true
+            },
+            "value": "schedule_click_me_123_Exchange Listings"
+          },
+          {
+            "type": "button",
+            "action_id": "8Sh0v",
+            "text": {
+              "type": "plain_text",
+              "text": "Cancel",
+              "emoji": true
+            },
+            "style": "danger",
+            "value": "cancel_click_me_123_Exchange Listings"
+          }
+        ]
+      },
+      {
+        "type": "divider",
+        "block_id": "CPl"
+      },
+      {
+        "type": "header",
+        "block_id": "Azajk",
+        "text": {
+          "type": "plain_text",
+          "text": "test",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "tQTI",
+        "text": {
+          "type": "mrkdwn",
+          "text": "test description",
+          "verbatim": false
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "nYGZ",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Type:*\nComputer (laptop)",
+            "verbatim": false
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*When:*\nSubmitted Aut 10",
+            "verbatim": false
+          }
+        ]
+      },
+      {
+        "type": "actions",
+        "block_id": "0VB",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "jILx",
+            "text": {
+              "type": "plain_text",
+              "text": "Run",
+              "emoji": true
+            },
+            "style": "primary",
+            "value": "run_click_me_123_test"
+          },
+          {
+            "type": "button",
+            "action_id": "6k22F",
+            "text": {
+              "type": "plain_text",
+              "text": "Schedule",
+              "emoji": true
+            },
+            "value": "schedule_click_me_123_test"
+          },
+          {
+            "type": "button",
+            "action_id": "Nw+",
+            "text": {
+              "type": "plain_text",
+              "text": "Cancel",
+              "emoji": true
+            },
+            "style": "danger",
+            "value": "cancel_click_me_123_test"
+          }
+        ]
+      },
+      {
+        "type": "divider",
+        "block_id": "hEk"
+      },
+      {
+        "type": "header",
+        "block_id": "eoFf",
+        "text": {
+          "type": "plain_text",
+          "text": "Yahoo 2min Prices",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "EtVT",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Scrapes Yahoo 2min price charts to disk",
+          "verbatim": false
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "WmPP",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Type:*\nComputer (laptop)",
+            "verbatim": false
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*When:*\nSubmitted Aut 10",
+            "verbatim": false
+          }
+        ]
+      },
+      {
+        "type": "actions",
+        "block_id": "2TD",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "bFYf",
+            "text": {
+              "type": "plain_text",
+              "text": "Run",
+              "emoji": true
+            },
+            "style": "primary",
+            "value": "run_click_me_123_Yahoo 2min Prices"
+          },
+          {
+            "type": "button",
+            "action_id": "0m0YX",
+            "text": {
+              "type": "plain_text",
+              "text": "Schedule",
+              "emoji": true
+            },
+            "value": "schedule_click_me_123_Yahoo 2min Prices"
+          },
+          {
+            "type": "button",
+            "action_id": "K9bBP",
+            "text": {
+              "type": "plain_text",
+              "text": "Cancel",
+              "emoji": true
+            },
+            "style": "danger",
+            "value": "cancel_click_me_123_Yahoo 2min Prices"
+          }
+        ]
+      }
+    ],
+    "private_metadata": "",
+    "callback_id": "",
+    "state": {
+      "values": {}
+    },
+    "hash": "1651442882.jPoth1Rj",
+    "title": {
+      "type": "plain_text",
+      "text": "View Title",
+      "emoji": true
+    },
+    "clear_on_close": false,
+    "notify_on_close": false,
+    "close": null,
+    "submit": null,
+    "previous_view_id": null,
+    "root_view_id": "V03DKDHNJKD",
+    "app_id": "A03B812RGT0",
+    "external_id": "",
+    "app_installed_team_id": "T039T9D2CD8",
+    "bot_id": "B03BTG3KAAV"
+  },
+  "actions": [
+    {
+      "action_id": "jILx",
+      "block_id": "0VB",
+      "text": {
+        "type": "plain_text",
+        "text": "Run",
+        "emoji": true
+      },
+      "value": "run_click_me_123_test",
+      "style": "primary",
+      "type": "button",
+      "action_ts": "1651442887.027084"
+    }
+  ]
+}

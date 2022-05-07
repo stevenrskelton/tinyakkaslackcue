@@ -1,0 +1,250 @@
+{
+  "type": "view_submission",
+  "team": {
+    "id": "T039T9D2CD8",
+    "domain": "tradeaudit"
+  },
+  "user": {
+    "id": "U039T9DUHGT",
+    "username": "tradeauditapp",
+    "name": "tradeauditapp",
+    "team_id": "T039T9D2CD8"
+  },
+  "api_app_id": "A03B812RGT0",
+  "token": "Fo38CPu8Atf2KtR1DBlUceMb",
+  "trigger_id": "3458457351638.3333319080450.3ed9a23519d3a819cc62e98a84733d0b",
+  "view": {
+    "id": "V03DP2QUZV0",
+    "team_id": "T039T9D2CD8",
+    "type": "modal",
+    "blocks": [
+      {
+        "type": "section",
+        "block_id": "KOXzQ",
+        "text": {
+          "type": "plain_text",
+          "text": "Queue this task immediately, or set later date\/time to schedule.",
+          "emoji": true
+        }
+      },
+      {
+        "type": "input",
+        "block_id": "mUuhl",
+        "label": {
+          "type": "plain_text",
+          "text": "Start date",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "datepicker",
+          "action_id": "datepicker-action",
+          "initial_date": "2022-05-01",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Select a date",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "input",
+        "block_id": "xVW",
+        "label": {
+          "type": "plain_text",
+          "text": "Starttime",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "timepicker",
+          "action_id": "timepicker-action",
+          "initial_time": "11:38",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Start Time",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "divider",
+        "block_id": "CjY8"
+      },
+      {
+        "type": "input",
+        "block_id": "sVa",
+        "label": {
+          "type": "plain_text",
+          "text": "Users to notify on task complete",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "multi_users_select",
+          "action_id": "multi_users_select-action1",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Users",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "input",
+        "block_id": "Tnsx",
+        "label": {
+          "type": "plain_text",
+          "text": "Users to notify on taskfailure",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "multi_users_select",
+          "action_id": "multi_users_select-action2",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Users",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "divider",
+        "block_id": "w18"
+      },
+      {
+        "type": "input",
+        "block_id": "BudPL",
+        "label": {
+          "type": "plain_text",
+          "text": "Log Level",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "static_select",
+          "action_id": "static_select-action",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Select an item",
+            "emoji": true
+          },
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":boom: ERROR",
+                "emoji": true
+              },
+              "value": "ERROR"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":rotating_light: WARN",
+                "emoji": true
+              },
+              "value": "WARN"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":eyes: INFO",
+                "emoji": true
+              },
+              "value": "INFO"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":warning: DEBUG",
+                "emoji": true
+              },
+              "value": "DEBUG"
+            }
+          ]
+        }
+      }
+    ],
+    "private_metadata": "secrets",
+    "callback_id": "",
+    "state": {
+      "values": {
+        "mUuhl": {
+          "datepicker-action": {
+            "type": "datepicker",
+            "selected_date": "2022-05-01"
+          }
+        },
+        "xVW": {
+          "timepicker-action": {
+            "type": "timepicker",
+            "selected_time": "11:38"
+          }
+        },
+        "sVa": {
+          "multi_users_select-action1": {
+            "type": "multi_users_select",
+            "selected_users": [
+              "U039TCGLX5G"
+            ]
+          }
+        },
+        "Tnsx": {
+          "multi_users_select-action2": {
+            "type": "multi_users_select",
+            "selected_users": [
+              "U039TCGLX5G"
+            ]
+          }
+        },
+        "BudPL": {
+          "static_select-action": {
+            "type": "static_select",
+            "selected_option": {
+              "text": {
+                "type": "plain_text",
+                "text": ":boom: ERROR",
+                "emoji": true
+              },
+              "value": "ERROR"
+            }
+          }
+        }
+      }
+    },
+    "hash": "1651448339.XpgUHBp5",
+    "title": {
+      "type": "plain_text",
+      "text": "New somenamehere Task",
+      "emoji": true
+    },
+    "clear_on_close": false,
+    "notify_on_close": false,
+    "close": {
+      "type": "plain_text",
+      "text": "Cancel",
+      "emoji": true
+    },
+    "submit": {
+      "type": "plain_text",
+      "text": "Schedule",
+      "emoji": true
+    },
+    "previous_view_id": null,
+    "root_view_id": "V03DP2QUZV0",
+    "app_id": "A03B812RGT0",
+    "external_id": "",
+    "app_installed_team_id": "T039T9D2CD8",
+    "bot_id": "B03BTG3KAAV"
+  },
+  "response_urls": [],
+  "is_enterprise_install": false,
+  "enterprise": null
+}
