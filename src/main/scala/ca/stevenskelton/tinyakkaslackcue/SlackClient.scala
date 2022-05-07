@@ -39,7 +39,7 @@ object SlackTaskFactories {
   val Price = "Yahoo 2min Prices"
 }
 
-class SlackClient(botOAuthToken: String, botUserId: SlackUserId, botChannelId: String) {
+class SlackClient(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String) {
 
   val client = Slack.getInstance.methods
 
