@@ -1,23 +1,52 @@
 package ca.stevenskelton.tinyakkaslackcue
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.StatusCodes.NotFound
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.SystemMaterializer
-import ca.stevenskelton.tinyakkaslackcue.http.HttpServer
 import ca.stevenskelton.tinyakkaslackcue.logging.SlackLoggerFactory
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.Future
 
 class Main extends App {
 
   private implicit val config = ConfigFactory.defaultApplication().resolve()
 
-  private val httpActorSystem = ActorSystem("HTTPServer", config)
+  private implicit val httpActorSystem = ActorSystem("HTTPServer", config)
 
-  private val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"))(SlackClient(config), SystemMaterializer(httpActorSystem).materializer)
+  private implicit val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"))(SlackClient(config), SystemMaterializer(httpActorSystem).materializer)
 
-  val httpServer = HttpServer.bindPublic(config)(httpActorSystem, httpLogger)
+  implicit val materializer = SystemMaterializer(httpActorSystem).materializer
+  implicit val _config = config
+  val host = config.getString("env.host")
+  val port = config.getInt("env.http.port")
+
+  implicit val slackClient = SlackClient(config)
+  implicit val slackTaskFactories = SlackClient.taskFactories(config, materializer)
+
+  val slackRoutes = new SlackRoutes()
+
+  val publicRoutes = concat(
+    path("slack" / "event")(slackRoutes.slackEventRoute),
+    path("slack" / "action")(slackRoutes.slackActionRoute)
+  )
+
+  val httpServer: Future[Http.ServerBinding] = Http()(httpActorSystem).newServerAt(host, port).bind(concat(publicRoutes, Route.seal {
+    extractRequestContext {
+      context =>
+        complete {
+          httpLogger.info(s"404 ${context.request.method.value} ${context.unmatchedPath}")
+          HttpResponse(NotFound, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Not Found"))
+        }
+    }
+  }))
+
   httpServer.map {
     httpBinding =>
       val address = httpBinding.localAddress
@@ -33,6 +62,5 @@ class Main extends App {
       httpActorSystem.terminate()
       System.exit(1)
   }
-
 
 }

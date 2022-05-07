@@ -24,7 +24,7 @@ object SlackTaskThread {
                      notifyOnComplete: Seq[String]
                    )
 
-  def parse(messageItem: MessageItem, slackClient: SlackClient, slackTaskFactories: SlackTaskFactories ): Option[(SlackTask, Fields)] = Try {
+  def parse(messageItem: MessageItem, slackClient: SlackClient, slackTaskFactories: SlackTaskFactories): Option[(SlackTask, Fields)] = Try {
     val created = messageItem.getCreated
     val message = messageItem.getMessage
     val blocks = message.getBlocks.asScala.toList

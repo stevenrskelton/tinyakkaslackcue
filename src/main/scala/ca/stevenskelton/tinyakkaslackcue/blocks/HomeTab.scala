@@ -1,8 +1,8 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import akka.Done
-import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackcue._
+import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 
@@ -179,7 +179,7 @@ object HomeTab {
     //    }
     val view = ScheduleActionModal.modal("somenamehere", ZonedDateTime.now(), PrivateMetadata(""))
     val result = slackClient.viewsOpen(slackTriggerId, view)
-    if(!result.isOk){
+    if (!result.isOk) {
       logger.error(result.getError)
     }
     Future.successful(Done)

@@ -1,7 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import ca.stevenskelton.tinyakkaslackcue.SlackBlocksAsString
-import com.slack.api.model.block.Blocks
 import org.slf4j.event.Level
 import play.api.libs.json.JsObject
 

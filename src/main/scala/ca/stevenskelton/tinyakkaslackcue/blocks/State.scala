@@ -8,8 +8,11 @@ import java.time.{LocalDate, LocalTime}
 trait State {}
 
 case class DatePickerState(value: LocalDate) extends State
+
 case class TimePickerState(value: LocalTime) extends State
+
 case class MultiUsersState(users: Seq[SlackUserId]) extends State
+
 case class SelectState(value: String) extends State
 
 object State {

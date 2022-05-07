@@ -4,7 +4,7 @@ import akka.Done
 import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab
 import ca.stevenskelton.tinyakkaslackcue.{SlackBlocksAsString, SlackClient, SlackTaskFactories, SlackUserId}
 import org.slf4j.Logger
-import play.api.libs.json.{JsObject, JsValue}
+import play.api.libs.json.JsObject
 
 import scala.concurrent.Future
 

@@ -11,7 +11,7 @@ object DateUtils {
   val Time2minPostOpen: LocalTime = LocalTime.of(16, 0)
   val Time2minPostEnd: LocalTime = LocalTime.of(20, 0)
 
-//  val FirstDataDate: EpochDay = EpochDay(LocalDate.of(2016, Month.APRIL, 20));
+  //  val FirstDataDate: EpochDay = EpochDay(LocalDate.of(2016, Month.APRIL, 20));
   val EpochLocalDateTime: LocalDateTime = DateUtils.parseLocalDateTime(0);
 
   val yyyyMMddFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
