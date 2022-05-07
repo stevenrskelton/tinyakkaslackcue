@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackcue
 
-import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackcue.blocks.SlackTaskThread
 import ca.stevenskelton.tinyakkaslackcue.blocks.SlackTaskThread.Fields
 import com.slack.api.Slack

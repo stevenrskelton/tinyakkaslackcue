@@ -2,8 +2,8 @@ package ca.stevenskelton.tinyakkaslackcue.logging
 
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{Materializer, OverflowStrategy}
-import ca.stevenskelton.tinyakkaslackcue.blocks.{SlackTaskThread, logLevelEmoji}
 import ca.stevenskelton.tinyakkaslackcue._
+import ca.stevenskelton.tinyakkaslackcue.blocks.{SlackTaskThread, logLevelEmoji}
 import org.slf4j.Logger
 import org.slf4j.event.LoggingEvent
 

@@ -284,51 +284,51 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
     //    }
   }
 
-//  "break" should {
-//    "exit task but allow more tasks to be scheduled" in {
-//      timer.cancel()
-//      i = 0
-//      val task1 = new NamedTask("name1") {
-//        override def run(logger: Logger, break: => Nothing): Unit = {
-//          (0 to 10).foreach { _ =>
-//            if (isCancelled) break
-//            else Thread.sleep(20)
-//          }
-//          i += 1
-//        }
-//      }
-//      val task2 = new NamedTask("name2") {
-//        override def run(logger: Logger, break: => Nothing): Unit = {
-//          (0 to 10).foreach { _ =>
-//            if (isCancelled) break
-//            else Thread.sleep(20)
-//          }
-//          i += 3
-//        }
-//      }
-//
-//      timer.schedule(task1)
-//      timer.schedule(task2)
-//      val prelist = timer.list
-//      prelist should have size 2
-//
-//      i shouldBe 0
-//      timer.cancel(task1.uuid)
-//      Thread.sleep(100)
-//      i shouldBe 0
-//
-//      val postlist = timer.list
-//      postlist should have size 1
-//      val name1 = postlist(0)
-//      name1.task.name shouldBe task2.name
-//      name1.isRunning shouldBe true
-//      name1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
-//
-//      eventually(timeout2sec) {
-//        i shouldBe 3
-//      }
-//      timer.list should have size 0
-//    }
-//  }
+  //  "break" should {
+  //    "exit task but allow more tasks to be scheduled" in {
+  //      timer.cancel()
+  //      i = 0
+  //      val task1 = new NamedTask("name1") {
+  //        override def run(logger: Logger, break: => Nothing): Unit = {
+  //          (0 to 10).foreach { _ =>
+  //            if (isCancelled) break
+  //            else Thread.sleep(20)
+  //          }
+  //          i += 1
+  //        }
+  //      }
+  //      val task2 = new NamedTask("name2") {
+  //        override def run(logger: Logger, break: => Nothing): Unit = {
+  //          (0 to 10).foreach { _ =>
+  //            if (isCancelled) break
+  //            else Thread.sleep(20)
+  //          }
+  //          i += 3
+  //        }
+  //      }
+  //
+  //      timer.schedule(task1)
+  //      timer.schedule(task2)
+  //      val prelist = timer.list
+  //      prelist should have size 2
+  //
+  //      i shouldBe 0
+  //      timer.cancel(task1.uuid)
+  //      Thread.sleep(100)
+  //      i shouldBe 0
+  //
+  //      val postlist = timer.list
+  //      postlist should have size 1
+  //      val name1 = postlist(0)
+  //      name1.task.name shouldBe task2.name
+  //      name1.isRunning shouldBe true
+  //      name1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+  //
+  //      eventually(timeout2sec) {
+  //        i shouldBe 3
+  //      }
+  //      timer.list should have size 0
+  //    }
+  //  }
 
 }
