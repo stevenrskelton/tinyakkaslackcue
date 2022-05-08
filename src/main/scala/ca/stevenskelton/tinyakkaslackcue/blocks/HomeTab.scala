@@ -13,14 +13,18 @@ import scala.util.Try
 
 object HomeTab {
 
+  val ActionIdTaskQueue = ActionId("task-queue-action")
+  val ActionIdTaskSchedule = ActionId("schedule-task-action")
+  val ActionIdTaskCancel = ActionId("multi_users_select-action1")
+
   object State extends Enumeration {
     type State = Value
 
-    val Scheduled, Success, Failure = Value
+    val Running, Scheduled, Success, Failure = Value
   }
 
   private implicit val orderingFields = new Ordering[Fields] {
-    override def compare(x: Fields, y: Fields): Int = x.name.compareTo(y.name)
+    override def compare(x: Fields, y: Fields): Int = x.slackTaskIdentifier.name.compareTo(y.slackTaskIdentifier.name)
   }
 
   private implicit val orderingFieldsInstance = new Ordering[FieldsInstance] {
@@ -30,18 +34,49 @@ object HomeTab {
   case class FieldsInstance(slackTs: SlackTs, date: ZonedDateTime, duration: Duration, createdBy: SlackUserId, state: State.State) {
 
     def toBlocks: SlackBlocksAsString = {
-      val header = state match {
-        case State.Success => "Last Success"
-        case State.Failure => "Last Failure"
-        case State.Scheduled => ???
-      }
-      SlackBlocksAsString {
-        s"""
+      val blocksAsString = state match {
+        case State.Success => s"""
 {
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": "*$header*\\nCreated By:${createdBy.value}\\nDuration:${DateUtils.humanReadable(duration)}\\n${DateUtils.humanReadable(date)}"
+    "text": ":white_check_mark: *Last Success:* ${DateUtils.humanReadable(date)}"
+  },
+  "accessory": {
+    "type": "button",
+    "text": {
+      "type": "plain_text",
+      "text": "View Logs",
+      "emoji": true
+    },
+    "value": "click_me_123",
+    "action_id": "button-action"
+  }
+}"""
+        case State.Failure => s"""
+{
+  "type": "section",
+  "text": {
+    "type": "mrkdwn",
+    "text": ":no_entry_sign: *Last Failure:* ${DateUtils.humanReadable(date)}"
+  },
+  "accessory": {
+    "type": "button",
+    "text": {
+      "type": "plain_text",
+      "text": "View Logs",
+      "emoji": true
+    },
+    "value": "click_me_123",
+    "action_id": "button-action"
+  }
+}"""
+        case State.Scheduled => s"""
+{
+  "type": "section",
+  "text": {
+    "type": "mrkdwn",
+    "text": ":watch: *Scheduled:* 2022-05-01 4:51pm"
   },
   "accessory": {
     "type": "button",
@@ -51,17 +86,67 @@ object HomeTab {
       "emoji": true
     },
     "value": "click_me_123",
-    "url": "https://tradeaudit.slack.com/archives/C03BC1HBVQD/p1651114822709949",
     "action_id": "button-action"
   }
 }"""
+        case State.Running =>
+          s"""
+{
+  "type": "section",
+  "fields": [
+    {
+      "type": "mrkdwn",
+      "text": "*Type:*\nComputer (laptop)"
+    },
+    {
+      "type": "mrkdwn",
+      "text": "*When:*\nSubmitted Aut 10"
+    },
+    {
+      "type": "mrkdwn",
+      "text": "*Last Update:*\nMar 10, 2015 (3 years, 5 months)"
+    },
+    {
+      "type": "mrkdwn",
+      "text": "*Reason:*\nAll vowel keys aren't working."
+    },
+    {
+      "type": "mrkdwn",
+      "text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
+    }
+  ]
+},
+{
+  "type": "actions",
+  "elements": [
+    {
+      "type": "button",
+      "text": {
+        "type": "plain_text",
+        "emoji": true,
+        "text": "View Logs"
+      },
+      "value": "click_me_123"
+    },
+    {
+      "type": "button",
+      "text": {
+        "type": "plain_text",
+        "emoji": true,
+        "text": "Cancel"
+      },
+      "style": "danger",
+      "value": "click_me_123"
+    }
+  ]
+}"""
       }
+      SlackBlocksAsString(blocksAsString)
     }
   }
 
   case class Fields(
-                     name: String,
-                     description: Mrkdwn,
+                     slackTaskIdentifier: SlackTaskIdentifier,
                      executed: SortedSet[FieldsInstance],
                      pending: SortedSet[FieldsInstance]
                    ) {
@@ -79,7 +164,7 @@ object HomeTab {
   "type": "header",
   "text": {
     "type": "plain_text",
-    "text": "$name",
+    "text": "${slackTaskIdentifier.name}",
     "emoji": true
   }
 },
@@ -87,7 +172,7 @@ object HomeTab {
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": "$description"
+    "text": "${slackTaskIdentifier.description}"
   }
 },
 {
@@ -113,10 +198,10 @@ object HomeTab {
       "text": {
         "type": "plain_text",
         "emoji": true,
-        "text": "Run"
+        "text": "Queue"
       },
       "style": "primary",
-      "value": "run_click_me_123_$name"
+      "value": "${ActionIdTaskQueue.value}-${slackTaskIdentifier.getClass.getName}"
     },
     {
       "type": "button",
@@ -125,7 +210,7 @@ object HomeTab {
         "emoji": true,
         "text": "Schedule"
       },
-      "value": "schedule_click_me_123_$name"
+      "value": "${ActionIdTaskSchedule.value}-${slackTaskIdentifier.getClass.getName}"
     },
     {
       "type": "button",
@@ -135,7 +220,7 @@ object HomeTab {
         "text": "Cancel"
       },
       "style": "danger",
-      "value": "cancel_click_me_123_$name"
+      "value": "${ActionIdTaskCancel.value}-${slackTaskIdentifier.getClass.getName}"
     }
   ]
 }"""
@@ -154,8 +239,7 @@ object HomeTab {
       slackTask =>
         //        val pinned = allPinned.find(_.)
         Fields(
-          name = slackTask.name,
-          description = slackTask.description,
+          slackTaskIdentifier = slackTask,
           executed = SortedSet.empty,
           pending = SortedSet.empty
         )

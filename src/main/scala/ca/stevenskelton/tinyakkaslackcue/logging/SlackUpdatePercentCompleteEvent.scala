@@ -1,4 +1,4 @@
-package ca.stevenskelton.tinyakkaslackcue
+package ca.stevenskelton.tinyakkaslackcue.logging
 
 import org.slf4j.event.{Level, LoggingEvent}
 import org.slf4j.{Logger, Marker}

@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackcue
 
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.stream.{Materializer, UniqueKillSwitch}
-import ca.stevenskelton.tinyakkaslackcue.logging.SlackLoggerFactory
+import ca.stevenskelton.tinyakkaslackcue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackUpdatePercentCompleteEvent}
 import org.slf4j.Logger
 
 import scala.collection.mutable
