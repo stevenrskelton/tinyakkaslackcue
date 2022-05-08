@@ -1,5 +1,6 @@
 package ca.stevenskelton
 
+import ca.stevenskelton.tinyakkaslackcue.blocks.ActionId
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.model.Message
 import play.api.libs.functional.syntax._
@@ -31,13 +32,13 @@ package object tinyakkaslackcue {
 
   case class SlackBlocksAsString(value: String) extends AnyVal
 
-  case class SlackAction(actionId: String, value: String)
+  case class SlackAction(actionId: ActionId, value: String)
 
   case class SlackTriggerId(value: String) extends AnyVal
 
   object SlackAction {
     implicit val rd: Reads[SlackAction] = (
-      (__ \ "action_id").read[String] and
+      (__ \ "action_id").read[String].map(ActionId(_)) and
         (__ \ "value").read[String]) (SlackAction.apply _)
   }
 

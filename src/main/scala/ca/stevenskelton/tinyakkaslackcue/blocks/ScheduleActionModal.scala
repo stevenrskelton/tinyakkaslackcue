@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.SlackBlocksAsString
+import ca.stevenskelton.tinyakkaslackcue.{SlackBlocksAsString, SlackUser}
 import org.slf4j.event.Level
 import play.api.libs.json.JsObject
 
@@ -16,36 +16,18 @@ object ScheduleActionModal {
   val ActionIdLogLevel = ActionId("static_select-action")
 
   //https://api.slack.com/reference/surfaces/views
-  def modal(name: String, zonedDateTime: ZonedDateTime, privateMetadata: PrivateMetadata): SlackBlocksAsString = {
+  def modal(slackUser: SlackUser,name: String, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
     //mrkdwn
-    SlackBlocksAsString(
-      s"""{
-  "private_metadata": "${privateMetadata.value}",
-	"title": {
-		"type": "plain_text",
-		"text": "New $name Task",
-		"emoji": true
-	},
-	"submit": {
-		"type": "plain_text",
-		"text": "Schedule",
-		"emoji": true
-	},
-	"type": "modal",
-	"close": {
-		"type": "plain_text",
-		"text": "Cancel",
-		"emoji": true
-	},
-	"blocks": [
-		{
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": "Queue this task immediately, or set later date/time to schedule."
-			}
-		},
-		{
+
+    val headerText = if(zonedDateTimeOpt.isEmpty){
+      "Queue this task immediately."
+    }else{
+      "Set later date/time to schedule."
+    }
+
+    val dateTimeBlocks = zonedDateTimeOpt.fold("") {
+      zonedDateTime =>
+       s"""{
 			"type": "input",
 			"element": {
 				"type": "datepicker",
@@ -80,7 +62,37 @@ object ScheduleActionModal {
 				"text": "Start time",
 				"emoji": true
 			}
+		},"""
+    }
+
+    SlackBlocksAsString(
+      s"""{
+  "private_metadata": "${privateMetadata.value}",
+	"title": {
+		"type": "plain_text",
+		"text": "New $name Task",
+		"emoji": true
+	},
+	"submit": {
+		"type": "plain_text",
+		"text": "Schedule",
+		"emoji": true
+	},
+	"type": "modal",
+	"close": {
+		"type": "plain_text",
+		"text": "Cancel",
+		"emoji": true
+	},
+	"blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "$headerText"
+			}
 		},
+		$dateTimeBlocks
 		{
 			"type": "divider"
 		},
@@ -93,7 +105,8 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
-				"action_id": "${ActionIdNotifyOnComplete.value}"
+				"action_id": "${ActionIdNotifyOnComplete.value}",
+        "initial_value": "${slackUser.username}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -110,7 +123,8 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
-				"action_id": "${ActionIdNotifyOnFailure.value}"
+				"action_id": "${ActionIdNotifyOnFailure.value}",
+        "initial_value": "${slackUser.username}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -143,7 +157,8 @@ object ScheduleActionModal {
 					}"""
         }.mkString(",")
       }],
-				"action_id": "${ActionIdLogLevel.value}"
+				"action_id": "${ActionIdLogLevel.value}",
+        "initial_value": "${Level.INFO.name}"
 			},
 			"label": {
 				"type": "plain_text",

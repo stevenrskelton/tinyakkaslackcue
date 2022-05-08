@@ -3,6 +3,7 @@ package ca.stevenskelton.tinyakkaslackcue.blocks
 import akka.Done
 import ca.stevenskelton.tinyakkaslackcue._
 import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
+import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 
@@ -201,7 +202,8 @@ object HomeTab {
         "text": "Queue"
       },
       "style": "primary",
-      "value": "${ActionIdTaskQueue.value}-${slackTaskIdentifier.getClass.getName}"
+      "action_id": "${ActionIdTaskQueue.value}",
+      "value": "${slackTaskIdentifier.getClass.getName}"
     },
     {
       "type": "button",
@@ -210,7 +212,8 @@ object HomeTab {
         "emoji": true,
         "text": "Schedule"
       },
-      "value": "${ActionIdTaskSchedule.value}-${slackTaskIdentifier.getClass.getName}"
+      "action_id": "${ActionIdTaskSchedule.value}",
+      "value": "${slackTaskIdentifier.getClass.getName}"
     },
     {
       "type": "button",
@@ -220,7 +223,8 @@ object HomeTab {
         "text": "Cancel"
       },
       "style": "danger",
-      "value": "${ActionIdTaskCancel.value}-${slackTaskIdentifier.getClass.getName}"
+      "action_id": "${ActionIdTaskCancel.value}",
+      "value": "${slackTaskIdentifier.getClass.getName}"
     }
   ]
 }"""
@@ -256,13 +260,23 @@ object HomeTab {
     logger.info(Json.stringify(jsObject))
 
     val slackActions: Seq[SlackAction] = (jsObject \ "actions").as[Seq[SlackAction]]
-
+    val action = slackActions.head
+    val result: SlackApiTextResponse = action.actionId match {
+      case ActionIdTaskQueue =>
+        val view = ScheduleActionModal.modal(slackUser, action.value, None, PrivateMetadata(action.value))
+        slackClient.viewsOpen(slackTriggerId, view)
+      case ActionIdTaskSchedule =>
+        val view = ScheduleActionModal.modal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
+        slackClient.viewsOpen(slackTriggerId, view)
+      case ActionIdTaskCancel =>
+        val view = ScheduleActionModal.modal(slackUser,action.value, None, PrivateMetadata(action.value))
+        slackClient.viewsOpen(slackTriggerId, view)
+    }
     //    slackActions.headOption.map {
     //      slackAction =>
     //        Slack.getInstance.methods.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token())
     //    }
-    val view = ScheduleActionModal.modal("somenamehere", ZonedDateTime.now(), PrivateMetadata(""))
-    val result = slackClient.viewsOpen(slackTriggerId, view)
+
     if (!result.isOk) {
       logger.error(result.getError)
     }
