@@ -33,7 +33,8 @@ object HomeTab {
     //    if (blocks.isEmpty) {
     //      HomeTab.parseView(blocks).fold(Future.failed(_), _ => Future.successful(Done))
     val userId = SlackUserId((jsObject \ "user").as[String])
-    val viewBlocks = slackClient.getHistory()
+    val viewBlocks = slackTaskFactories.history
+    //TODO: sort
     val blocks = SlackBlocksAsString(viewBlocks.map(_.toBlocks.value).mkString(""",{"type": "divider"},"""))
     val response = slackClient.viewsPublish(userId, "home", blocks)
     if (response.isOk) {

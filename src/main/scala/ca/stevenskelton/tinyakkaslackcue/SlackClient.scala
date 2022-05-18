@@ -18,6 +18,8 @@ import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResp
 import com.slack.api.model.ConversationType
 import com.typesafe.config.Config
 
+import scala.collection.SortedSet
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
@@ -61,10 +63,6 @@ object SlackClient {
 }
 
 class SlackClient(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String, historyThread: SlackTs, client: MethodsClient) {
-
-  def getHistory() : Seq[TaskHistory] = {
-    Nil
-  }
 
   def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse = {
     client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).ts(ts.value).text(text))
