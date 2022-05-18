@@ -70,7 +70,7 @@ object ScheduleActionModal {
   "private_metadata": "${privateMetadata.value}",
 	"title": {
 		"type": "plain_text",
-		"text": "New $name",
+		"text": "New ${name.take(21)}",
 		"emoji": true
 	},
 	"submit": {
