@@ -70,7 +70,7 @@ object ScheduleActionModal {
   "private_metadata": "${privateMetadata.value}",
 	"title": {
 		"type": "plain_text",
-		"text": "New $name Task",
+		"text": "New $name",
 		"emoji": true
 	},
 	"submit": {
@@ -105,8 +105,7 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
-				"action_id": "${ActionIdNotifyOnComplete.value}",
-        "initial_value": "${slackUser.username}"
+				"action_id": "${ActionIdNotifyOnComplete.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -123,8 +122,7 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
-				"action_id": "${ActionIdNotifyOnFailure.value}",
-        "initial_value": "${slackUser.username}"
+				"action_id": "${ActionIdNotifyOnFailure.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -157,8 +155,7 @@ object ScheduleActionModal {
 					}"""
         }.mkString(",")
       }],
-				"action_id": "${ActionIdLogLevel.value}",
-        "initial_value": "${Level.INFO.name}"
+				"action_id": "${ActionIdLogLevel.value}"
 			},
 			"label": {
 				"type": "plain_text",

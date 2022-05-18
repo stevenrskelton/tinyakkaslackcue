@@ -62,7 +62,7 @@ case class TaskHistory(
       },
       "style": "primary",
       "action_id": "${ActionIdTaskQueue.value}",
-      "value": "${slackTaskIdentifier.getClass.getName}"
+      "value": "${slackTaskIdentifier.name}"
     },
     {
       "type": "button",
@@ -72,7 +72,7 @@ case class TaskHistory(
         "text": "Schedule"
       },
       "action_id": "${ActionIdTaskSchedule.value}",
-      "value": "${slackTaskIdentifier.getClass.getName}"
+      "value": "${slackTaskIdentifier.name}"
     },
     {
       "type": "button",
@@ -83,7 +83,7 @@ case class TaskHistory(
       },
       "style": "danger",
       "action_id": "${ActionIdTaskCancel.value}",
-      "value": "${slackTaskIdentifier.getClass.getName}"
+      "value": "${slackTaskIdentifier.name}"
     }
   ]
 }"""
