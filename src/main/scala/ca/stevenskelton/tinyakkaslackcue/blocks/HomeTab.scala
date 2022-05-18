@@ -24,230 +24,33 @@ object HomeTab {
     val Running, Scheduled, Success, Failure = Value
   }
 
-  private implicit val orderingFields = new Ordering[Fields] {
-    override def compare(x: Fields, y: Fields): Int = x.slackTaskIdentifier.name.compareTo(y.slackTaskIdentifier.name)
-  }
+//  private implicit val orderingFields = new Ordering[Fields] {
+//    override def compare(x: Fields, y: Fields): Int = x.slackTaskIdentifier.name.compareTo(y.slackTaskIdentifier.name)
+//  }
 
-  private implicit val orderingFieldsInstance = new Ordering[FieldsInstance] {
-    override def compare(x: FieldsInstance, y: FieldsInstance): Int = x.date.compareTo(y.date)
-  }
-
-  case class FieldsInstance(slackTs: SlackTs, date: ZonedDateTime, duration: Duration, createdBy: SlackUserId, state: State.State) {
-
-    def toBlocks: SlackBlocksAsString = {
-      val blocksAsString = state match {
-        case State.Success => s"""
-{
-  "type": "section",
-  "text": {
-    "type": "mrkdwn",
-    "text": ":white_check_mark: *Last Success:* ${DateUtils.humanReadable(date)}"
-  },
-  "accessory": {
-    "type": "button",
-    "text": {
-      "type": "plain_text",
-      "text": "View Logs",
-      "emoji": true
-    },
-    "value": "click_me_123",
-    "action_id": "button-action"
-  }
-}"""
-        case State.Failure => s"""
-{
-  "type": "section",
-  "text": {
-    "type": "mrkdwn",
-    "text": ":no_entry_sign: *Last Failure:* ${DateUtils.humanReadable(date)}"
-  },
-  "accessory": {
-    "type": "button",
-    "text": {
-      "type": "plain_text",
-      "text": "View Logs",
-      "emoji": true
-    },
-    "value": "click_me_123",
-    "action_id": "button-action"
-  }
-}"""
-        case State.Scheduled => s"""
-{
-  "type": "section",
-  "text": {
-    "type": "mrkdwn",
-    "text": ":watch: *Scheduled:* 2022-05-01 4:51pm"
-  },
-  "accessory": {
-    "type": "button",
-    "text": {
-      "type": "plain_text",
-      "text": "View Details",
-      "emoji": true
-    },
-    "value": "click_me_123",
-    "action_id": "button-action"
-  }
-}"""
-        case State.Running =>
-          s"""
-{
-  "type": "section",
-  "fields": [
-    {
-      "type": "mrkdwn",
-      "text": "*Type:*\nComputer (laptop)"
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*When:*\nSubmitted Aut 10"
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*Last Update:*\nMar 10, 2015 (3 years, 5 months)"
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*Reason:*\nAll vowel keys aren't working."
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
+  def openedEvent(slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, jsObject: JsObject)(implicit logger: Logger): Future[Done] = {
+    //    val blocks = (jsObject \ "view" \ "blocks").as[Seq[JsValue]]
+    //    if (blocks.isEmpty) {
+    //      HomeTab.parseView(blocks).fold(Future.failed(_), _ => Future.successful(Done))
+    val userId = SlackUserId((jsObject \ "user").as[String])
+    val viewBlocks = slackClient.getHistory()
+    val blocks = SlackBlocksAsString(viewBlocks.map(_.toBlocks.value).mkString(""",{"type": "divider"},"""))
+    val response = slackClient.viewsPublish(userId, "home", blocks)
+    if (response.isOk) {
+      logger.debug(s"Updated home view for ${userId.value}")
+      Future.successful(Done)
+    } else {
+      logger.error(s"Home view update failed: ${response.getError}")
+      Future.failed(new Exception(response.getError))
     }
-  ]
-},
-{
-  "type": "actions",
-  "elements": [
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "View Logs"
-      },
-      "value": "click_me_123"
-    },
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "Cancel"
-      },
-      "style": "danger",
-      "value": "click_me_123"
-    }
-  ]
-}"""
-      }
-      SlackBlocksAsString(blocksAsString)
-    }
+    //    } else {
+    //      //TODO: compare to hash
+    //      Future.successful(Done)
+    //    }
   }
 
-  case class Fields(
-                     slackTaskIdentifier: SlackTaskIdentifier,
-                     executed: SortedSet[FieldsInstance],
-                     pending: SortedSet[FieldsInstance]
-                   ) {
-
-    val nextTs: Option[SlackTs] = pending.headOption.map(_.slackTs)
-
-    private val HeaderPreamble = "Scheduled Task "
-    private val CreatedByPreamble = "*Created by* "
-    private val ScheduledForPreamble = "*Scheduled for* "
-
-    def toBlocks: SlackBlocksAsString = {
-      SlackBlocksAsString {
-        s"""
-{
-  "type": "header",
-  "text": {
-    "type": "plain_text",
-    "text": "${slackTaskIdentifier.name}",
-    "emoji": true
-  }
-},
-{
-  "type": "section",
-  "text": {
-    "type": "mrkdwn",
-    "text": "${slackTaskIdentifier.description}"
-  }
-},
-{
-  "type": "section",
-  "fields": [
-    {
-      "type": "mrkdwn",
-      "text": "*Type:*\nComputer (laptop)"
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*When:*\nSubmitted Aut 10"
-    },
-    ${pending.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")}
-    ${executed.toSeq.reverse.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")}
-  ]
-},
-{
-  "type": "actions",
-  "elements": [
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "Queue"
-      },
-      "style": "primary",
-      "action_id": "${ActionIdTaskQueue.value}",
-      "value": "${slackTaskIdentifier.getClass.getName}"
-    },
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "Schedule"
-      },
-      "action_id": "${ActionIdTaskSchedule.value}",
-      "value": "${slackTaskIdentifier.getClass.getName}"
-    },
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "Cancel"
-      },
-      "style": "danger",
-      "action_id": "${ActionIdTaskCancel.value}",
-      "value": "${slackTaskIdentifier.getClass.getName}"
-    }
-  ]
-}"""
-      }
-    }
-
-  }
-
-  def parseView(blocks: Seq[JsValue]): Try[Fields] = Try {
+  def parseView(blocks: Seq[JsValue]): Try[TaskHistory] = Try {
     ???
-  }
-
-  def initialize(slackClient: SlackClient, slackTaskFactories: SlackTaskFactories): Seq[Fields] = {
-    val allPinned = slackClient.pinsList()
-    slackTaskFactories.factories.map {
-      slackTask =>
-        //        val pinned = allPinned.find(_.)
-        Fields(
-          slackTaskIdentifier = slackTask,
-          executed = SortedSet.empty,
-          pending = SortedSet.empty
-        )
-    }
   }
 
   def handleSubmission(slackTriggerId: SlackTriggerId, slackUser: SlackUser, jsObject: JsObject)(implicit slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
@@ -261,23 +64,21 @@ object HomeTab {
 
     val slackActions: Seq[SlackAction] = (jsObject \ "actions").as[Seq[SlackAction]]
     val action = slackActions.head
-    val result: SlackApiTextResponse = action.actionId match {
+    val view = action.actionId match {
       case ActionIdTaskQueue =>
-        val view = ScheduleActionModal.modal(slackUser, action.value, None, PrivateMetadata(action.value))
-        slackClient.viewsOpen(slackTriggerId, view)
+        ScheduleActionModal.modal(slackUser, action.value, None, PrivateMetadata(action.value))
       case ActionIdTaskSchedule =>
-        val view = ScheduleActionModal.modal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
-        slackClient.viewsOpen(slackTriggerId, view)
+        ScheduleActionModal.modal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
       case ActionIdTaskCancel =>
-        val view = ScheduleActionModal.modal(slackUser,action.value, None, PrivateMetadata(action.value))
-        slackClient.viewsOpen(slackTriggerId, view)
+        ScheduleActionModal.modal(slackUser,action.value, None, PrivateMetadata(action.value))
     }
     //    slackActions.headOption.map {
     //      slackAction =>
     //        Slack.getInstance.methods.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token())
     //    }
-
+    val result: SlackApiTextResponse = slackClient.viewsOpen(slackTriggerId, view)
     if (!result.isOk) {
+      logger.debug(view.value)
       logger.error(result.getError)
     }
     Future.successful(Done)

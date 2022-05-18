@@ -9,7 +9,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab
-import ca.stevenskelton.tinyakkaslackcue.eventhandlers.AppHomeOpened
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
@@ -36,7 +35,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
         val eventObject = (jsObject \ "event").as[JsObject]
         logger.info(s"EventCallback ${Json.stringify(eventObject)}")
         val flow = (eventObject \ "type").as[String] match {
-          case "app_home_opened" => AppHomeOpened(slackClient, slackTaskFactories, eventObject)
+          case "app_home_opened" => HomeTab.openedEvent(slackClient, slackTaskFactories, eventObject)
           case unknown => throw new NotImplementedError(s"Slack event $unknown not implemented: ${Json.stringify(jsObject)}")
         }
         extractExecutionContext {

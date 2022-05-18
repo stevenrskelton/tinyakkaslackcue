@@ -20,14 +20,15 @@ class Main extends App {
 
   private implicit val httpActorSystem = ActorSystem("HTTPServer", config)
 
-  private implicit val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"))(SlackClient(config), SystemMaterializer(httpActorSystem).materializer)
+  implicit val slackClient = SlackClient.initialize(config)
+
+  private implicit val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"))(slackClient, SystemMaterializer(httpActorSystem).materializer)
 
   implicit val materializer = SystemMaterializer(httpActorSystem).materializer
   implicit val _config = config
   val host = config.getString("env.host")
   val port = config.getInt("env.http.port")
 
-  implicit val slackClient = SlackClient(config)
   implicit val slackTaskFactories = new SlackTaskFactories {
     override def factories: Seq[SlackTaskFactory] = Nil
   }
