@@ -26,13 +26,15 @@ class Main extends App {
   private implicit val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"))(slackClient, SystemMaterializer(httpActorSystem).materializer)
 
   implicit val materializer = SystemMaterializer(httpActorSystem).materializer
-  implicit val _config = config
   val host = config.getString("env.host")
   val port = config.getInt("env.http.port")
 
   implicit val slackTaskFactories = new SlackTaskFactories {
     override def factories: Seq[SlackTaskFactory] = Nil
+
     override def history: Seq[TaskHistory] = Nil
+
+    override def tinySlackCue: TinySlackCue = new TinySlackCue(slackClient, httpLogger)
   }
 
   val slackRoutes = new SlackRoutes()

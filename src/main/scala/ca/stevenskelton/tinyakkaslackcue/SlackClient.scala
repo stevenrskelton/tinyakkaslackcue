@@ -62,7 +62,7 @@ object SlackClient {
   }
 }
 
-class SlackClient(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String, historyThread: SlackTs, client: MethodsClient) {
+class SlackClient(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String, val historyThread: SlackTs, client: MethodsClient) {
 
   def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse = {
     client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).ts(ts.value).text(text))

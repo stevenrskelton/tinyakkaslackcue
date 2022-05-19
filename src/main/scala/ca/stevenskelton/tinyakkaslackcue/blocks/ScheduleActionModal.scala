@@ -168,8 +168,9 @@ object ScheduleActionModal {
   }
 
   def parseViewSubmission(jsObject: JsObject): (PrivateMetadata, Map[ActionId, State]) = {
-    val privateMetadata = PrivateMetadata((jsObject \ "private_metadata").asOpt[String].getOrElse(""))
-    val actionStates = State.parseActionStates(jsObject \ "view" \ "state" \ "values")
+    val view = jsObject \ "view"
+    val privateMetadata = PrivateMetadata((view \ "private_metadata").asOpt[String].getOrElse(""))
+    val actionStates = State.parseActionStates(view \ "state" \ "values")
     (privateMetadata, actionStates)
   }
 

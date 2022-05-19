@@ -22,10 +22,12 @@ package object blocks {
     override def toString: String = value
   }
 
-  case class PrivateMetadata(value: String) extends AnyVal
+  case class PrivateMetadata private(value: String) extends AnyVal
 
   object PrivateMetadata {
     val Empty = PrivateMetadata("")
+
+    def apply(value: String): PrivateMetadata = new PrivateMetadata(value.take(25))
   }
 
 }

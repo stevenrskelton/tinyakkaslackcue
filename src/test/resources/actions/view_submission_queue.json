@@ -12,70 +12,28 @@
   },
   "api_app_id": "A03B812RGT0",
   "token": "Fo38CPu8Atf2KtR1DBlUceMb",
-  "trigger_id": "3458457351638.3333319080450.3ed9a23519d3a819cc62e98a84733d0b",
+  "trigger_id": "3546218468210.3333319080450.f6fee038821d1376a2e210bd505e3bd5",
   "view": {
-    "id": "V03DP2QUZV0",
+    "id": "V03FZ9B99AR",
     "team_id": "T039T9D2CD8",
     "type": "modal",
     "blocks": [
       {
         "type": "section",
-        "block_id": "KOXzQ",
+        "block_id": "S1IPp",
         "text": {
           "type": "plain_text",
-          "text": "Queue this task immediately, or set later date\/time to schedule.",
+          "text": "Queue this task immediately.",
           "emoji": true
-        }
-      },
-      {
-        "type": "input",
-        "block_id": "mUuhl",
-        "label": {
-          "type": "plain_text",
-          "text": "Start date",
-          "emoji": true
-        },
-        "optional": false,
-        "dispatch_action": false,
-        "element": {
-          "type": "datepicker",
-          "action_id": "datepicker-action",
-          "initial_date": "2022-05-01",
-          "placeholder": {
-            "type": "plain_text",
-            "text": "Select a date",
-            "emoji": true
-          }
-        }
-      },
-      {
-        "type": "input",
-        "block_id": "xVW",
-        "label": {
-          "type": "plain_text",
-          "text": "Starttime",
-          "emoji": true
-        },
-        "optional": false,
-        "dispatch_action": false,
-        "element": {
-          "type": "timepicker",
-          "action_id": "timepicker-action",
-          "initial_time": "11:38",
-          "placeholder": {
-            "type": "plain_text",
-            "text": "Start Time",
-            "emoji": true
-          }
         }
       },
       {
         "type": "divider",
-        "block_id": "CjY8"
+        "block_id": "79m"
       },
       {
         "type": "input",
-        "block_id": "sVa",
+        "block_id": "mA8",
         "label": {
           "type": "plain_text",
           "text": "Users to notify on task complete",
@@ -95,10 +53,10 @@
       },
       {
         "type": "input",
-        "block_id": "Tnsx",
+        "block_id": "PcVe=",
         "label": {
           "type": "plain_text",
-          "text": "Users to notify on taskfailure",
+          "text": "Users to notify on task failure",
           "emoji": true
         },
         "optional": false,
@@ -115,11 +73,11 @@
       },
       {
         "type": "divider",
-        "block_id": "w18"
+        "block_id": "5SjF1"
       },
       {
         "type": "input",
-        "block_id": "BudPL",
+        "block_id": "YEg",
         "label": {
           "type": "plain_text",
           "text": "Log Level",
@@ -172,39 +130,27 @@
         }
       }
     ],
-    "private_metadata": "secrets",
+    "private_metadata": "Exchange Listings",
     "callback_id": "",
     "state": {
       "values": {
-        "mUuhl": {
-          "datepicker-action": {
-            "type": "datepicker",
-            "selected_date": "2022-05-01"
-          }
-        },
-        "xVW": {
-          "timepicker-action": {
-            "type": "timepicker",
-            "selected_time": "11:38"
-          }
-        },
-        "sVa": {
+        "mA8": {
           "multi_users_select-action1": {
             "type": "multi_users_select",
             "selected_users": [
-              "U039TCGLX5G"
+              "U039T9DUHGT"
             ]
           }
         },
-        "Tnsx": {
+        "PcVe=": {
           "multi_users_select-action2": {
             "type": "multi_users_select",
             "selected_users": [
-              "U039TCGLX5G"
+              "U039T9DUHGT"
             ]
           }
         },
-        "BudPL": {
+        "YEg": {
           "static_select-action": {
             "type": "static_select",
             "selected_option": {
@@ -219,10 +165,10 @@
         }
       }
     },
-    "hash": "1651448339.XpgUHBp5",
+    "hash": "1652915743.lfpqfkjV",
     "title": {
       "type": "plain_text",
-      "text": "New somenamehere Task",
+      "text": "New Exchange Listings",
       "emoji": true
     },
     "clear_on_close": false,
@@ -238,7 +184,7 @@
       "emoji": true
     },
     "previous_view_id": null,
-    "root_view_id": "V03DP2QUZV0",
+    "root_view_id": "V03FZ9B99AR",
     "app_id": "A03B812RGT0",
     "external_id": "",
     "app_installed_team_id": "T039T9D2CD8",

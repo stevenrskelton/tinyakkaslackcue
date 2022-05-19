@@ -1,0 +1,251 @@
+{
+  "type": "view_submission",
+  "team": {
+    "id": "T039T9D2CD8",
+    "domain": "tradeaudit"
+  },
+  "user": {
+    "id": "U039T9DUHGT",
+    "username": "tradeauditapp",
+    "name": "tradeauditapp",
+    "team_id": "T039T9D2CD8"
+  },
+  "api_app_id": "A03B812RGT0",
+  "token": "Fo38CPu8Atf2KtR1DBlUceMb",
+  "trigger_id": "3570024983792.3333319080450.e7004a9e7934eedcbdf2e9448563cf4a",
+  "view": {
+    "id": "V03G4JBBD8C",
+    "team_id": "T039T9D2CD8",
+    "type": "modal",
+    "blocks": [
+      {
+        "type": "section",
+        "block_id": "wbQXl",
+        "text": {
+          "type": "plain_text",
+          "text": "Set later date/time to schedule.",
+          "emoji": true
+        }
+      },
+      {
+        "type": "input",
+        "block_id": "MZ1",
+        "label": {
+          "type": "plain_text",
+          "text": "Start date",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "datepicker",
+          "action_id": "datepicker-action",
+          "initial_date": "2022-05-18",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Select a date",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "input",
+        "block_id": "BPi",
+        "label": {
+          "type": "plain_text",
+          "text": "Start time",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "timepicker",
+          "action_id": "timepicker-action",
+          "initial_time": "11:31",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Start Time",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "divider",
+        "block_id": "eRSn"
+      },
+      {
+        "type": "input",
+        "block_id": "Ibz",
+        "label": {
+          "type": "plain_text",
+          "text": "Users to notify on task complete",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "multi_users_select",
+          "action_id": "multi_users_select-action1",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Users",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "input",
+        "block_id": "ywL",
+        "label": {
+          "type": "plain_text",
+          "text": "Users to notify on task failure",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "multi_users_select",
+          "action_id": "multi_users_select-action2",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Users",
+            "emoji": true
+          }
+        }
+      },
+      {
+        "type": "divider",
+        "block_id": "Rhc/0"
+      },
+      {
+        "type": "input",
+        "block_id": "2I1Gh",
+        "label": {
+          "type": "plain_text",
+          "text": "Log Level",
+          "emoji": true
+        },
+        "optional": false,
+        "dispatch_action": false,
+        "element": {
+          "type": "static_select",
+          "action_id": "static_select-action",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Select an item",
+            "emoji": true
+          },
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":boom: ERROR",
+                "emoji": true
+              },
+              "value": "ERROR"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":rotating_light: WARN",
+                "emoji": true
+              },
+              "value": "WARN"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":eyes: INFO",
+                "emoji": true
+              },
+              "value": "INFO"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": ":warning: DEBUG",
+                "emoji": true
+              },
+              "value": "DEBUG"
+            }
+          ]
+        }
+      }
+    ],
+    "private_metadata": "Yahoo 2min Prices",
+    "callback_id": "",
+    "state": {
+      "values": {
+        "MZ1": {
+          "datepicker-action": {
+            "type": "datepicker",
+            "selected_date": "2022-05-18"
+          }
+        },
+        "BPi": {
+          "timepicker-action": {
+            "type": "timepicker",
+            "selected_time": "11:31"
+          }
+        },
+        "Ibz": {
+          "multi_users_select-action1": {
+            "type": "multi_users_select",
+            "selected_users": [
+              "U039T9DUHGT"
+            ]
+          }
+        },
+        "ywL": {
+          "multi_users_select-action2": {
+            "type": "multi_users_select",
+            "selected_users": [
+              "U039T9DUHGT",
+              "U039TCGLX5G"
+            ]
+          }
+        },
+        "2I1Gh": {
+          "static_select-action": {
+            "type": "static_select",
+            "selected_option": {
+              "text": {
+                "type": "plain_text",
+                "text": ":rotating_light: WARN",
+                "emoji": true
+              },
+              "value": "WARN"
+            }
+          }
+        }
+      }
+    },
+    "hash": "1652916661.Iez2ZKH2",
+    "title": {
+      "type": "plain_text",
+      "text": "New Yahoo 2min Prices",
+      "emoji": true
+    },
+    "clear_on_close": false,
+    "notify_on_close": false,
+    "close": {
+      "type": "plain_text",
+      "text": "Cancel",
+      "emoji": true
+    },
+    "submit": {
+      "type": "plain_text",
+      "text": "Schedule",
+      "emoji": true
+    },
+    "previous_view_id": null,
+    "root_view_id": "V03G4JBBD8C",
+    "app_id": "A03B812RGT0",
+    "external_id": "",
+    "app_installed_team_id": "T039T9D2CD8",
+    "bot_id": "B03BTG3KAAV"
+  },
+  "response_urls": [],
+  "is_enterprise_install": false,
+  "enterprise": null
+}
