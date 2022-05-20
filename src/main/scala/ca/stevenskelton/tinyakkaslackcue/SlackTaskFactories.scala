@@ -31,6 +31,10 @@ abstract class SlackTaskFactories(
 //  private implicit val materializer = SystemMaterializer.get(actorSystem)
   def factories: Seq[SlackTaskFactory]
 
+  implicit val ordering = new Ordering[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] {
+    override def compare(x: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask, y: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): Int = x.executionStart.compareTo(y.executionStart)
+  }
+
   def history: Seq[TaskHistory] = {
     val allQueuedTasks = tinySlackCue.listScheduledTasks
     factories.map {
@@ -44,7 +48,7 @@ abstract class SlackTaskFactories(
               runningTask = Some(scheduleTask)
               None
             }else {
-              Some(TaskHistoryItem(scheduleTask.task.ts, scheduleTask.executionStart, Duration.ZERO, createdBy = SlackUserId.Empty, HomeTab.State.Scheduled))
+              Some(scheduleTask)
             }
         }
         TaskHistory(slackTaskFactory, runningTask, executed = SortedSet.empty, pending = SortedSet.from(cueTasks))

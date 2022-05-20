@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.{SlackBlocksAsString, SlackUser}
+import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.ActionIdTaskCancel
+import ca.stevenskelton.tinyakkaslackcue.{InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackUser}
 import org.slf4j.event.Level
 import play.api.libs.json.JsObject
 
@@ -14,6 +15,42 @@ object ScheduleActionModal {
   val ActionIdNotifyOnComplete = ActionId("multi_users_select-action1")
   val ActionIdNotifyOnFailure = ActionId("multi_users_select-action2")
   val ActionIdLogLevel = ActionId("static_select-action")
+
+  def viewModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackBlocksAsString = {
+
+        SlackBlocksAsString(
+      s"""{
+	"title": {
+		"type": "plain_text",
+		"text": "${scheduledTask.task.name}",
+		"emoji": true
+	},
+	"submit": {
+		"type": "plain_text",
+		"text": "Cancel Task",
+    "style": "danger",
+    "action_id": "${ActionIdTaskCancel.value}",
+    "value": "${scheduledTask.uuid}",
+		"emoji": true
+	},
+	"type": "modal",
+	"close": {
+		"type": "plain_text",
+		"text": "Close",
+		"emoji": true
+	},
+	"blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "${scheduledTask.executionStart.toString}"
+			}
+		}
+	]
+		}""")
+
+  }
 
   //https://api.slack.com/reference/surfaces/views
   def modal(slackUser: SlackUser,name: String, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {

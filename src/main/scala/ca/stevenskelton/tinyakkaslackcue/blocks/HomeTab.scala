@@ -18,16 +18,9 @@ object HomeTab {
   val ActionIdTaskQueue = ActionId("task-queue-action")
   val ActionIdTaskSchedule = ActionId("schedule-task-action")
   val ActionIdTaskCancel = ActionId("multi_users_select-action1")
+  val ActionIdTaskView = ActionId("view-task")
+  val ActionIdTaskThread = ActionId("view-thread")
 
-  object State extends Enumeration {
-    type State = Value
-
-    val Running, Scheduled, Success, Failure = Value
-  }
-
-//  private implicit val orderingFields = new Ordering[Fields] {
-//    override def compare(x: Fields, y: Fields): Int = x.slackTaskIdentifier.name.compareTo(y.slackTaskIdentifier.name)
-//  }
 
   def openedEvent(slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, jsObject: JsObject)(implicit logger: Logger): Future[Done] = {
     //    val blocks = (jsObject \ "view" \ "blocks").as[Seq[JsValue]]
@@ -97,6 +90,16 @@ object HomeTab {
         ScheduleActionModal.modal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
       case ActionIdTaskCancel =>
         ScheduleActionModal.modal(slackUser,action.value, None, PrivateMetadata(action.value))
+      case ActionIdTaskView =>
+        val uuid = action.value
+        slackTaskFactories.tinySlackCue.listScheduledTasks.find(_.uuid.toString == uuid).map {
+          scheduledTask => ScheduleActionModal.viewModal(scheduledTask)
+        }.getOrElse {
+          val ex = new Exception(s"Task UUID $uuid not found")
+          logger.error("handleAction", ex)
+          throw ex
+        }
+//      case ActionIdTaskThread =>
     }
     //    slackActions.headOption.map {
     //      slackAction =>
