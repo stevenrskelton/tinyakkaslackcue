@@ -85,11 +85,11 @@ object HomeTab {
     val action = slackActions.head
     val view = action.actionId match {
       case ActionIdTaskQueue =>
-        ScheduleActionModal.modal(slackUser, action.value, None, PrivateMetadata(action.value))
+        ScheduleActionModal.createModal(slackUser, action.value, None, PrivateMetadata(action.value))
       case ActionIdTaskSchedule =>
-        ScheduleActionModal.modal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
+        ScheduleActionModal.createModal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
       case ActionIdTaskCancel =>
-        ScheduleActionModal.modal(slackUser,action.value, None, PrivateMetadata(action.value))
+        ScheduleActionModal.createModal(slackUser,action.value, None, PrivateMetadata(action.value))
       case ActionIdTaskView =>
         val uuid = action.value
         slackTaskFactories.tinySlackCue.listScheduledTasks.find(_.uuid.toString == uuid).map {

@@ -60,7 +60,7 @@ case class TaskHistory(
 
     val runningBlocks = running.map {
       scheduledTask =>
-        s"""{
+        s""",{
   "type": "section",
   "fields": [
     {

@@ -53,7 +53,7 @@ object ScheduleActionModal {
   }
 
   //https://api.slack.com/reference/surfaces/views
-  def modal(slackUser: SlackUser,name: String, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
+  def createModal(slackUser: SlackUser, name: String, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
     //mrkdwn
 
     val headerText = if(zonedDateTimeOpt.isEmpty){
