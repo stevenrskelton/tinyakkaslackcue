@@ -83,9 +83,13 @@ object SlackTaskThread {
   }""")
   }
 
-  def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long): String = {
+  def update(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): String = {
+    update(scheduledTask.task, scheduledTask.task.percentComplete, scheduledTask.executionStart.toEpochSecond, width = 40)
+  }
+
+  def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long, width: Int = 14): String = {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
-    val bar = s"|${TextProgressBar.SlackEmoji.bar(percentComplete, 14)}| ${("  " + math.round(percentComplete * 100)).takeRight(3)}%"
+    val bar = s"|${TextProgressBar.SlackEmoji.bar(percentComplete, width)}| ${("  " + math.round(percentComplete * 100)).takeRight(3)}%"
     val elapsed = if (startTimeMs != 0) s"\nStarted ${DateUtils.humanReadable(duration)} ago" else ""
     s"Running *${slackTask.name}*\n$bar$elapsed"
   }

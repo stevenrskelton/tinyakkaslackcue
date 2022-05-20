@@ -23,11 +23,13 @@ abstract class SlackLoggedStreamTask[T, B](implicit slackClient: SlackClient, va
     val completeElements = new mutable.HashSet[B]()
     implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this, logger) //, 2.seconds)
     val (source, itemCount) = sourceAndCount(slackTaskLogger)
+    itemCount.foreach(i => estimatedCount = i)
     val (killswitch, result) = source.toMat(Sink.foreach {
       t =>
         val key = distinctBy(t)
         if (completeElements.add(key)) {
-          itemCount.foreach(total => slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(completeElements.size.toFloat / total.toFloat)))
+          completedCount = completeElements.size
+          itemCount.foreach(total => slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(percentComplete)))
         }
     })(Keep.both).run()
     killSwitchOption = Some(killswitch)

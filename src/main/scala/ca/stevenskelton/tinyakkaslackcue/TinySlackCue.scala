@@ -1,15 +1,16 @@
 package ca.stevenskelton.tinyakkaslackcue
 
+import akka.Done
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackcue.blocks.SlackTaskThread
 import com.typesafe.config.Config
 import org.slf4j.Logger
 
 import java.time.ZonedDateTime
 import java.util.UUID
+import scala.util.Try
 
-class TinySlackCue(slackClient: SlackClient, logger: Logger)(implicit actorSystem: ActorSystem, config: Config) {
+class TinySlackCue(slackClient: SlackClient, logger: Logger, onComplete: (SlackTask, Try[Done]) => Unit)(implicit actorSystem: ActorSystem, config: Config) {
   private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTask](logger)
 
   def listScheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] = interactiveTimer.list
@@ -25,7 +26,7 @@ class TinySlackCue(slackClient: SlackClient, logger: Logger)(implicit actorSyste
       notifyOnError = Nil,
       notifyOnComplete = Nil
     )
-    val scheduledTask = time.fold(interactiveTimer.schedule(slackTask))(interactiveTimer.schedule(slackTask, _))
+    val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
     slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
     slackClient.pinsAdd(slackTask.ts)
     slackTask

@@ -1,12 +1,13 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.{ActionIdTaskCancel, ActionIdTaskQueue, ActionIdTaskSchedule}
-import ca.stevenskelton.tinyakkaslackcue.{SlackBlocksAsString, SlackTaskIdentifier, SlackTs}
+import ca.stevenskelton.tinyakkaslackcue.{InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackTaskIdentifier, SlackTs}
 
 import scala.collection.SortedSet
 
 case class TaskHistory(
                         slackTaskIdentifier: SlackTaskIdentifier,
+                        running: Option[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask],
                         executed: SortedSet[TaskHistoryItem],
                         pending: SortedSet[TaskHistoryItem]
                       ) {
@@ -18,6 +19,45 @@ case class TaskHistory(
   private val ScheduledForPreamble = "*Scheduled for* "
 
   def toBlocks: SlackBlocksAsString = {
+
+    val executedBlocks = if(executed.isEmpty)
+      """{
+        			"type": "section",
+        			"text": {
+        				"type": "mrkdwn",
+        				"text": "No previous executions"
+        			}
+        }""" else executed.toSeq.reverse.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
+    val pendingBlocks = if(pending.isEmpty)
+      """{
+        			"type": "section",
+        			"text": {
+        				"type": "mrkdwn",
+        				"text": "No pending executions"
+        			}
+        }""" else pending.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
+    val runningBlocks = running.map {
+      scheduledTask =>
+        s"""{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "${SlackTaskThread.update(scheduledTask)}"
+			},
+			"accessory": {
+        "type": "button",
+        "text": {
+          "type": "plain_text",
+          "emoji": true,
+          "text": "Cancel"
+        },
+        "style": "danger",
+        "action_id": "${ActionIdTaskCancel.value}",
+        "value": "${scheduledTask.uuid}"
+			}
+		}"""
+    }.getOrElse("")
+
     SlackBlocksAsString {
       s"""
 {
@@ -34,21 +74,6 @@ case class TaskHistory(
     "type": "mrkdwn",
     "text": "${slackTaskIdentifier.description}"
   }
-},
-{
-  "type": "section",
-  "fields": [
-    {
-      "type": "mrkdwn",
-      "text": "*Type:*\nComputer (laptop)"
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*When:*\nSubmitted Aut 10"
-    },
-    ${pending.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")}
-    ${executed.toSeq.reverse.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")}
-  ]
 },
 {
   "type": "actions",
@@ -73,20 +98,11 @@ case class TaskHistory(
       },
       "action_id": "${ActionIdTaskSchedule.value}",
       "value": "${slackTaskIdentifier.name}"
-    },
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "Cancel"
-      },
-      "style": "danger",
-      "action_id": "${ActionIdTaskCancel.value}",
-      "value": "${slackTaskIdentifier.name}"
     }
   ]
-}"""
+},
+${Seq(runningBlocks,pendingBlocks,executedBlocks).mkString(",")}
+"""
     }
   }
 

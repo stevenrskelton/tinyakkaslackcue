@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue
 
+import akka.Done
 import akka.actor.Cancellable
 import org.slf4j.Logger
 
@@ -7,6 +8,7 @@ import java.time._
 import java.util
 import java.util.{Date, Timer, TimerTask, UUID}
 import scala.jdk.CollectionConverters.IterableHasAsScala
+import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 abstract class UUIDTask extends Cancellable {
@@ -39,7 +41,7 @@ class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
     humanReadableFormat(Duration.ofMillis(System.currentTimeMillis - starttime))
   }
 
-  private class InnerTimerTask(val task: T) extends TimerTask {
+  private class InnerTimerTask(val task: T, onComplete: Try[Done] => Unit) extends TimerTask {
 
     var (isRunning, isComplete, hasFailed) = (false, false, false)
 
@@ -52,17 +54,20 @@ class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
       isRunning = true
       val logger = createLogger(task.uuid)
       val starttime = System.currentTimeMillis
-      try {
+      val result = try {
         task.run(logger)
         isComplete = true
+        Success(Done)
       } catch {
         case NonFatal(ex) =>
           hasFailed = true
           logger.error(s"Job failed after ${humanReadableTimeFromStart(starttime)}", ex)
+          Failure(ex)
       } finally {
         isRunning = false
         allTimerTasks.remove(this)
       }
+      onComplete(result)
     }
   }
 
@@ -82,15 +87,15 @@ class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
 
   private val allTimerTasks = java.util.Collections.newSetFromMap[InnerTimerTask](new util.WeakHashMap[InnerTimerTask, java.lang.Boolean]())
 
-  def schedule(task: T): ScheduledTask = {
-    val innerTimerTask = new InnerTimerTask(task)
+  def schedule(task: T, onComplete: Try[Done] => Unit): ScheduledTask = {
+    val innerTimerTask = new InnerTimerTask(task, onComplete)
     allTimerTasks.add(innerTimerTask)
     timer.schedule(innerTimerTask, 0)
     toScheduledTask(allTimerTasks.asScala.find(_.task == task).get)
   }
 
-  def schedule(task: T, time: ZonedDateTime): ScheduledTask = {
-    val innerTimerTask = new InnerTimerTask(task)
+  def schedule(task: T, time: ZonedDateTime, onComplete: Try[Done] => Unit): ScheduledTask = {
+    val innerTimerTask = new InnerTimerTask(task, onComplete)
     allTimerTasks.add(innerTimerTask)
     timer.schedule(innerTimerTask, Date.from(time.toInstant))
     toScheduledTask(allTimerTasks.asScala.find(_.task == task).get)

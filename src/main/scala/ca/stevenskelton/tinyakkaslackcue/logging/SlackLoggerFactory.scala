@@ -30,7 +30,7 @@ object SlackLoggerFactory {
           slackClient.chatPostMessageInThread(message, slackTs)
         }
     }
-    val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 1.second).to(sink).run()
+    val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()
     new SlackLogger(getName = base.getName, sourceQueue, base)
   }
 
@@ -70,7 +70,7 @@ object SlackLoggerFactory {
           }
         }
     }
-    val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 1.second).to(sink).run()
+    val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()
     sourceQueue.watchCompletion.map {
       _ =>
         slackClient.chatUpdate(SlackTaskThread.completed(slackTask, startTimeMs), slackTask.ts)

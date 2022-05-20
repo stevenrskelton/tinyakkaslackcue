@@ -29,12 +29,8 @@ class Main extends App {
   val host = config.getString("env.host")
   val port = config.getInt("env.http.port")
 
-  implicit val slackTaskFactories = new SlackTaskFactories {
+  implicit val slackTaskFactories = new SlackTaskFactories(slackClient, httpLogger, httpActorSystem, config) {
     override def factories: Seq[SlackTaskFactory] = Nil
-
-    override def history: Seq[TaskHistory] = Nil
-
-    override def tinySlackCue: TinySlackCue = new TinySlackCue(slackClient, httpLogger)
   }
 
   val slackRoutes = new SlackRoutes()
