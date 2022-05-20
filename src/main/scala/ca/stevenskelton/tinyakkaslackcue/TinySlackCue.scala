@@ -28,7 +28,6 @@ class TinySlackCue(slackClient: SlackClient, logger: Logger, onComplete: (SlackT
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
     slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
-    slackClient.pinsAdd(slackTask.ts)
     slackTask
   }
 
