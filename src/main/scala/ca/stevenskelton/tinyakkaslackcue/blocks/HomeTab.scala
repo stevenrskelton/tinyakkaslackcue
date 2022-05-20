@@ -43,7 +43,7 @@ object HomeTab {
       Future.successful(Done)
     } else {
       logger.error(s"Home view update failed: ${response.getError}")
-      logger.error(s"```${blocks.value}```")
+      logger.error(blocks.value)
       Future.failed(new Exception(response.getError))
     }
     //    } else {

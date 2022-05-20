@@ -21,24 +21,26 @@ case class TaskHistory(
   def toBlocks: SlackBlocksAsString = {
 
     val executedBlocks = if(executed.isEmpty)
-      """{
+      """,{
         			"type": "section",
         			"text": {
         				"type": "mrkdwn",
         				"text": "No previous executions"
         			}
-        }""" else executed.toSeq.reverse.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
+        }""" else executed.toSeq.reverse.map(_.toBlocks.value).mkString(",",""",{"type": "divider"},""","")
+
     val pendingBlocks = if(pending.isEmpty)
-      """{
+      """,{
         			"type": "section",
         			"text": {
         				"type": "mrkdwn",
         				"text": "No pending executions"
         			}
-        }""" else pending.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
+        }""" else pending.map(_.toBlocks.value).mkString(",",""",{"type": "divider"},""","")
+
     val runningBlocks = running.map {
       scheduledTask =>
-        s"""{
+        s""",{
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
@@ -100,8 +102,10 @@ case class TaskHistory(
       "value": "${slackTaskIdentifier.name}"
     }
   ]
-},
-${Seq(runningBlocks,pendingBlocks,executedBlocks).mkString(",")}
+}
+$runningBlocks
+$pendingBlocks
+$executedBlocks
 """
     }
   }
