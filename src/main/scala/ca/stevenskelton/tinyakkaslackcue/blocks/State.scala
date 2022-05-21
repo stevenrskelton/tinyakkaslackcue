@@ -15,6 +15,8 @@ case class MultiUsersState(users: Seq[SlackUserId]) extends State
 
 case class SelectState(value: String) extends State
 
+case class ButtonState(value: String) extends State
+
 object State {
 
   def parseActionStates(jsLookupResult: JsLookupResult): Map[ActionId, State] = {
@@ -32,6 +34,7 @@ object State {
       case "timepicker" => TimePickerState((jsObject \ "selected_time").as[LocalTime])
       case "multi_users_select" => MultiUsersState((jsObject \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
       case "static_select" => SelectState((jsObject \ "selected_option" \ "value").as[String])
+      case "button" => ButtonState((jsObject \ "value").as[String])
     }
   }
 }

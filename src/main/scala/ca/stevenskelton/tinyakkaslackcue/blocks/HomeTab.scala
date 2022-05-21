@@ -18,7 +18,7 @@ object HomeTab {
 
   val ActionIdTaskQueue = ActionId("task-queue-action")
   val ActionIdTaskSchedule = ActionId("schedule-task-action")
-  val ActionIdTaskCancel = ActionId("multi_users_select-action1")
+  val ActionIdTaskCancel = ActionId("task-cancel")
   val ActionIdTaskView = ActionId("view-task")
   val ActionIdTaskThread = ActionId("view-thread")
 

@@ -8,10 +8,13 @@ import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab
+import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.ActionIdTaskCancel
+import ca.stevenskelton.tinyakkaslackcue.blocks.ScheduleActionModal.CallbackIdView
+import ca.stevenskelton.tinyakkaslackcue.blocks.{ButtonState, CallbackId, DatePickerState, HomeTab, ScheduleActionModal}
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, materializer: Materializer, logger: Logger) {
@@ -53,13 +56,31 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
       val handler = for {
         jsObject <- Json.parse(payload).asOpt[JsObject]
         actionType <- (jsObject \ "type").asOpt[String]
-        viewType <- (jsObject \ "view" \ "type").asOpt[String]
+        viewType = (jsObject \ "view" \ "type").asOpt[String]
+        callbackId = (jsObject \ "view" \ "id").asOpt[String].map(CallbackId(_))
         triggerId <- (jsObject \ "trigger_id").asOpt[String].map(SlackTriggerId(_))
         slackUser <- (jsObject \ "user").asOpt[SlackUser]
-      } yield (actionType, viewType) match {
-        case ("block_actions", "home") => HomeTab.handleAction(triggerId, slackUser, jsObject)
-        case ("view_submission", "modal") => HomeTab.handleSubmission(triggerId, slackUser, jsObject)
-        case (x, y) => throw new NotImplementedError(s"Slack payload $x, for view $y not implemented: $payload")
+      } yield (actionType, viewType, callbackId) match {
+        case ("block_actions", Some("home"), _) => HomeTab.handleAction(triggerId, slackUser, jsObject)
+        case ("block_actions", _, Some(CallbackIdView)) =>
+          logger.info(Json.stringify(jsObject))
+          val (privateMetadata, actionStates, _) = ScheduleActionModal.parseViewSubmission(jsObject)
+          actionStates.get(ActionIdTaskCancel).map { state =>
+            val uuid = UUID.fromString(state.asInstanceOf[ButtonState].value)
+            if(slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)){
+              HomeTab.update(slackUser.id, slackTaskFactories)
+            }else{
+              val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
+              logger.error("handleSubmission", ex)
+              Future.failed(ex)
+            }
+          }.getOrElse {
+            val ex = new Exception(s"Could not find action ${ActionIdTaskCancel.value}")
+            logger.error("handleSubmission", ex)
+            Future.failed(ex)
+          }
+        case ("view_submission", Some("modal"), _) => HomeTab.handleSubmission(triggerId, slackUser, jsObject)
+        case (x, y, z) => throw new NotImplementedError(s"Slack payload $x, for view $y callback $z not implemented: $payload")
       }
 
       handler.map {
