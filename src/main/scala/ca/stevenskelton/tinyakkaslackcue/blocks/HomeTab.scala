@@ -47,7 +47,7 @@ object HomeTab {
     val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(jsObject)
     callbackId match {
       case CallbackIdView =>
-        if(slackTaskFactories.tinySlackCue.cancelScheduledTask(UUID.fromString(privateMetadata.value))){
+        if(actionStates.get(ActionIdTaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
           HomeTab.update(slackUser.id, slackTaskFactories)
         } else {
           val ex = new Exception(s"Could not find task uuid ${privateMetadata.value}")

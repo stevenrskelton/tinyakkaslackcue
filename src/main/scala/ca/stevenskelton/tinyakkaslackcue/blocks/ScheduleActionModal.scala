@@ -27,25 +27,35 @@ object ScheduleActionModal {
 		"text": "${scheduledTask.task.name}",
 		"emoji": true
 	},
-	"submit": {
-		"type": "plain_text",
-		"text": "Cancel Task",
-		"emoji": true
-	},
 	"type": "modal",
   ${CallbackIdView.block},
-  ${PrivateMetadata(scheduledTask.uuid.toString).block},
 	"close": {
 		"type": "plain_text",
 		"text": "Close",
 		"emoji": true
 	},
 	"blocks": [
+ 		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Cancel",
+						"emoji": true
+					},
+					"style": "danger",
+					"value": "${scheduledTask.uuid.toString}",
+					"action_id": "${HomeTab.ActionIdTaskCancel}"
+				}
+			]
+		},
 		{
 			"type": "section",
 			"text": {
 				"type": "plain_text",
-				"text": "${scheduledTask.executionStart.toString}"
+				"text": "*Started:* ${scheduledTask.executionStart.toString}"
 			}
 		}
 	]
