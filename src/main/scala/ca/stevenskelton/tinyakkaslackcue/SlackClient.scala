@@ -105,6 +105,5 @@ class SlackClient(val botOAuthToken: String, botUserId: SlackUserId, botChannelI
     client.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(botOAuthToken).triggerId(slackTriggerId.value).viewAsString(view.value))
   }
 
-
 }
 

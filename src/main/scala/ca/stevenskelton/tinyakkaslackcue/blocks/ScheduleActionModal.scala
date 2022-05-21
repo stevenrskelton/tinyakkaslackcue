@@ -56,10 +56,10 @@ object ScheduleActionModal {
   def createModal(slackUser: SlackUser, name: String, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
     //mrkdwn
 
-    val headerText = if(zonedDateTimeOpt.isEmpty){
-      "Queue this task immediately."
+    val (headerText, submitButtonText) = if(zonedDateTimeOpt.isEmpty){
+      ("Queue this task immediately.","Queue")
     }else{
-      "Set later date/time to schedule."
+      ("Set later date/time to schedule.","Schedule")
     }
 
     val dateTimeBlocks = zonedDateTimeOpt.fold("") {
@@ -112,7 +112,7 @@ object ScheduleActionModal {
 	},
 	"submit": {
 		"type": "plain_text",
-		"text": "Schedule",
+		"text": "$submitButtonText",
 		"emoji": true
 	},
 	"type": "modal",

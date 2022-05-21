@@ -35,7 +35,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
         val eventObject = (jsObject \ "event").as[JsObject]
         logger.info(s"EventCallback ${Json.stringify(eventObject)}")
         val flow = (eventObject \ "type").as[String] match {
-          case "app_home_opened" => HomeTab.openedEvent(slackClient, slackTaskFactories, eventObject)
+          case "app_home_opened" => HomeTab.openedEvent(slackTaskFactories, eventObject)
           case unknown => throw new NotImplementedError(s"Slack event $unknown not implemented: ${Json.stringify(jsObject)}")
         }
         extractExecutionContext {

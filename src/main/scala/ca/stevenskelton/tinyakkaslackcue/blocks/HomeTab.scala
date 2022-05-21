@@ -22,34 +22,31 @@ object HomeTab {
   val ActionIdTaskThread = ActionId("view-thread")
 
 
-  def openedEvent(slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, jsObject: JsObject)(implicit logger: Logger): Future[Done] = {
-    //    val blocks = (jsObject \ "view" \ "blocks").as[Seq[JsValue]]
-    //    if (blocks.isEmpty) {
-    //      HomeTab.parseView(blocks).fold(Future.failed(_), _ => Future.successful(Done))
-    val userId = SlackUserId((jsObject \ "user").as[String])
+  def update(slackUserId: SlackUserId, slackTaskFactories: SlackTaskFactories)(implicit logger: Logger): Future[Done] = {
     val viewBlocks = slackTaskFactories.history
     //TODO: sort
     val blocks = SlackBlocksAsString(viewBlocks.map(_.toBlocks.value).mkString(""",{"type": "divider"},"""))
-    val response = slackClient.viewsPublish(userId, "home", blocks)
+    val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, "home", blocks)
     if (response.isOk) {
-      logger.debug(s"Updated home view for ${userId.value}")
+      logger.debug(s"Updated home view for ${slackUserId.value}")
       Future.successful(Done)
     } else {
       logger.error(s"Home view update failed: ${response.getError}")
       logger.error(blocks.value)
       Future.failed(new Exception(response.getError))
     }
-    //    } else {
-    //      //TODO: compare to hash
-    //      Future.successful(Done)
-    //    }
+  }
+
+  def openedEvent(slackTaskFactories: SlackTaskFactories, jsObject: JsObject)(implicit logger: Logger): Future[Done] = {
+    val slackUserId = SlackUserId((jsObject \ "user").as[String])
+    update(slackUserId, slackTaskFactories)
   }
 
   def parseView(blocks: Seq[JsValue]): Try[TaskHistory] = Try {
     ???
   }
 
-  def handleSubmission(slackTriggerId: SlackTriggerId, slackUser: SlackUser, jsObject: JsObject)(implicit slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
+  def handleSubmission(slackTriggerId: SlackTriggerId, slackUser: SlackUser, jsObject: JsObject)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
     logger.info(Json.stringify(jsObject))
     val (privateMetadata, actionStates) = ScheduleActionModal.parseViewSubmission(jsObject)
     slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
@@ -64,9 +61,9 @@ object HomeTab {
         val slackTask = slackTaskFactories.tinySlackCue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
         val msg = zonedDateTimeOpt.fold("Queued")(_ => "Scheduled")
         //TODO: can we quote the task thread
-        slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackClient.historyThread)
+        slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
 
-        Future.successful(Done)
+        HomeTab.update(slackUser.id, slackTaskFactories)
 //        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))
 //        actionStates(ActionIdNotifyOnFailure).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"), SlackUserId("U039TCGLX5G"))
 //        actionStates(ActionIdLogLevel)
