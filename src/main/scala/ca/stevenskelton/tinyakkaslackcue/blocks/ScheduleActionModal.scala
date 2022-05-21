@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.ActionIdTaskCancel
+import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.{ActionIdTaskCancel, ModalIdView}
 import ca.stevenskelton.tinyakkaslackcue.{InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackUser}
 import org.slf4j.event.Level
 import play.api.libs.json.JsObject
@@ -28,12 +28,11 @@ object ScheduleActionModal {
 	"submit": {
 		"type": "plain_text",
 		"text": "Cancel Task",
-    "style": "danger",
-    "action_id": "${ActionIdTaskCancel.value}",
-    "value": "${scheduledTask.uuid}",
 		"emoji": true
 	},
 	"type": "modal",
+  "callback_id": "$ModalIdView",
+  ${PrivateMetadata(scheduledTask.uuid.toString).block},
 	"close": {
 		"type": "plain_text",
 		"text": "Close",
@@ -104,7 +103,7 @@ object ScheduleActionModal {
 
     SlackBlocksAsString(
       s"""{
-  "private_metadata": "${privateMetadata.value}",
+  ${privateMetadata.block},
 	"title": {
 		"type": "plain_text",
 		"text": "New ${name.take(21)}",

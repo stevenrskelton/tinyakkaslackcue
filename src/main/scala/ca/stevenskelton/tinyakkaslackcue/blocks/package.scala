@@ -22,7 +22,9 @@ package object blocks {
     override def toString: String = value
   }
 
-  case class PrivateMetadata private(value: String) extends AnyVal
+  case class PrivateMetadata private(value: String) extends AnyVal {
+    def block:String = s""""private_metadata": "$value""""
+  }
 
   object PrivateMetadata {
     val Empty = PrivateMetadata("")

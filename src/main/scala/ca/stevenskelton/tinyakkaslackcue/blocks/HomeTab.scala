@@ -21,6 +21,7 @@ object HomeTab {
   val ActionIdTaskView = ActionId("view-task")
   val ActionIdTaskThread = ActionId("view-thread")
 
+  val ModalIdView = "task-view-modal"
 
   def update(slackUserId: SlackUserId, slackTaskFactories: SlackTaskFactories)(implicit logger: Logger): Future[Done] = {
     val viewBlocks = slackTaskFactories.history
