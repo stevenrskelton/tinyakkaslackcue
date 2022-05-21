@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.{ActionIdTaskCancel, ModalIdView}
 import ca.stevenskelton.tinyakkaslackcue.{InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackUser}
 import org.slf4j.event.Level
 import play.api.libs.json.JsObject
@@ -15,6 +14,9 @@ object ScheduleActionModal {
   val ActionIdNotifyOnComplete = ActionId("multi_users_select-action1")
   val ActionIdNotifyOnFailure = ActionId("multi_users_select-action2")
   val ActionIdLogLevel = ActionId("static_select-action")
+
+  val CallbackIdView = CallbackId("task-view-modal")
+  val CallbackIdCreate = CallbackId("task-create")
 
   def viewModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackBlocksAsString = {
 
@@ -31,7 +33,7 @@ object ScheduleActionModal {
 		"emoji": true
 	},
 	"type": "modal",
-  "callback_id": "$ModalIdView",
+  ${CallbackIdView.block},
   ${PrivateMetadata(scheduledTask.uuid.toString).block},
 	"close": {
 		"type": "plain_text",
@@ -115,6 +117,7 @@ object ScheduleActionModal {
 		"emoji": true
 	},
 	"type": "modal",
+  ${CallbackIdCreate.block},
 	"close": {
 		"type": "plain_text",
 		"text": "Cancel",
@@ -203,11 +206,12 @@ object ScheduleActionModal {
 }""")
   }
 
-  def parseViewSubmission(jsObject: JsObject): (PrivateMetadata, Map[ActionId, State]) = {
+  def parseViewSubmission(jsObject: JsObject): (PrivateMetadata, Map[ActionId, State], CallbackId) = {
     val view = jsObject \ "view"
     val privateMetadata = PrivateMetadata((view \ "private_metadata").asOpt[String].getOrElse(""))
     val actionStates = State.parseActionStates(view \ "state" \ "values")
-    (privateMetadata, actionStates)
+    val callbackId = CallbackId((view \ "callback_id").asOpt[String].getOrElse(""))
+    (privateMetadata, actionStates, callbackId)
   }
 
 }

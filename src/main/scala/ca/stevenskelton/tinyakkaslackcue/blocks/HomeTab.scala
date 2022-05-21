@@ -2,13 +2,14 @@ package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import akka.Done
 import ca.stevenskelton.tinyakkaslackcue._
-import ca.stevenskelton.tinyakkaslackcue.blocks.ScheduleActionModal.{ActionIdLogLevel, ActionIdNotifyOnComplete, ActionIdNotifyOnFailure, ActionIdScheduleDate, ActionIdScheduleTime}
+import ca.stevenskelton.tinyakkaslackcue.blocks.ScheduleActionModal.{ActionIdLogLevel, ActionIdNotifyOnComplete, ActionIdNotifyOnFailure, ActionIdScheduleDate, ActionIdScheduleTime, CallbackIdCreate, CallbackIdView}
 import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 
 import java.time.{Duration, LocalDate, LocalTime, ZoneId, ZonedDateTime}
+import java.util.UUID
 import scala.collection.SortedSet
 import scala.concurrent.Future
 import scala.util.Try
@@ -20,8 +21,6 @@ object HomeTab {
   val ActionIdTaskCancel = ActionId("multi_users_select-action1")
   val ActionIdTaskView = ActionId("view-task")
   val ActionIdTaskThread = ActionId("view-thread")
-
-  val ModalIdView = "task-view-modal"
 
   def update(slackUserId: SlackUserId, slackTaskFactories: SlackTaskFactories)(implicit logger: Logger): Future[Done] = {
     val viewBlocks = slackTaskFactories.history
@@ -43,36 +42,46 @@ object HomeTab {
     update(slackUserId, slackTaskFactories)
   }
 
-  def parseView(blocks: Seq[JsValue]): Try[TaskHistory] = Try {
-    ???
-  }
-
   def handleSubmission(slackTriggerId: SlackTriggerId, slackUser: SlackUser, jsObject: JsObject)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
     logger.info(Json.stringify(jsObject))
-    val (privateMetadata, actionStates) = ScheduleActionModal.parseViewSubmission(jsObject)
-    slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
-      taskFactory =>
+    val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(jsObject)
+    callbackId match {
+      case CallbackIdView =>
+        if(slackTaskFactories.tinySlackCue.cancelScheduledTask(UUID.fromString(privateMetadata.value))){
+          HomeTab.update(slackUser.id, slackTaskFactories)
+        } else {
+          val ex = new Exception(s"Could not find task uuid ${privateMetadata.value}")
+          logger.error("handleSubmission", ex)
+          Future.failed(ex)
+        }
+      case CallbackIdCreate =>
+        slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
+          taskFactory =>
+            val zonedDateTimeOpt = for{
+              scheduledDate <- actionStates.get(ActionIdScheduleDate).map(_.asInstanceOf[DatePickerState].value)
+              scheduledTime <-  actionStates.get(ActionIdScheduleTime).map(_.asInstanceOf[TimePickerState].value)
+            } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
+            //TODO zone should be from Slack
 
-        val zonedDateTimeOpt = for{
-          scheduledDate <- actionStates.get(ActionIdScheduleDate).map(_.asInstanceOf[DatePickerState].value)
-          scheduledTime <-  actionStates.get(ActionIdScheduleTime).map(_.asInstanceOf[TimePickerState].value)
-        } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
-        //TODO zone should be from Slack
+            val slackTask = slackTaskFactories.tinySlackCue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
+            val msg = zonedDateTimeOpt.fold("Queued")(_ => "Scheduled")
+            //TODO: can we quote the task thread
+            slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
 
-        val slackTask = slackTaskFactories.tinySlackCue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
-        val msg = zonedDateTimeOpt.fold("Queued")(_ => "Scheduled")
-        //TODO: can we quote the task thread
-        slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
+            HomeTab.update(slackUser.id, slackTaskFactories)
+          //        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))
+          //        actionStates(ActionIdNotifyOnFailure).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"), SlackUserId("U039TCGLX5G"))
+          //        actionStates(ActionIdLogLevel)
 
-        HomeTab.update(slackUser.id, slackTaskFactories)
-//        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))
-//        actionStates(ActionIdNotifyOnFailure).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"), SlackUserId("U039TCGLX5G"))
-//        actionStates(ActionIdLogLevel)
-
-    }.getOrElse {
-      val ex = new Exception(s"Could not find task ${privateMetadata.value}")
-      logger.error("handleSubmission", ex)
-      Future.failed(ex)
+        }.getOrElse {
+          val ex = new Exception(s"Could not find task ${privateMetadata.value}")
+          logger.error("handleSubmission", ex)
+          Future.failed(ex)
+        }
+      case CallbackId(callbackId) =>
+        val ex = new Exception(s"Could not find callback id $callbackId")
+        logger.error("handleSubmission", ex)
+        Future.failed(ex)
     }
   }
 

@@ -20,7 +20,7 @@ class ScheduleActionModalSpec extends AnyWordSpec
     val viewSubmission = FileUtils.readJson(new File("../tinyakkaslackcue/src/test/resources/actions/view_submission_queue.json")).get.as[JsObject]
 
     "read fields" in {
-      val (privateMetadata, actionStates) = ScheduleActionModal.parseViewSubmission(viewSubmission)
+      val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(viewSubmission)
       privateMetadata.value shouldBe "Exchange Listings"
 
       actionStates should have size 3
@@ -35,7 +35,7 @@ class ScheduleActionModalSpec extends AnyWordSpec
     val viewSubmission = FileUtils.readJson(new File("../tinyakkaslackcue/src/test/resources/actions/view_submission_schedule.json")).get.as[JsObject]
 
     "read fields" in {
-      val (privateMetadata, actionStates) = ScheduleActionModal.parseViewSubmission(viewSubmission)
+      val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(viewSubmission)
       privateMetadata.value shouldBe "Yahoo 2min Prices"
 
       actionStates should have size 5

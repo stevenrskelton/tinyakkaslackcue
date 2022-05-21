@@ -1,0 +1,64 @@
+{
+  "type": "view_submission",
+  "team": {
+    "id": "T039T9D2CD8",
+    "domain": "tradeaudit"
+  },
+  "user": {
+    "id": "U039T9DUHGT",
+    "username": "tradeauditapp",
+    "name": "tradeauditapp",
+    "team_id": "T039T9D2CD8"
+  },
+  "api_app_id": "A03B812RGT0",
+  "token": "Fo38CPu8Atf2KtR1DBlUceMb",
+  "trigger_id": "3543707820855.3333319080450.551c2046ea670d5193225687dca096bb",
+  "view": {
+    "id": "V03GE80CZ8B",
+    "team_id": "T039T9D2CD8",
+    "type": "modal",
+    "blocks": [
+      {
+        "type": "section",
+        "block_id": "tCC",
+        "text": {
+          "type": "plain_text",
+          "text": "2022-05-26T12:41Z[Etc/UTC]",
+          "emoji": true
+        }
+      }
+    ],
+    "private_metadata": "0dee3fa6-7861-48e9-92c4-4",
+    "callback_id": "task-view-modal",
+    "state": {
+      "values": {}
+    },
+    "hash": "1653093725.lVcI2KaZ",
+    "title": {
+      "type": "plain_text",
+      "text": "test",
+      "emoji": true
+    },
+    "clear_on_close": false,
+    "notify_on_close": false,
+    "close": {
+      "type": "plain_text",
+      "text": "Close",
+      "emoji": true
+    },
+    "submit": {
+      "type": "plain_text",
+      "text": "Cancel Task",
+      "emoji": true
+    },
+    "previous_view_id": null,
+    "root_view_id": "V03GE80CZ8B",
+    "app_id": "A03B812RGT0",
+    "external_id": "",
+    "app_installed_team_id": "T039T9D2CD8",
+    "bot_id": "B03BTG3KAAV"
+  },
+  "response_urls": [],
+  "is_enterprise_install": false,
+  "enterprise": null
+}
