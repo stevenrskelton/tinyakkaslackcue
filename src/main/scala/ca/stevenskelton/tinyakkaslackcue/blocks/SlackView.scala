@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.{AppHomeTitle, SlackBlocksAsString}
+import ca.stevenskelton.tinyakkaslackcue.SlackBlocksAsString
 
 case class SlackView(name: String, blocks: SlackBlocksAsString) {
   override def toString: String = s"""{"type":"$name","blocks":[${blocks.value}]}"""
@@ -14,7 +14,7 @@ object SlackView {
         "type": "header",
         "text": {
           "type": "plain_text",
-          "text": "$AppHomeTitle",
+          "text": ":card_index: Tiny Akka Slack Cue",
           "emoji": true
         }
       },{
@@ -30,21 +30,13 @@ object SlackView {
     }else{
       val header = s"""
       {
-        "type": "header",
-        "text": {
-          "type": "plain_text",
-          "text": "$AppHomeTitle",
-          "emoji": true
-        }
-      },
-      {
         "type": "actions",
         "elements": [
           {
             "type": "button",
             "text": {
               "type": "plain_text",
-              "text": "Refresh Page",
+              "text": "Refresh :card_index: Statuses",
               "emoji": true
             },
             "style": "primary",
