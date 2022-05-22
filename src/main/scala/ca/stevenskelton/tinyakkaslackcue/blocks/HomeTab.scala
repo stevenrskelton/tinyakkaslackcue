@@ -80,18 +80,15 @@ object HomeTab {
     }
   }
 
-  def handleAction(slackTriggerId: SlackTriggerId, slackUser: SlackUser, jsObject: JsObject)(implicit slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
-    logger.info(s"\n```${Json.stringify(jsObject)}```\n")
-
-    val slackActions: Seq[SlackAction] = (jsObject \ "actions").as[Seq[SlackAction]]
-    val action = slackActions.head
-    val view = action.actionId match {
+  def handleAction(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
+    val action = slackPayload.actions.headOption.fold(ActionId(""))(_.actionId)
+    val view = action match {
       case ActionId.TaskQueue =>
-        ScheduleActionModal.createModal(slackUser, action.value, None, PrivateMetadata(action.value))
+        ScheduleActionModal.createModal(slackPayload.user, action.value, None, PrivateMetadata(action.value))
       case ActionId.TaskSchedule =>
-        ScheduleActionModal.createModal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
+        ScheduleActionModal.createModal(slackPayload.user, action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
       case ActionId.TaskCancel =>
-        ScheduleActionModal.createModal(slackUser,action.value, None, PrivateMetadata(action.value))
+        ScheduleActionModal.createModal(slackPayload.user, action.value, None, PrivateMetadata(action.value))
       case ActionId.TaskView =>
         val uuid = action.value
         slackTaskFactories.tinySlackCue.listScheduledTasks.find(_.uuid.toString == uuid).map {
@@ -107,7 +104,7 @@ object HomeTab {
     //      slackAction =>
     //        Slack.getInstance.methods.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token())
     //    }
-    val result: SlackApiTextResponse = slackClient.viewsOpen(slackTriggerId, view)
+    val result: SlackApiTextResponse = slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, view)
     if (!result.isOk) {
       logger.debug(s"\n```${view.value}```\n")
       logger.error(result.getError)

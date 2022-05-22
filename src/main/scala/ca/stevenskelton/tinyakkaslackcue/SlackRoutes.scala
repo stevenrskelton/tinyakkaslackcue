@@ -62,7 +62,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
             if(slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TabRefresh)){
               HomeTab.update(slackPayload)
             }else {
-              HomeTab.handleAction(slackPayload.triggerId, slackPayload.user, jsObject)
+              HomeTab.handleAction(slackPayload)
             }
           }else if(slackPayload.callbackId == Some(CallbackId.View)){
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
