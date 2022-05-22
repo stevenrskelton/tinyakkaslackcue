@@ -39,7 +39,7 @@ package object tinyakkaslackcue {
   object SlackAction {
     implicit val rd: Reads[SlackAction] = (
       (__ \ "action_id").read[String].map(ActionId(_)) and
-        (__ \ "value").read[String]) (SlackAction.apply _)
+        (__ \ "value").readNullable[String].map(_.getOrElse(""))) (SlackAction.apply _)
   }
 
   case class Mrkdwn(value: String) extends AnyVal {
