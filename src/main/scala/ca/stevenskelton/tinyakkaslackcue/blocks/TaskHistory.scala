@@ -98,6 +98,8 @@ case class TaskHistory(
 }"""
     }.getOrElse("")
 
+    val queueText = if(running.isEmpty) "Run Immediately" else "Queue Immediately"
+
     SlackBlocksAsString {
       s"""
 {
@@ -123,7 +125,7 @@ case class TaskHistory(
       "text": {
         "type": "plain_text",
         "emoji": true,
-        "text": "Queue Immediately"
+        "text": "${queueText}"
       },
       "style": "primary",
       "action_id": "${ActionId.TaskQueue.value}",

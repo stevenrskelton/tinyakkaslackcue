@@ -32,17 +32,17 @@ object HomeTab {
   }
 
   def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
-    slackPayload.callbackId.get match {
+    slackPayload.callbackId.getOrElse("") match {
       case CallbackId.View =>
         if(slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
           HomeTab.update(slackPayload.user.id, slackTaskFactories)
         } else {
-          val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.get.value}")
+          val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.fold("")(_.value)}")
           logger.error("handleSubmission", ex)
           Future.failed(ex)
         }
       case CallbackId.Create =>
-        slackTaskFactories.findByPrivateMetadata(slackPayload.privateMetadata.get).map {
+        slackTaskFactories.findByPrivateMetadata(slackPayload.privateMetadata.getOrElse(PrivateMetadata.Empty)).map {
           taskFactory =>
             val zonedDateTimeOpt = for{
               scheduledDate <- slackPayload.actionStates.get(ActionId.ScheduleDate).map(_.asInstanceOf[DatePickerState].value)
@@ -61,7 +61,7 @@ object HomeTab {
           //        actionStates(ActionIdLogLevel)
 
         }.getOrElse {
-          val ex = new Exception(s"Could not find task ${slackPayload.privateMetadata.get.value}")
+          val ex = new Exception(s"Could not find task ${slackPayload.privateMetadata.fold("")(_.value)}")
           logger.error("handleSubmission", ex)
           Future.failed(ex)
         }

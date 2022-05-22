@@ -17,7 +17,7 @@ object SlackPayload {
       case x => SlackPayloadType(x)
     }
     val user = (jsObject \ "user").as[SlackUser]
-    val slackActions: Seq[SlackAction] = (jsObject \ "actions").as[Seq[SlackAction]]
+    val slackActions: Seq[SlackAction] = (jsObject \ "actions").asOpt[Seq[SlackAction]].getOrElse(Nil)
     val view = jsObject \ "view"
     val id = (view \ "id").as[String]
     val triggerId = SlackTriggerId((jsObject \ "trigger_id").as[String])
