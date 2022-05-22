@@ -12,20 +12,22 @@ import scala.concurrent.Future
 object HomeTab {
 
   def update(slackPayload: SlackPayload)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
-    //TODO: sort
-    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
-    val response = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, slackView)
-    if (response.isOk) {
-      logger.debug(s"Updated home view for ${slackPayload.user}")
-      Future.successful(Done)
-    } else {
-      logger.error(s"Home view update failed: ${response.getError}")
-      logger.error(s"\n```${slackView.toString}```\n")
-      Future.failed(new Exception(response.getError))
-    }
+//    //TODO: sort
+//    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
+//    val response = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, slackView)
+//    if (response.isOk) {
+//      logger.debug(s"Updated home view for ${slackPayload.user}")
+//      Future.successful(Done)
+//    } else {
+//      logger.error(s"Home view update failed: ${response.getError}")
+//      logger.error(s"\n```${slackView.toString}```\n")
+//      Future.failed(new Exception(response.getError))
+//    }
+    openedEvent(slackPayload.user.id)
   }
 
   def openedEvent(slackUserId: SlackUserId)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
+    //TODO: sort
     val slackView = SlackView.createHomeTab(slackTaskFactories.history)
     val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, slackView)
     if (response.isOk) {

@@ -67,17 +67,28 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
           }else if(slackPayload.callbackId == Some(CallbackId.View)){
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
               val uuid = UUID.fromString(state.asInstanceOf[ButtonState].value)
-              if(slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)){
+              if (slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)) {
                 HomeTab.update(slackPayload)
-              }else{
+              } else {
                 val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
                 logger.error("handleSubmission", ex)
                 Future.failed(ex)
               }
             }.getOrElse {
-              val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
-              logger.error("handleSubmission", ex)
-              Future.failed(ex)
+              if(slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TaskCancel)){
+                val uuid = UUID.fromString(slackPayload.actions.head.value)
+                if (slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)) {
+                  HomeTab.update(slackPayload)
+                }else{
+                  val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
+                  logger.error("handleSubmission", ex)
+                  Future.failed(ex)
+                }
+              }else {
+                val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
+                logger.error("handleSubmission", ex)
+                Future.failed(ex)
+              }
             }
           }else{
             HomeTab.update(slackPayload)
