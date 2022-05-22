@@ -132,8 +132,7 @@ object ScheduleActionModal {
 		}"""
     }
 
-    val advancedOptions = ""
-      val advanced2 = s""",{
+    val advancedOptions = s""",{
 			"type": "divider"
 		},
 		{
@@ -145,6 +144,7 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
+        "initial_users": ["${slackUser.id.value}"],
 				"action_id": "${ActionId.NotifyOnComplete.value}",
 			},
 			"label": {
@@ -162,6 +162,7 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
+        "initial_users": ["${slackUser.id.value}"],
 				"action_id": "${ActionId.NotifyOnFailure.value}"
 			},
 			"label": {
@@ -214,7 +215,7 @@ object ScheduleActionModal {
 					"emoji": true
 				},
 				"options": [${Seq(Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG).map(logLevelBlock).mkString(",")}],
-        "initial_options": [${logLevelBlock(Level.WARN)}],
+        "initial_option": ${logLevelBlock(Level.WARN)},
 				"action_id": "${ActionId.LogLevel.value}"
 			},
 			"label": {
