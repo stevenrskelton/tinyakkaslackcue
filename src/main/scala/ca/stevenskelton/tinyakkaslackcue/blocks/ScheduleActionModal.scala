@@ -223,6 +223,7 @@ object ScheduleActionModal {
 				"text": "Log Level",
 				"emoji": true
 			}
+    }
  	]
 }""")
   }
