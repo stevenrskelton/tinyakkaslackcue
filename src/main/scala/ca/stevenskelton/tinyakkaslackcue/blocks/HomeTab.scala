@@ -103,23 +103,25 @@ object HomeTab {
               logger.error("handleAction", ex)
               throw ex
             }
-          case ActionId.TaskCancel =>
-            val privateMetadata = PrivateMetadata(action.value)
-            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
-              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
-            }.getOrElse {
-              val ex = new Exception(s"Task ${action.value} not found")
-              logger.error("handleAction", ex)
-              throw ex
-            }
+//          case ActionId.TaskCancel =>
+//            val privateMetadata = PrivateMetadata(action.value)
+//            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
+//              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
+//            }.getOrElse {
+//              val ex = new Exception(s"Task ${action.value} not found")
+//              logger.error("handleAction", ex)
+//              throw ex
+//            }
           case ActionId.TaskView =>
             val uuid = UUID.fromString(action.value)
-            slackTaskFactories.tinySlackCue.listScheduledTasks.find(_.uuid == uuid).map {
-              scheduledTask => ScheduleActionModal.viewModal(scheduledTask)
-            }.getOrElse {
+            val list = slackTaskFactories.tinySlackCue.listScheduledTasks
+            val index = list.indexWhere(_.uuid == uuid)
+            if(index == -1) {
               val ex = new Exception(s"Task UUID $uuid not found")
               logger.error("handleAction", ex)
               throw ex
+            }else{
+              ScheduleActionModal.viewModal(list, index)
             }
           //      case ActionIdTaskThread =>
         }

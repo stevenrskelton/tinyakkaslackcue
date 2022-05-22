@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import ca.stevenskelton.tinyakkaslackcue._
+import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
 
 import scala.collection.SortedSet
 
@@ -27,7 +28,7 @@ case class TaskHistory(
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": ":watch: *Scheduled:* 2022-05-01 4:51pm"
+    "text": ":watch: *Scheduled:* ${DateUtils.humanReadable(scheduledTask.executionStart)}"
   },
   "accessory": {
     "type": "button",
