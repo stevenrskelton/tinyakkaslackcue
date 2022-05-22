@@ -2,13 +2,10 @@ package ca.stevenskelton.tinyakkaslackcue
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.stream.SystemMaterializer
-import ca.stevenskelton.tinyakkaslackcue.blocks.{HomeTab, PrivateMetadata, TaskHistory, TaskHistoryItem}
-import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
+import ca.stevenskelton.tinyakkaslackcue.blocks.{PrivateMetadata, TaskHistory}
 import com.typesafe.config.Config
 import org.slf4j.Logger
 
-import java.time.{Duration, ZonedDateTime}
 import scala.collection.SortedSet
 import scala.util.{Failure, Success, Try}
 

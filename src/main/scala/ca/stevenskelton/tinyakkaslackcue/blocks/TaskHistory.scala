@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.{ActionIdTaskCancel, ActionIdTaskQueue, ActionIdTaskSchedule, ActionIdTaskThread}
 import ca.stevenskelton.tinyakkaslackcue._
 
 import scala.collection.SortedSet
@@ -20,23 +19,9 @@ case class TaskHistory(
 
   def toBlocks: SlackBlocksAsString = {
 
-    val executedBlocks = if (executed.isEmpty)
-      """,{
-        			"type": "section",
-        			"text": {
-        				"type": "mrkdwn",
-        				"text": "No previous executions"
-        			}
-        }""" else executed.toSeq.reverse.map(_.toBlocks.value).mkString(",", """,{"type": "divider"},""", "")
+    val executedBlocks = if (executed.isEmpty) "" else executed.toSeq.reverse.map(_.toBlocks.value).mkString(",", """,{"type": "divider"},""", "")
 
-    val pendingBlocks = if (pending.isEmpty)
-      """,{
-        			"type": "section",
-        			"text": {
-        				"type": "mrkdwn",
-        				"text": "No pending executions"
-        			}
-        }""" else pending.map {
+    val pendingBlocks = if (pending.isEmpty) "" else pending.map {
       scheduledTask =>
         s"""{
   "type": "section",
@@ -52,7 +37,7 @@ case class TaskHistory(
       "emoji": true
     },
     "value": "${scheduledTask.uuid.toString}",
-    "action_id": "${HomeTab.ActionIdTaskView}"
+    "action_id": "${ActionId.TaskView}"
   }
 }"""
     }.mkString(",", """,{"type": "divider"},""", "")
@@ -95,7 +80,7 @@ case class TaskHistory(
         "emoji": true,
         "text": "View Logs"
       },
-      "action_id": "${ActionIdTaskThread.value}",
+      "action_id": "${ActionId.TaskThread.value}",
       "value": "${scheduledTask.uuid}"
     },
     {
@@ -106,7 +91,7 @@ case class TaskHistory(
         "text": "Cancel"
       },
       "style": "danger",
-      "action_id": "${ActionIdTaskCancel.value}",
+      "action_id": "${ActionId.TaskCancel.value}",
       "value": "${scheduledTask.uuid}"
     }
   ]
@@ -138,10 +123,10 @@ case class TaskHistory(
       "text": {
         "type": "plain_text",
         "emoji": true,
-        "text": "Queue"
+        "text": "Queue Immediately"
       },
       "style": "primary",
-      "action_id": "${ActionIdTaskQueue.value}",
+      "action_id": "${ActionId.TaskQueue.value}",
       "value": "${slackTaskIdentifier.name}"
     },
     {
@@ -151,7 +136,7 @@ case class TaskHistory(
         "emoji": true,
         "text": "Schedule"
       },
-      "action_id": "${ActionIdTaskSchedule.value}",
+      "action_id": "${ActionId.TaskSchedule.value}",
       "value": "${slackTaskIdentifier.name}"
     }
   ]

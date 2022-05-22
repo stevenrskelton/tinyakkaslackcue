@@ -8,9 +8,7 @@ import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import ca.stevenskelton.tinyakkaslackcue.blocks.HomeTab.ActionIdTaskCancel
-import ca.stevenskelton.tinyakkaslackcue.blocks.ScheduleActionModal.CallbackIdView
-import ca.stevenskelton.tinyakkaslackcue.blocks.{ButtonState, CallbackId, DatePickerState, HomeTab, ScheduleActionModal}
+import ca.stevenskelton.tinyakkaslackcue.blocks.{ActionId, ButtonState, CallbackId, HomeTab, ScheduleActionModal}
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
@@ -36,7 +34,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
       case ("url_verification", jsObject) => complete((jsObject \ "challenge").as[String])
       case ("event_callback", jsObject) =>
         val eventObject = (jsObject \ "event").as[JsObject]
-        logger.info(s"EventCallback ${Json.stringify(eventObject)}")
+        logger.info(s"EventCallback\n```${Json.stringify(eventObject)}```")
         val flow = (eventObject \ "type").as[String] match {
           case "app_home_opened" => HomeTab.openedEvent(slackTaskFactories, eventObject)
           case unknown => throw new NotImplementedError(s"Slack event $unknown not implemented: ${Json.stringify(jsObject)}")
@@ -51,7 +49,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
 
   val slackActionRoute: Route = Directives.post {
     formField("payload") { payload =>
-      logger.info(s"Action payload: $payload")
+      logger.info(s"Action payload:\n```$payload```\n")
 
       val handler = for {
         jsObject <- Json.parse(payload).asOpt[JsObject]
@@ -62,10 +60,10 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
         slackUser <- (jsObject \ "user").asOpt[SlackUser]
       } yield (actionType, viewType, callbackId) match {
         case ("block_actions", Some("home"), _) => HomeTab.handleAction(triggerId, slackUser, jsObject)
-        case ("block_actions", _, Some(CallbackIdView)) =>
+        case ("block_actions", _, Some(CallbackId.View)) =>
           logger.info(Json.stringify(jsObject))
           val (privateMetadata, actionStates, _) = ScheduleActionModal.parseViewSubmission(jsObject)
-          actionStates.get(ActionIdTaskCancel).map { state =>
+          actionStates.get(ActionId.TaskCancel).map { state =>
             val uuid = UUID.fromString(state.asInstanceOf[ButtonState].value)
             if(slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)){
               HomeTab.update(slackUser.id, slackTaskFactories)
@@ -75,7 +73,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
               Future.failed(ex)
             }
           }.getOrElse {
-            val ex = new Exception(s"Could not find action ${ActionIdTaskCancel.value}")
+            val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
             logger.error("handleSubmission", ex)
             Future.failed(ex)
           }
@@ -86,7 +84,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
       handler.map {
         _ => complete(HttpResponse(OK))
       } getOrElse {
-        logger.error(s"SA:\n```$payload```")
+        logger.error(s"SA:\n```$payload```\n")
         throw new NotImplementedError(s"Slack message unknown type $payload")
       }
     }

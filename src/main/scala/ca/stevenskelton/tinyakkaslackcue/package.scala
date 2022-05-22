@@ -8,7 +8,7 @@ import play.api.libs.json._
 
 package object tinyakkaslackcue {
 
-  case class SlackTs private(value: String) extends AnyVal
+  case class SlackTs(value: String) extends AnyVal
 
   object SlackTs {
     val Empty = SlackTs("")

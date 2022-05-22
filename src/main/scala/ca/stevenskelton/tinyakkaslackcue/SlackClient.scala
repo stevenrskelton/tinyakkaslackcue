@@ -1,13 +1,11 @@
 package ca.stevenskelton.tinyakkaslackcue
 
-import ca.stevenskelton.tinyakkaslackcue.blocks.{SlackTaskThread, TaskHistory}
+import ca.stevenskelton.tinyakkaslackcue.blocks.{SlackTaskThread, SlackView}
 import ca.stevenskelton.tinyakkaslackcue.blocks.SlackTaskThread.Fields
 import com.slack.api.Slack
 import com.slack.api.methods.MethodsClient
-import com.slack.api.methods.request.apps.connections.AppsConnectionsOpenRequest
-import com.slack.api.methods.request.bots.BotsInfoRequest
 import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateRequest}
-import com.slack.api.methods.request.conversations.{ConversationsListRequest, ConversationsOpenRequest}
+import com.slack.api.methods.request.conversations.ConversationsListRequest
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest, PinsRemoveRequest}
 import com.slack.api.methods.request.users.UsersListRequest
 import com.slack.api.methods.request.views.{ViewsOpenRequest, ViewsPublishRequest}
@@ -18,9 +16,6 @@ import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResp
 import com.slack.api.model.ConversationType
 import com.typesafe.config.Config
 
-import scala.collection.SortedSet
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 object SlackClient {
@@ -58,50 +53,64 @@ object SlackClient {
       SlackTs(pinnedMessageResult.getTs)
     }
 
-    new SlackClient(botOAuthToken, botUserId, botChannelId, pinnedTs, client)
+    new SlackClientImpl(botOAuthToken, botUserId, botChannelId, pinnedTs, client)
   }
 }
 
-class SlackClient(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String, val historyThread: SlackTs, client: MethodsClient) {
+trait SlackClient {
+  def botOAuthToken: String
+  def historyThread: SlackTs
+  def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse
+  def chatUpdateBlocks(blocks: SlackBlocksAsString, ts: SlackTs): ChatUpdateResponse
+  def pinsAdd(ts: SlackTs): PinsAddResponse
+  def pinsRemove(ts: SlackTs): PinsRemoveResponse
+  def pinsList(): Iterable[MessageItem]
+  def pinnedTasks(slackTaskFactories: SlackTaskFactories): Iterable[(SlackTask, Fields)]
+  def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse
+  def chatPostMessage(text: String): ChatPostMessageResponse
+  def viewsPublish(userId: SlackUserId, slackView: SlackView): ViewsPublishResponse
+  def viewsOpen(slackTriggerId: SlackTriggerId, view: SlackBlocksAsString): ViewsOpenResponse
+}
 
-  def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse = {
+class SlackClientImpl(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String, val historyThread: SlackTs, client: MethodsClient) extends SlackClient {
+
+  override def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse = {
     client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).ts(ts.value).text(text))
   }
 
-  def chatUpdateBlocks(blocks: SlackBlocksAsString, ts: SlackTs): ChatUpdateResponse = {
+  override def chatUpdateBlocks(blocks: SlackBlocksAsString, ts: SlackTs): ChatUpdateResponse = {
     client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).ts(ts.value).blocksAsString(blocks.value))
   }
 
-  def pinsAdd(ts: SlackTs): PinsAddResponse = {
+  override def pinsAdd(ts: SlackTs): PinsAddResponse = {
     client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).timestamp(ts.value))
   }
 
-  def pinsRemove(ts: SlackTs): PinsRemoveResponse = {
+  override def pinsRemove(ts: SlackTs): PinsRemoveResponse = {
     client.pinsRemove((r: PinsRemoveRequest.PinsRemoveRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).timestamp(ts.value))
   }
 
-  def pinsList(): Iterable[MessageItem] = {
+  override def pinsList(): Iterable[MessageItem] = {
     client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannelId)).getItems.asScala
   }
 
-  def pinnedTasks(slackTaskFactories: SlackTaskFactories): Iterable[(SlackTask, Fields)] = {
+  override def pinnedTasks(slackTaskFactories: SlackTaskFactories): Iterable[(SlackTask, Fields)] = {
     pinsList().flatMap(SlackTaskThread.parse(_, this, slackTaskFactories))
   }
 
-  def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse = {
+  override def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse = {
     client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).text(text).threadTs(thread.value))
   }
 
-  def chatPostMessage(text: String): ChatPostMessageResponse = {
+  override def chatPostMessage(text: String): ChatPostMessageResponse = {
     client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).text(text))
   }
 
-  def viewsPublish(userId: SlackUserId, viewName: String, blocks: SlackBlocksAsString): ViewsPublishResponse = {
-    val viewAsString = s"{\"type\":\"$viewName\",\"blocks\":[${blocks.value}]}"
-    client.viewsPublish((r: ViewsPublishRequest.ViewsPublishRequestBuilder) => r.token(botOAuthToken).userId(userId.value).viewAsString(viewAsString))
+  override def viewsPublish(userId: SlackUserId, slackView: SlackView): ViewsPublishResponse = {
+    client.viewsPublish((r: ViewsPublishRequest.ViewsPublishRequestBuilder) => r.token(botOAuthToken).userId(userId.value).viewAsString(slackView.toString))
   }
 
-  def viewsOpen(slackTriggerId: SlackTriggerId, view: SlackBlocksAsString): ViewsOpenResponse = {
+  override def viewsOpen(slackTriggerId: SlackTriggerId, view: SlackBlocksAsString): ViewsOpenResponse = {
     client.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(botOAuthToken).triggerId(slackTriggerId.value).viewAsString(view.value))
   }
 

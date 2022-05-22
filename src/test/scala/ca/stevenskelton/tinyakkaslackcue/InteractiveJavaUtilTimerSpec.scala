@@ -51,8 +51,8 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val task1 = createTask1
       val task2 = createTask2
 
-      timer.schedule(task1)
-      timer.schedule(task2)
+      timer.schedule(task1, _ => ())
+      timer.schedule(task2, _ => ())
       val prelist = timer.list
       prelist should have size 2
       val name1 = prelist(0)
@@ -85,11 +85,11 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val task2 = createTask2
       val task3 = createTask3
 
-      timer.schedule(task1)
+      timer.schedule(task1, _ => ())
       val t2 = task2
-      timer.schedule(t2)
+      timer.schedule(t2, _ => ())
       Thread.sleep(1)
-      timer.schedule(task3)
+      timer.schedule(task3, _ => ())
 
       val prelist = timer.list
       prelist should have size 3
@@ -135,8 +135,8 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val task1 = createTask1
       val task2 = createTask2
 
-      timer.schedule(task1)
-      timer.schedule(task2)
+      timer.schedule(task1, _ => ())
+      timer.schedule(task2, _ => ())
       val prelist = timer.list
       prelist should have size 2
       val name1 = prelist(0)
@@ -183,8 +183,8 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val task1 = createTask1
       val task2 = createTask2
 
-      timer.schedule(task1)
-      timer.schedule(task2)
+      timer.schedule(task1, _ => ())
+      timer.schedule(task2, _ => ())
       val prelist = timer.list
       prelist should have size 2
       val name1 = prelist(0)
@@ -224,8 +224,8 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val task2 = createTask2
       val task2time = ZonedDateTime.now().plusMinutes(5)
 
-      timer.schedule(task1, task1time)
-      timer.schedule(task2, task2time)
+      timer.schedule(task1, task1time, _ => ())
+      timer.schedule(task2, task2time, _ => ())
       val prelist = timer.list
       prelist should have size 2
       val name1 = prelist(0)

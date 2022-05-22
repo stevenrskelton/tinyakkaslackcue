@@ -9,15 +9,6 @@ import java.time.format.DateTimeFormatter
 
 object ScheduleActionModal {
 
-  val ActionIdScheduleDate = ActionId("datepicker-action")
-  val ActionIdScheduleTime = ActionId("timepicker-action")
-  val ActionIdNotifyOnComplete = ActionId("multi_users_select-action1")
-  val ActionIdNotifyOnFailure = ActionId("multi_users_select-action2")
-  val ActionIdLogLevel = ActionId("static_select-action")
-
-  val CallbackIdView = CallbackId("task-view-modal")
-  val CallbackIdCreate = CallbackId("task-create")
-
   def viewModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackBlocksAsString = {
 
         SlackBlocksAsString(
@@ -28,7 +19,7 @@ object ScheduleActionModal {
 		"emoji": true
 	},
 	"type": "modal",
-  ${CallbackIdView.block},
+  ${CallbackId.View.block},
 	"close": {
 		"type": "plain_text",
 		"text": "Close",
@@ -47,7 +38,7 @@ object ScheduleActionModal {
 					},
 					"style": "danger",
 					"value": "${scheduledTask.uuid.toString}",
-					"action_id": "${HomeTab.ActionIdTaskCancel}"
+					"action_id": "${ActionId.TaskCancel}"
 				}
 			]
 		},
@@ -85,7 +76,7 @@ object ScheduleActionModal {
 					"text": "Select a date",
 					"emoji": true
 				},
-				"action_id": "${ActionIdScheduleDate.value}"
+				"action_id": "${ActionId.ScheduleDate.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -103,7 +94,7 @@ object ScheduleActionModal {
 					"text": "Start Time",
 					"emoji": true
 				},
-				"action_id": "${ActionIdScheduleTime.value}"
+				"action_id": "${ActionId.ScheduleTime.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -127,7 +118,7 @@ object ScheduleActionModal {
 		"emoji": true
 	},
 	"type": "modal",
-  ${CallbackIdCreate.block},
+  ${CallbackId.Create.block},
 	"close": {
 		"type": "plain_text",
 		"text": "Cancel",
@@ -154,7 +145,7 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
-				"action_id": "${ActionIdNotifyOnComplete.value}"
+				"action_id": "${ActionId.NotifyOnComplete.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -171,7 +162,7 @@ object ScheduleActionModal {
 					"text": "Users",
 					"emoji": true
 				},
-				"action_id": "${ActionIdNotifyOnFailure.value}"
+				"action_id": "${ActionId.NotifyOnFailure.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -204,7 +195,7 @@ object ScheduleActionModal {
 					}"""
         }.mkString(",")
       }],
-				"action_id": "${ActionIdLogLevel.value}"
+				"action_id": "${ActionId.LogLevel.value}"
 			},
 			"label": {
 				"type": "plain_text",

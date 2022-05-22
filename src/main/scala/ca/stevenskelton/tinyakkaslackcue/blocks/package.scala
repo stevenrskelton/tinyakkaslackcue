@@ -18,23 +18,4 @@ package object blocks {
     case Level.DEBUG => EmojiDEBUG
   }
 
-  case class ActionId(value: String) extends AnyVal {
-    override def toString: String = value
-  }
-
-  case class CallbackId(value: String) extends AnyVal {
-    override def toString: String = value
-    def block: String = s""""callback_id": "$value""""
-  }
-
-  case class PrivateMetadata private(value: String) extends AnyVal {
-    def block:String = s""""private_metadata": "$value""""
-  }
-
-  object PrivateMetadata {
-    val Empty = PrivateMetadata("")
-
-    def apply(value: String): PrivateMetadata = new PrivateMetadata(value.take(25))
-  }
-
 }

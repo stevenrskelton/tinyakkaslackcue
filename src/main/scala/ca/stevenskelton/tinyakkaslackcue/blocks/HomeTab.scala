@@ -2,37 +2,26 @@ package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import akka.Done
 import ca.stevenskelton.tinyakkaslackcue._
-import ca.stevenskelton.tinyakkaslackcue.blocks.ScheduleActionModal.{ActionIdLogLevel, ActionIdNotifyOnComplete, ActionIdNotifyOnFailure, ActionIdScheduleDate, ActionIdScheduleTime, CallbackIdCreate, CallbackIdView}
-import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, Json}
 
-import java.time.{Duration, LocalDate, LocalTime, ZoneId, ZonedDateTime}
+import java.time.{ZoneId, ZonedDateTime}
 import java.util.UUID
-import scala.collection.SortedSet
 import scala.concurrent.Future
-import scala.util.Try
 
 object HomeTab {
 
-  val ActionIdTaskQueue = ActionId("task-queue-action")
-  val ActionIdTaskSchedule = ActionId("schedule-task-action")
-  val ActionIdTaskCancel = ActionId("task-cancel")
-  val ActionIdTaskView = ActionId("view-task")
-  val ActionIdTaskThread = ActionId("view-thread")
-
   def update(slackUserId: SlackUserId, slackTaskFactories: SlackTaskFactories)(implicit logger: Logger): Future[Done] = {
-    val viewBlocks = slackTaskFactories.history
     //TODO: sort
-    val blocks = SlackBlocksAsString(viewBlocks.map(_.toBlocks.value).mkString(""",{"type": "divider"},"""))
-    val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, "home", blocks)
+    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
+    val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, slackView)
     if (response.isOk) {
       logger.debug(s"Updated home view for ${slackUserId.value}")
       Future.successful(Done)
     } else {
       logger.error(s"Home view update failed: ${response.getError}")
-      logger.error(blocks.value)
+      logger.error(slackView.toString)
       Future.failed(new Exception(response.getError))
     }
   }
@@ -46,20 +35,20 @@ object HomeTab {
     logger.info(Json.stringify(jsObject))
     val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(jsObject)
     callbackId match {
-      case CallbackIdView =>
-        if(actionStates.get(ActionIdTaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
+      case CallbackId.View =>
+        if(actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
           HomeTab.update(slackUser.id, slackTaskFactories)
         } else {
           val ex = new Exception(s"Could not find task uuid ${privateMetadata.value}")
           logger.error("handleSubmission", ex)
           Future.failed(ex)
         }
-      case CallbackIdCreate =>
+      case CallbackId.Create =>
         slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
           taskFactory =>
             val zonedDateTimeOpt = for{
-              scheduledDate <- actionStates.get(ActionIdScheduleDate).map(_.asInstanceOf[DatePickerState].value)
-              scheduledTime <-  actionStates.get(ActionIdScheduleTime).map(_.asInstanceOf[TimePickerState].value)
+              scheduledDate <- actionStates.get(ActionId.ScheduleDate).map(_.asInstanceOf[DatePickerState].value)
+              scheduledTime <-  actionStates.get(ActionId.ScheduleTime).map(_.asInstanceOf[TimePickerState].value)
             } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
             //TODO zone should be from Slack
 
@@ -91,13 +80,13 @@ object HomeTab {
     val slackActions: Seq[SlackAction] = (jsObject \ "actions").as[Seq[SlackAction]]
     val action = slackActions.head
     val view = action.actionId match {
-      case ActionIdTaskQueue =>
+      case ActionId.TaskQueue =>
         ScheduleActionModal.createModal(slackUser, action.value, None, PrivateMetadata(action.value))
-      case ActionIdTaskSchedule =>
+      case ActionId.TaskSchedule =>
         ScheduleActionModal.createModal(slackUser,action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
-      case ActionIdTaskCancel =>
+      case ActionId.TaskCancel =>
         ScheduleActionModal.createModal(slackUser,action.value, None, PrivateMetadata(action.value))
-      case ActionIdTaskView =>
+      case ActionId.TaskView =>
         val uuid = action.value
         slackTaskFactories.tinySlackCue.listScheduledTasks.find(_.uuid.toString == uuid).map {
           scheduledTask => ScheduleActionModal.viewModal(scheduledTask)
