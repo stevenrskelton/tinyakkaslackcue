@@ -8,8 +8,28 @@ case class SlackView(name: String, blocks: SlackBlocksAsString) {
 
 object SlackView {
   def createHomeTab(taskHistories: Seq[TaskHistory]): SlackView = {
-    val header = s""",
-     {
+    if(taskHistories.isEmpty){
+      val header = s"""
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": ":card_index: Tiny Akka Slack Cue",
+          "emoji": true
+        }
+      },{
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Configure Tasks*\nTasks are cancellable and can be queued"
+          }
+        ]
+      }"""
+      SlackView("home", SlackBlocksAsString(header))
+    }else{
+      val header = s"""
+      {
         "type": "header",
         "text": {
           "type": "plain_text",
@@ -31,8 +51,9 @@ object SlackView {
             "action_id": "${ActionId.TabRefresh}"
           }
         ]
-      }"""
-    val blocks = taskHistories.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
-    SlackView("home", SlackBlocksAsString(header + blocks))
+      },"""
+      val blocks = taskHistories.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
+      SlackView("home", SlackBlocksAsString(header + blocks))
+    }
   }
 }

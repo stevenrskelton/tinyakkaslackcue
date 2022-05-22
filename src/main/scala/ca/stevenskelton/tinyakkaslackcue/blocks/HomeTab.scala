@@ -21,7 +21,7 @@ object HomeTab {
       Future.successful(Done)
     } else {
       logger.error(s"Home view update failed: ${response.getError}")
-      logger.error(slackView.toString)
+      logger.error(s"\n```${slackView.toString}```\n")
       Future.failed(new Exception(response.getError))
     }
   }
