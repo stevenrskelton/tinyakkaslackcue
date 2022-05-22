@@ -4,7 +4,6 @@ import akka.Done
 import ca.stevenskelton.tinyakkaslackcue._
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
-import play.api.libs.json.{JsObject, Json}
 
 import java.time.{ZoneId, ZonedDateTime}
 import java.util.UUID
@@ -26,7 +25,7 @@ object HomeTab {
     }
   }
 
-  def openedEvent(slackUserId : SlackUserId)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
+  def openedEvent(slackUserId: SlackUserId)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
     val slackView = SlackView.createHomeTab(slackTaskFactories.history)
     val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, slackView)
     if (response.isOk) {
@@ -42,7 +41,7 @@ object HomeTab {
   def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
     slackPayload.callbackId.getOrElse("") match {
       case CallbackId.View =>
-        if(slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
+        if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))) {
           HomeTab.update(slackPayload)
         } else {
           val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.fold("")(_.value)}")
@@ -52,7 +51,7 @@ object HomeTab {
       case CallbackId.Create =>
         slackTaskFactories.findByPrivateMetadata(slackPayload.privateMetadata.getOrElse(PrivateMetadata.Empty)).map {
           taskFactory =>
-            val zonedDateTimeOpt = for{
+            val zonedDateTimeOpt = for {
               scheduledDate <- slackPayload.actionStates.get(ActionId.ScheduleDate).map(_.asInstanceOf[DatePickerState].value)
               scheduledTime <- slackPayload.actionStates.get(ActionId.ScheduleTime).map(_.asInstanceOf[TimePickerState].value)
             } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
@@ -81,35 +80,63 @@ object HomeTab {
   }
 
   def handleAction(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
-    val action = slackPayload.actions.headOption.fold(ActionId(""))(_.actionId)
-    val view = action match {
-      case ActionId.TaskQueue =>
-        ScheduleActionModal.createModal(slackPayload.user, action.value, None, PrivateMetadata(action.value))
-      case ActionId.TaskSchedule =>
-        ScheduleActionModal.createModal(slackPayload.user, action.value, Some(ZonedDateTime.now()), PrivateMetadata(action.value))
-      case ActionId.TaskCancel =>
-        ScheduleActionModal.createModal(slackPayload.user, action.value, None, PrivateMetadata(action.value))
-      case ActionId.TaskView =>
-        val uuid = action.value
-        slackTaskFactories.tinySlackCue.listScheduledTasks.find(_.uuid.toString == uuid).map {
-          scheduledTask => ScheduleActionModal.viewModal(scheduledTask)
-        }.getOrElse {
-          val ex = new Exception(s"Task UUID $uuid not found")
-          logger.error("handleAction", ex)
-          throw ex
+    slackPayload.actions.headOption.map {
+      action =>
+        val view = action.actionId match {
+          case ActionId.TaskQueue =>
+            val privateMetadata = PrivateMetadata(action.value)
+            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
+              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
+            }.getOrElse {
+              val ex = new Exception(s"Task ${action.value} not found")
+              logger.error("handleAction", ex)
+              throw ex
+            }
+          case ActionId.TaskSchedule =>
+            val privateMetadata = PrivateMetadata(action.value)
+            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
+              ScheduleActionModal.createModal(slackPayload.user, _, Some(ZonedDateTime.now()), privateMetadata)
+            }.getOrElse {
+              val ex = new Exception(s"Task ${action.value} not found")
+              logger.error("handleAction", ex)
+              throw ex
+            }
+          case ActionId.TaskCancel =>
+            val privateMetadata = PrivateMetadata(action.value)
+            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
+              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
+            }.getOrElse {
+              val ex = new Exception(s"Task ${action.value} not found")
+              logger.error("handleAction", ex)
+              throw ex
+            }
+          case ActionId.TaskView =>
+            val uuid = UUID.fromString(action.value)
+            slackTaskFactories.tinySlackCue.listScheduledTasks.find(_.uuid == uuid).map {
+              scheduledTask => ScheduleActionModal.viewModal(scheduledTask)
+            }.getOrElse {
+              val ex = new Exception(s"Task UUID $uuid not found")
+              logger.error("handleAction", ex)
+              throw ex
+            }
+          //      case ActionIdTaskThread =>
         }
-//      case ActionIdTaskThread =>
+
+        //    slackActions.headOption.map {
+        //      slackAction =>
+        //        Slack.getInstance.methods.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token())
+        //    }
+        val result: SlackApiTextResponse = slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, view)
+        if (!result.isOk) {
+          logger.debug(s"\n```${view.value}```\n")
+          logger.error(result.getError)
+        }
+        Future.successful(Done)
+    }.getOrElse {
+      val ex = new Exception(s"No actions found")
+      logger.error("handleAction", ex)
+      Future.failed(ex)
     }
-    //    slackActions.headOption.map {
-    //      slackAction =>
-    //        Slack.getInstance.methods.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token())
-    //    }
-    val result: SlackApiTextResponse = slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, view)
-    if (!result.isOk) {
-      logger.debug(s"\n```${view.value}```\n")
-      logger.error(result.getError)
-    }
-    Future.successful(Done)
   }
   //  def toAddInstanceToBlocks(existing: Seq[Fields], slackTask: SlackTask, instance: FieldsInstance): Seq[Fields] = {
   //    val updatedFields = if (existing.exists(_.name == slackTask)) {

@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.{InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackUser}
+import ca.stevenskelton.tinyakkaslackcue.{InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackTaskFactory, SlackUser}
 import org.slf4j.event.Level
 import play.api.libs.json.JsObject
 
@@ -55,7 +55,7 @@ object ScheduleActionModal {
   }
 
   //https://api.slack.com/reference/surfaces/views
-  def createModal(slackUser: SlackUser, name: String, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
+  def createModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
     //mrkdwn
 
     val (headerText, submitButtonText) = if(zonedDateTimeOpt.isEmpty){
@@ -109,7 +109,7 @@ object ScheduleActionModal {
   ${privateMetadata.block},
 	"title": {
 		"type": "plain_text",
-		"text": "New ${name.take(21)}",
+		"text": "New ${slackTaskFactory.name.take(21)}",
 		"emoji": true
 	},
 	"submit": {
