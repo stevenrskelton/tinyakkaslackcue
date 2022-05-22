@@ -1,0 +1,232 @@
+{
+  "type": "block_actions",
+  "user": {
+    "id": "U039T9DUHGT",
+    "username": "tradeauditapp",
+    "name": "tradeauditapp",
+    "team_id": "T039T9D2CD8"
+  },
+  "api_app_id": "A03B812RGT0",
+  "token": "Fo38CPu8Atf2KtR1DBlUceMb",
+  "container": {
+    "type": "view",
+    "view_id": "V03DKDHNJKD"
+  },
+  "trigger_id": "3572272201137.3333319080450.8bee13f4421e6ba708e7a9b0eb459087",
+  "team": {
+    "id": "T039T9D2CD8",
+    "domain": "tradeaudit"
+  },
+  "enterprise": null,
+  "is_enterprise_install": false,
+  "view": {
+    "id": "V03DKDHNJKD",
+    "team_id": "T039T9D2CD8",
+    "type": "home",
+    "blocks": [
+      {
+        "type": "header",
+        "block_id": "wow",
+        "text": {
+          "type": "plain_text",
+          "text": ":card_index: Tiny Akka Slack Cue",
+          "emoji": true
+        }
+      },
+      {
+        "type": "actions",
+        "block_id": "YJmZC",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "tab-refresh",
+            "text": {
+              "type": "plain_text",
+              "text": "Refresh Page",
+              "emoji": true
+            },
+            "style": "primary"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "block_id": "THOG",
+        "text": {
+          "type": "plain_text",
+          "text": "Exchange Listings",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "5KNw",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Updates active stock and ETF listings on the NYSE and Nasdaq exchanges",
+          "verbatim": false
+        }
+      },
+      {
+        "type": "actions",
+        "block_id": "39a",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "task-queue-action",
+            "text": {
+              "type": "plain_text",
+              "text": "Queue Immediately",
+              "emoji": true
+            },
+            "style": "primary",
+            "value": "Exchange Listings"
+          },
+          {
+            "type": "button",
+            "action_id": "schedule-task-action",
+            "text": {
+              "type": "plain_text",
+              "text": "Schedule",
+              "emoji": true
+            },
+            "value": "Exchange Listings"
+          }
+        ]
+      },
+      {
+        "type": "divider",
+        "block_id": "+wp"
+      },
+      {
+        "type": "header",
+        "block_id": "uMjD",
+        "text": {
+          "type": "plain_text",
+          "text": "test",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "Yp3",
+        "text": {
+          "type": "mrkdwn",
+          "text": "2 minutes @ 1 second",
+          "verbatim": false
+        }
+      },
+      {
+        "type": "actions",
+        "block_id": "hDDQx",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "task-queue-action",
+            "text": {
+              "type": "plain_text",
+              "text": "Queue Immediately",
+              "emoji": true
+            },
+            "style": "primary",
+            "value": "test"
+          },
+          {
+            "type": "button",
+            "action_id": "schedule-task-action",
+            "text": {
+              "type": "plain_text",
+              "text": "Schedule",
+              "emoji": true
+            },
+            "value": "test"
+          }
+        ]
+      },
+      {
+        "type": "divider",
+        "block_id": "M3Qd"
+      },
+      {
+        "type": "header",
+        "block_id": "pcl",
+        "text": {
+          "type": "plain_text",
+          "text": "Yahoo 2min Prices",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "block_id": "hmU",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Scrapes Yahoo 2min price charts to disk",
+          "verbatim": false
+        }
+      },
+      {
+        "type": "actions",
+        "block_id": "n8mk",
+        "elements": [
+          {
+            "type": "button",
+            "action_id": "task-queue-action",
+            "text": {
+              "type": "plain_text",
+              "text": "Queue Immediately",
+              "emoji": true
+            },
+            "style": "primary",
+            "value": "Yahoo 2min Prices"
+          },
+          {
+            "type": "button",
+            "action_id": "schedule-task-action",
+            "text": {
+              "type": "plain_text",
+              "text": "Schedule",
+              "emoji": true
+            },
+            "value": "Yahoo 2min Prices"
+          }
+        ]
+      }
+    ],
+    "private_metadata": "",
+    "callback_id": "",
+    "state": {
+      "values": {}
+    },
+    "hash": "1653184265.Z749l715",
+    "title": {
+      "type": "plain_text",
+      "text": "View Title",
+      "emoji": true
+    },
+    "clear_on_close": false,
+    "notify_on_close": false,
+    "close": null,
+    "submit": null,
+    "previous_view_id": null,
+    "root_view_id": "V03DKDHNJKD",
+    "app_id": "A03B812RGT0",
+    "external_id": "",
+    "app_installed_team_id": "T039T9D2CD8",
+    "bot_id": "B03BTG3KAAV"
+  },
+  "actions": [
+    {
+      "action_id": "tab-refresh",
+      "block_id": "YJmZC",
+      "text": {
+        "type": "plain_text",
+        "text": "Refresh Page",
+        "emoji": true
+      },
+      "style": "primary",
+      "type": "button",
+      "action_ts": "1653184273.233110"
+    }
+  ]
+}

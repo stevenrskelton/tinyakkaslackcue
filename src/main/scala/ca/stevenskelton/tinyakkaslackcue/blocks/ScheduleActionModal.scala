@@ -207,12 +207,4 @@ object ScheduleActionModal {
 }""")
   }
 
-  def parseViewSubmission(jsObject: JsObject): (PrivateMetadata, Map[ActionId, State], CallbackId) = {
-    val view = jsObject \ "view"
-    val privateMetadata = PrivateMetadata((view \ "private_metadata").asOpt[String].getOrElse(""))
-    val actionStates = State.parseActionStates(view \ "state" \ "values")
-    val callbackId = CallbackId((view \ "callback_id").asOpt[String].getOrElse(""))
-    (privateMetadata, actionStates, callbackId)
-  }
-
 }

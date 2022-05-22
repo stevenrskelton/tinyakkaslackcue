@@ -50,42 +50,44 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
   val slackActionRoute: Route = Directives.post {
     formField("payload") { payload =>
       logger.info(s"Action payload:\n```$payload```\n")
+      val jsObject = Json.parse(payload).as[JsObject]
+      val slackPayload = SlackPayload(jsObject)
 
-      val handler = for {
-        jsObject <- Json.parse(payload).asOpt[JsObject]
-        actionType <- (jsObject \ "type").asOpt[String]
-        viewType = (jsObject \ "view" \ "type").asOpt[String]
-        callbackId = (jsObject \ "view" \ "id").asOpt[String].map(CallbackId(_))
-        triggerId <- (jsObject \ "trigger_id").asOpt[String].map(SlackTriggerId(_))
-        slackUser <- (jsObject \ "user").asOpt[SlackUser]
-      } yield (actionType, viewType, callbackId) match {
-        case ("block_actions", Some("home"), _) => HomeTab.handleAction(triggerId, slackUser, jsObject)
-        case ("block_actions", _, Some(CallbackId.View)) =>
-          logger.info(Json.stringify(jsObject))
-          val (privateMetadata, actionStates, _) = ScheduleActionModal.parseViewSubmission(jsObject)
-          actionStates.get(ActionId.TaskCancel).map { state =>
-            val uuid = UUID.fromString(state.asInstanceOf[ButtonState].value)
-            if(slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)){
-              HomeTab.update(slackUser.id, slackTaskFactories)
-            }else{
-              val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
+      val handler = slackPayload.payloadType match {
+        case SlackPayload.BlockActions =>
+          val viewType = (jsObject \ "view" \ "type").asOpt[String]
+          if(viewType == Some("home")){
+            HomeTab.handleAction(slackPayload.triggerId, slackPayload.user, jsObject)
+          }else if(slackPayload.callbackId == Some(CallbackId.View)){
+            slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
+              val uuid = UUID.fromString(state.asInstanceOf[ButtonState].value)
+              if(slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)){
+                HomeTab.update(slackPayload.user.id, slackTaskFactories)
+              }else{
+                val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
+                logger.error("handleSubmission", ex)
+                Future.failed(ex)
+              }
+            }.getOrElse {
+              val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
               logger.error("handleSubmission", ex)
               Future.failed(ex)
             }
-          }.getOrElse {
-            val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
-            logger.error("handleSubmission", ex)
-            Future.failed(ex)
+          }else{
+            HomeTab.update(slackPayload.user.id, slackTaskFactories)
           }
-        case ("view_submission", Some("modal"), _) => HomeTab.handleSubmission(triggerId, slackUser, jsObject)
-        case (x, y, z) => throw new NotImplementedError(s"Slack payload $x, for view $y callback $z not implemented: $payload")
+        case SlackPayload.ViewSubmission =>
+          HomeTab.handleSubmission(slackPayload)
+        case x =>
+          val ex = new NotImplementedError(s"Slack type $x, for:\n```$payload```")
+          logger.error("slackActionRoute", ex)
+          Future.failed(ex)
       }
-
-      handler.map {
-        _ => complete(HttpResponse(OK))
-      } getOrElse {
-        logger.error(s"SA:\n```$payload```\n")
-        throw new NotImplementedError(s"Slack message unknown type $payload")
+      complete {
+        import scala.concurrent.ExecutionContext.Implicits.global
+        handler.map {
+          _ => HttpResponse(OK)
+        }
       }
     }
   }

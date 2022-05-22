@@ -31,24 +31,22 @@ object HomeTab {
     update(slackUserId, slackTaskFactories)
   }
 
-  def handleSubmission(slackTriggerId: SlackTriggerId, slackUser: SlackUser, jsObject: JsObject)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
-    logger.info(Json.stringify(jsObject))
-    val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(jsObject)
-    callbackId match {
+  def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
+    slackPayload.callbackId.get match {
       case CallbackId.View =>
-        if(actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
-          HomeTab.update(slackUser.id, slackTaskFactories)
+        if(slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
+          HomeTab.update(slackPayload.user.id, slackTaskFactories)
         } else {
-          val ex = new Exception(s"Could not find task uuid ${privateMetadata.value}")
+          val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.get.value}")
           logger.error("handleSubmission", ex)
           Future.failed(ex)
         }
       case CallbackId.Create =>
-        slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
+        slackTaskFactories.findByPrivateMetadata(slackPayload.privateMetadata.get).map {
           taskFactory =>
             val zonedDateTimeOpt = for{
-              scheduledDate <- actionStates.get(ActionId.ScheduleDate).map(_.asInstanceOf[DatePickerState].value)
-              scheduledTime <-  actionStates.get(ActionId.ScheduleTime).map(_.asInstanceOf[TimePickerState].value)
+              scheduledDate <- slackPayload.actionStates.get(ActionId.ScheduleDate).map(_.asInstanceOf[DatePickerState].value)
+              scheduledTime <- slackPayload.actionStates.get(ActionId.ScheduleTime).map(_.asInstanceOf[TimePickerState].value)
             } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
             //TODO zone should be from Slack
 
@@ -57,13 +55,13 @@ object HomeTab {
             //TODO: can we quote the task thread
             slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
 
-            HomeTab.update(slackUser.id, slackTaskFactories)
+            HomeTab.update(slackPayload.user.id, slackTaskFactories)
           //        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))
           //        actionStates(ActionIdNotifyOnFailure).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"), SlackUserId("U039TCGLX5G"))
           //        actionStates(ActionIdLogLevel)
 
         }.getOrElse {
-          val ex = new Exception(s"Could not find task ${privateMetadata.value}")
+          val ex = new Exception(s"Could not find task ${slackPayload.privateMetadata.get.value}")
           logger.error("handleSubmission", ex)
           Future.failed(ex)
         }
