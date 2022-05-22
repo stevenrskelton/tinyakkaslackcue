@@ -23,7 +23,7 @@ object ScheduleActionModal {
       s""",{
           "type": "section",
           "text": {
-            "type": "plain_text",
+            "type": "mrkdwn",
             "text": "*Scheduled for:* ${scheduledTask.executionStart.toString}\n*Queue Position*: ${if(index == 0 || (isQueueExecuting && index == 1)) "Next" else (index + 1).toString}"
           }
         }"""
@@ -32,7 +32,7 @@ object ScheduleActionModal {
     SlackBlocksAsString(s"""{
       "title": {
         "type": "plain_text",
-        "text": "${scheduledTask.task.name}",
+        "text": ":card_index: Tiny Akka Slack Cue",
         "emoji": true
       },
       "type": "modal",
@@ -43,6 +43,14 @@ object ScheduleActionModal {
         "emoji": true
       },
       "blocks": [
+        {
+          "type": "header",
+          "text": {
+            "type": "plain_text",
+            "text": "${scheduledTask.task.name}",
+            "emoji": true
+          }
+        },
         {
           "type": "actions",
           "elements": [
@@ -177,7 +185,7 @@ object ScheduleActionModal {
   ${privateMetadata.block},
 	"title": {
 		"type": "plain_text",
-		"text": "New ${slackTaskFactory.name.take(21)}",
+		"text": ":card_index: Tiny Akka Slack Cue",
 		"emoji": true
 	},
 	"submit": {
@@ -193,6 +201,14 @@ object ScheduleActionModal {
 		"emoji": true
 	},
 	"blocks": [
+     {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "New ${slackTaskFactory.name}",
+        "emoji": true
+      }
+    },
 		{
 			"type": "section",
 			"text": {
