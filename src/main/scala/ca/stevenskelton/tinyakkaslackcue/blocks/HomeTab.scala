@@ -12,12 +12,12 @@ import scala.concurrent.Future
 
 object HomeTab {
 
-  def update(slackUserId: SlackUserId, slackTaskFactories: SlackTaskFactories)(implicit logger: Logger): Future[Done] = {
+  def update(slackPayload: SlackPayload)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
     //TODO: sort
     val slackView = SlackView.createHomeTab(slackTaskFactories.history)
-    val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, slackView)
+    val response = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, slackView)
     if (response.isOk) {
-      logger.debug(s"Updated home view for ${slackUserId.value}")
+      logger.debug(s"Updated home view for ${slackPayload.user}")
       Future.successful(Done)
     } else {
       logger.error(s"Home view update failed: ${response.getError}")
@@ -26,16 +26,24 @@ object HomeTab {
     }
   }
 
-  def openedEvent(slackTaskFactories: SlackTaskFactories, jsObject: JsObject)(implicit logger: Logger): Future[Done] = {
-    val slackUserId = SlackUserId((jsObject \ "user").as[String])
-    update(slackUserId, slackTaskFactories)
+  def openedEvent(slackUserId : SlackUserId)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
+    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
+    val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, slackView)
+    if (response.isOk) {
+      logger.debug(s"Created home view for ${slackUserId.value}")
+      Future.successful(Done)
+    } else {
+      logger.error(s"Home view creation failed: ${response.getError}")
+      logger.error(s"\n```${slackView.toString}```\n")
+      Future.failed(new Exception(response.getError))
+    }
   }
 
   def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
     slackPayload.callbackId.getOrElse("") match {
       case CallbackId.View =>
         if(slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))){
-          HomeTab.update(slackPayload.user.id, slackTaskFactories)
+          HomeTab.update(slackPayload)
         } else {
           val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.fold("")(_.value)}")
           logger.error("handleSubmission", ex)
@@ -55,7 +63,7 @@ object HomeTab {
             //TODO: can we quote the task thread
             slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
 
-            HomeTab.update(slackPayload.user.id, slackTaskFactories)
+            HomeTab.update(slackPayload)
           //        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))
           //        actionStates(ActionIdNotifyOnFailure).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"), SlackUserId("U039TCGLX5G"))
           //        actionStates(ActionIdLogLevel)
@@ -73,7 +81,7 @@ object HomeTab {
   }
 
   def handleAction(slackTriggerId: SlackTriggerId, slackUser: SlackUser, jsObject: JsObject)(implicit slackClient: SlackClient, slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
-    logger.info(Json.stringify(jsObject))
+    logger.info(s"\n```${Json.stringify(jsObject)}```\n")
 
     val slackActions: Seq[SlackAction] = (jsObject \ "actions").as[Seq[SlackAction]]
     val action = slackActions.head
@@ -101,7 +109,7 @@ object HomeTab {
     //    }
     val result: SlackApiTextResponse = slackClient.viewsOpen(slackTriggerId, view)
     if (!result.isOk) {
-      logger.debug(view.value)
+      logger.debug(s"\n```${view.value}```\n")
       logger.error(result.getError)
     }
     Future.successful(Done)

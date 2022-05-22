@@ -138,6 +138,7 @@ case class TaskHistory(
         "emoji": true,
         "text": "Schedule"
       },
+      "style": "primary",
       "action_id": "${ActionId.TaskSchedule.value}",
       "value": "${slackTaskIdentifier.name}"
     }

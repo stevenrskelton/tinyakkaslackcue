@@ -8,11 +8,11 @@ import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateReq
 import com.slack.api.methods.request.conversations.ConversationsListRequest
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest, PinsRemoveRequest}
 import com.slack.api.methods.request.users.UsersListRequest
-import com.slack.api.methods.request.views.{ViewsOpenRequest, ViewsPublishRequest}
+import com.slack.api.methods.request.views.{ViewsOpenRequest, ViewsPublishRequest, ViewsUpdateRequest}
 import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateResponse}
 import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsRemoveResponse}
-import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse}
+import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse, ViewsUpdateResponse}
 import com.slack.api.model.ConversationType
 import com.typesafe.config.Config
 
@@ -68,6 +68,7 @@ trait SlackClient {
   def pinnedTasks(slackTaskFactories: SlackTaskFactories): Iterable[(SlackTask, Fields)]
   def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse
   def chatPostMessage(text: String): ChatPostMessageResponse
+  def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse
   def viewsPublish(userId: SlackUserId, slackView: SlackView): ViewsPublishResponse
   def viewsOpen(slackTriggerId: SlackTriggerId, view: SlackBlocksAsString): ViewsOpenResponse
 }
@@ -104,6 +105,10 @@ class SlackClientImpl(val botOAuthToken: String, botUserId: SlackUserId, botChan
 
   override def chatPostMessage(text: String): ChatPostMessageResponse = {
     client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).text(text))
+  }
+
+  override def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse = {
+    client.viewsUpdate((r: ViewsUpdateRequest.ViewsUpdateRequestBuilder) => r.token(botOAuthToken).viewId(viewId).viewAsString(slackView.toString))
   }
 
   override def viewsPublish(userId: SlackUserId, slackView: SlackView): ViewsPublishResponse = {

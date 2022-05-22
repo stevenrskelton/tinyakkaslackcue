@@ -36,7 +36,9 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
         val eventObject = (jsObject \ "event").as[JsObject]
         logger.info(s"EventCallback\n```${Json.stringify(eventObject)}```")
         val flow = (eventObject \ "type").as[String] match {
-          case "app_home_opened" => HomeTab.openedEvent(slackTaskFactories, eventObject)
+          case "app_home_opened" =>
+            val slackUserId = SlackUserId((eventObject \ "user").as[String])
+            HomeTab.openedEvent(slackUserId)
           case unknown => throw new NotImplementedError(s"Slack event $unknown not implemented: ${Json.stringify(jsObject)}")
         }
         extractExecutionContext {
@@ -57,12 +59,16 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
         case SlackPayload.BlockActions =>
           val viewType = (jsObject \ "view" \ "type").asOpt[String]
           if(viewType == Some("home")){
-            HomeTab.handleAction(slackPayload.triggerId, slackPayload.user, jsObject)
+            if(slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TabRefresh)){
+              HomeTab.update(slackPayload)
+            }else {
+              HomeTab.handleAction(slackPayload.triggerId, slackPayload.user, jsObject)
+            }
           }else if(slackPayload.callbackId == Some(CallbackId.View)){
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
               val uuid = UUID.fromString(state.asInstanceOf[ButtonState].value)
               if(slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)){
-                HomeTab.update(slackPayload.user.id, slackTaskFactories)
+                HomeTab.update(slackPayload)
               }else{
                 val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
                 logger.error("handleSubmission", ex)
@@ -74,7 +80,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
               Future.failed(ex)
             }
           }else{
-            HomeTab.update(slackPayload.user.id, slackTaskFactories)
+            HomeTab.update(slackPayload)
           }
         case SlackPayload.ViewSubmission =>
           HomeTab.handleSubmission(slackPayload)
