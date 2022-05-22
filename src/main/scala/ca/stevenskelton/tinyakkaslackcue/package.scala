@@ -8,6 +8,9 @@ import play.api.libs.json._
 
 package object tinyakkaslackcue {
 
+  val AppModalTitle = "Tiny Akka Slack Cue"
+  val AppHomeTitle = ":card_index: Tiny Akka Slack Cue"
+
   case class SlackTs(value: String) extends AnyVal
 
   object SlackTs {

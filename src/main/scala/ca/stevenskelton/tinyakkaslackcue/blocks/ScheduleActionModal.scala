@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.{InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackTaskFactory, SlackUser}
+import ca.stevenskelton.tinyakkaslackcue.{AppModalTitle, InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackTaskFactory, SlackUser}
 import org.slf4j.event.Level
 
 import java.time.ZonedDateTime
@@ -32,7 +32,7 @@ object ScheduleActionModal {
     SlackBlocksAsString(s"""{
       "title": {
         "type": "plain_text",
-        "text": ":card_index: Tiny Akka Slack Cue",
+        "text": "$AppModalTitle",
         "emoji": true
       },
       "type": "modal",
@@ -153,7 +153,7 @@ object ScheduleActionModal {
 					"emoji": true
 				},
         "initial_users": ["${slackUser.id.value}"],
-				"action_id": "${ActionId.NotifyOnComplete.value}",
+				"action_id": "${ActionId.NotifyOnComplete.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -185,7 +185,7 @@ object ScheduleActionModal {
   ${privateMetadata.block},
 	"title": {
 		"type": "plain_text",
-		"text": ":card_index: Tiny Akka Slack Cue",
+		"text": "$AppModalTitle",
 		"emoji": true
 	},
 	"submit": {

@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.SlackBlocksAsString
+import ca.stevenskelton.tinyakkaslackcue.{AppHomeTitle, SlackBlocksAsString}
 
 case class SlackView(name: String, blocks: SlackBlocksAsString) {
   override def toString: String = s"""{"type":"$name","blocks":[${blocks.value}]}"""
@@ -14,7 +14,7 @@ object SlackView {
         "type": "header",
         "text": {
           "type": "plain_text",
-          "text": ":card_index: Tiny Akka Slack Cue",
+          "text": "$AppHomeTitle",
           "emoji": true
         }
       },{
@@ -33,7 +33,7 @@ object SlackView {
         "type": "header",
         "text": {
           "type": "plain_text",
-          "text": ":card_index: Tiny Akka Slack Cue",
+          "text": "$AppHomeTitle",
           "emoji": true
         }
       },
@@ -51,7 +51,7 @@ object SlackView {
             "action_id": "${ActionId.TabRefresh}"
           }
         ]
-      },"""
+      },{"type": "divider"},"""
       val blocks = taskHistories.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
       SlackView("home", SlackBlocksAsString(header + blocks))
     }
