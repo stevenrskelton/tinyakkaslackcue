@@ -38,22 +38,25 @@ object SlackClient {
     val botUserId = SlackUserId(botUser.getId)
     val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
     val channels = conversationsResult.getChannels.asScala
-    val botChannelId = channels.find(_.getName == botChannelName).get.getId
+    channels.find(_.getName == botChannelName).map {
+      botChannel =>
+        val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.getId)).getItems).map(_.asScala).getOrElse(Nil)
+        val pinnedResult = pinnedMessages.filter {
+          o => o.getCreatedBy == botUserId.value && o.getMessage.getText == HistoryThreadText
+        }
+        val pinnedTs = pinnedResult.headOption.map { o =>
+          //TODO: parse history
+          SlackTs(o.getMessage.getTs)
+        }.getOrElse {
+          val pinnedMessageResult = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.getId).text(HistoryThreadText))
+          client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(botOAuthToken).channel(botChannel.getId).timestamp(pinnedMessageResult.getTs))
+          SlackTs(pinnedMessageResult.getTs)
+        }
 
-    val pinnedMessages = client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannelId)).getItems.asScala
-    val pinnedResult = pinnedMessages.filter {
-      o => o.getCreatedBy == botUserId.value && o.getMessage.getText == HistoryThreadText
-    }
-    val pinnedTs = pinnedResult.headOption.map { o =>
-      //TODO: parse history
-      SlackTs(o.getMessage.getTs)
+        new SlackClientImpl(botOAuthToken, botUserId, botChannel.getId, pinnedTs, client)
     }.getOrElse {
-      val pinnedMessageResult = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).text(HistoryThreadText))
-      client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(botOAuthToken).channel(botChannelId).timestamp(pinnedMessageResult.getTs))
-      SlackTs(pinnedMessageResult.getTs)
+      throw new Exception(s"Could not find channel $botChannelName")
     }
-
-    new SlackClientImpl(botOAuthToken, botUserId, botChannelId, pinnedTs, client)
   }
 }
 
