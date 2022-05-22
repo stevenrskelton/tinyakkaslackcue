@@ -79,7 +79,7 @@ object ScheduleActionModal {
                 },
                 "deny": {
                     "type": "plain_text",
-                    "text": "Close without Cancelling"
+                    "text": "Do not Cancel"
                 }
               }
             }

@@ -46,13 +46,16 @@ case class TaskHistory(
 
     val runningBlocks = running.map {
       scheduledTask =>
-        s""",{
+        s""",
+{
+  "type": "section",
+  "text": {
+    "type": "mrkdwn",
+    "text": "${SlackTaskThread.update(scheduledTask)}"
+  }
+},{
   "type": "section",
   "fields": [
-    {
-      "type": "mrkdwn",
-      "text": "${SlackTaskThread.update(scheduledTask)}"
-    },
     {
       "type": "mrkdwn",
       "text": "*When:*\nSubmitted Aut 10"
@@ -70,8 +73,7 @@ case class TaskHistory(
       "text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
     }
   ]
-},
-{
+},{
   "type": "actions",
   "elements": [
     {
@@ -110,15 +112,13 @@ case class TaskHistory(
     "text": "${slackTaskIdentifier.name}",
     "emoji": true
   }
-},
-{
+},{
   "type": "section",
   "text": {
     "type": "mrkdwn",
     "text": "${slackTaskIdentifier.description}"
   }
-},
-{
+},{
   "type": "actions",
   "elements": [
     {
