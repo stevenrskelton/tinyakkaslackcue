@@ -2,12 +2,11 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import akka.Done
 import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.views.{CreateTaskModal, HomeTab, SlackView, ViewTaskModal}
+import ca.stevenskelton.tinyakkaslackqueue.views.{CreateTaskModal, HomeTab, ViewTaskModal}
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 
 import java.time.{ZoneId, ZonedDateTime}
-import java.util.UUID
 import scala.concurrent.Future
 
 object HomeTabActions {

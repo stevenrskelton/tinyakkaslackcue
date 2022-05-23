@@ -9,14 +9,12 @@
     "team_id": "T21312902",
     "type": "home",
     "blocks": [
-
     ],
     "private_metadata": "",
     "callback_id": "",
-    "state":{
-
+    "state": {
     },
-    "hash":"1231232323.12321312",
+    "hash": "1231232323.12321312",
     "clear_on_close": false,
     "notify_on_close": false,
     "root_view_id": "VPASKP233",

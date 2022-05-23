@@ -8,9 +8,9 @@ import scala.collection.SortedSet
 
 case class TaskHistory(
                         slackTaskIdentifier: SlackTaskIdentifier,
-                        running: Option[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask],
+                        running: Option[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask],
                         executed: SortedSet[TaskHistoryItem],
-                        pending: SortedSet[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask]
+                        pending: SortedSet[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask]
                       ) {
 
   val nextTs: Option[SlackTs] = pending.headOption.map(_.task.id)

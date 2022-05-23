@@ -1,7 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.timer
 
 import akka.Done
-import akka.actor.Cancellable
 import org.slf4j.Logger
 
 import java.time._

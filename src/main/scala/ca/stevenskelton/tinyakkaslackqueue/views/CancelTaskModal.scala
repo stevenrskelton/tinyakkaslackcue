@@ -4,7 +4,7 @@ import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, SlackTask, SlackTs}
 
-class CancelTaskModal(scheduledTask: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask) extends SlackView {
+class CancelTaskModal(scheduledTask: InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask) extends SlackView {
 
   private val blocks = if (scheduledTask.isRunning) {
     s"""

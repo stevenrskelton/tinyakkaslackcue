@@ -52,7 +52,7 @@ object SlackTaskThread {
     s"Scheduling task *$taskName*"
   }
 
-  def schedule(scheduledTask: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask): SlackBlocksAsString = {
+  def schedule(scheduledTask: InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask): SlackBlocksAsString = {
 
     val createdByUser = "@Steven Skelton"
     val scheduledTime = scheduledTask.executionStart.format(DateTimeFormatter.ofPattern("YYYY-mm-dd hh:MM"))
@@ -84,7 +84,7 @@ object SlackTaskThread {
   }""")
   }
 
-  def update(scheduledTask: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask): String = {
+  def update(scheduledTask: InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask): String = {
     update(scheduledTask.task, scheduledTask.task.percentComplete, scheduledTask.executionStart.toEpochSecond, width = 40)
   }
 

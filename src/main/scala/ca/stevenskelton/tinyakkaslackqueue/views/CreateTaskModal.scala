@@ -9,11 +9,11 @@ import java.time.format.DateTimeFormatter
 
 class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata) extends SlackView {
 
-    private val submitButtonText = if (zonedDateTimeOpt.isEmpty) "Queue" else "Schedule"
+  private val submitButtonText = if (zonedDateTimeOpt.isEmpty) "Queue" else "Schedule"
 
   private val dateTimeBlocks = zonedDateTimeOpt.fold("") {
-      zonedDateTime =>
-        s""",{
+    zonedDateTime =>
+      s""",{
 			"type": "input",
 			"element": {
 				"type": "datepicker",
@@ -49,10 +49,10 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, 
 				"emoji": true
 			}
 		}"""
-    }
+  }
 
   private val advancedOptions =
-      s""",{
+    s""",{
 			"type": "divider"
 		},
 		{
@@ -102,7 +102,8 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, 
     "value": "${level.name}"
   }"""
 
-  override def toString: String = s"""{
+  override def toString: String =
+    s"""{
   ${privateMetadata.block},
 	"title": {
 		"type": "plain_text",

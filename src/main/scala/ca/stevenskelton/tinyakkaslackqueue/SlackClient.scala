@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-import ca.stevenskelton.tinyakkaslackqueue.blocks.SlackTaskThread.Fields
 import ca.stevenskelton.tinyakkaslackqueue.blocks.SlackTaskThread
+import ca.stevenskelton.tinyakkaslackqueue.blocks.SlackTaskThread.Fields
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.Slack
 import com.slack.api.methods.MethodsClient

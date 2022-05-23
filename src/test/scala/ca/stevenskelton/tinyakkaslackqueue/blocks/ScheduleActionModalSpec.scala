@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
-import ca.stevenskelton.tinyakkaslackqueue.views.CreateTaskModal
 import ca.stevenskelton.tinyakkaslackqueue.util.FileUtils
 import ca.stevenskelton.tinyakkaslackqueue.{SlackUserId, TestData}
 import org.scalatest.concurrent.ScalaFutures

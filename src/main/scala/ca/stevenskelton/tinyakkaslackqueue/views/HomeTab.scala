@@ -41,5 +41,6 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
       },{"type": "divider"},"""
     header + taskHistories.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
   }
+
   override def toString: String = s"""{"type":"home","blocks":[$blocks]}"""
 }
