@@ -7,6 +7,7 @@ import play.api.libs.json.JsObject
 object SlackPayload {
 
   final case class SlackPayloadType(value: String) extends AnyVal
+
   val BlockActions = SlackPayloadType("block_actions")
   val ViewSubmission = SlackPayloadType("view_submission")
 
@@ -27,5 +28,6 @@ object SlackPayload {
     SlackPayload(payloadType, id, user, slackActions, triggerId, privateMetadata, callbackId, actionStates)
   }
 }
+
 case class SlackPayload(payloadType: SlackPayloadType, viewId: String, user: SlackUser, actions: Seq[SlackAction], triggerId: SlackTriggerId,
                         privateMetadata: Option[PrivateMetadata], callbackId: Option[CallbackId], actionStates: Map[ActionId, State])

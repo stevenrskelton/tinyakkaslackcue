@@ -15,7 +15,7 @@ class TinySlackCue(slackClient: SlackClient, logger: Logger, onComplete: (SlackT
 
   def listScheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] = interactiveTimer.list
 
-  def cancelScheduledTask(uuid: UUID): Boolean = interactiveTimer.cancel(uuid)
+  def cancelScheduledTask(uuid: UUID): Option[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] = interactiveTimer.cancel(uuid)
 
   def scheduleSlackTask(slackTaskFactory: SlackTaskFactory, time: Option[ZonedDateTime]): SlackTask = {
     val slackPlaceholder = slackClient.chatPostMessage(SlackTaskThread.placeholderThread(slackTaskFactory.name))

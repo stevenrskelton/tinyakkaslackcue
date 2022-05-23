@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
-import ca.stevenskelton.tinyakkaslackcue.{AppModalTitle, InteractiveJavaUtilTimer, SlackBlocksAsString, SlackTask, SlackTaskFactory, SlackUser}
+import ca.stevenskelton.tinyakkaslackcue._
 import org.slf4j.event.Level
 
 import java.time.ZonedDateTime
@@ -8,23 +8,36 @@ import java.time.format.DateTimeFormatter
 
 object ScheduleActionModal {
 
-  def cancelledModal: SlackView = {
-    val blocks = """
+  def cancelledModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackView = {
+    val blocks = if (scheduledTask.isRunning) {
+      """
     {
 			"type": "section",
 			"text": {
 				"type": "plain_text",
-				"text": "Please choose an option where you'd like to stay from Oct 21 - Oct 23 (2 nights).",
+				"text": "Task has already started, attempting to abort.",
 				"emoji": true
 			}
 		}
     """
+    } else {
+      """
+    {
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "Removed task from queue.",
+				"emoji": true
+			}
+		}
+    """
+    }
     SlackView("modal", SlackBlocksAsString(blocks))
   }
 
   def viewModal(scheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask], index: Int): SlackBlocksAsString = {
     val scheduledTask = scheduledTasks(index)
-    val bodyBlocks = if(scheduledTask.isRunning) {
+    val bodyBlocks = if (scheduledTask.isRunning) {
       s""",{
           "type": "section",
           "text": {
@@ -32,18 +45,19 @@ object ScheduleActionModal {
             "text": "*Started:* ${scheduledTask.executionStart.toString}"
           }
         }"""
-    }else{
+    } else {
       val isQueueExecuting = scheduledTasks.head.isRunning
       s""",{
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": "*Scheduled for:* ${scheduledTask.executionStart.toString}\n*Queue Position*: ${if(index == 0 || (isQueueExecuting && index == 1)) "Next" else (index + 1).toString}"
+            "text": "*Scheduled for:* ${scheduledTask.executionStart.toString}\n*Queue Position*: ${if (index == 0 || (isQueueExecuting && index == 1)) "Next" else (index + 1).toString}"
           }
         }"""
     }
 
-    SlackBlocksAsString(s"""{
+    SlackBlocksAsString(
+      s"""{
       "title": {
         "type": "plain_text",
         "text": "$AppModalTitle",
@@ -85,7 +99,7 @@ object ScheduleActionModal {
                 },
                 "text": {
                     "type": "mrkdwn",
-                    "text": "${if(scheduledTask.isRunning) "Task will be notified to abort execution as soon as possible." else "This task hasn't been started and will be removed from queue."}"
+                    "text": "${if (scheduledTask.isRunning) "Task will be notified to abort execution as soon as possible." else "This task hasn't been started and will be removed from queue."}"
                 },
                 "confirm": {
                     "type": "plain_text",
@@ -102,21 +116,21 @@ object ScheduleActionModal {
         $bodyBlocks
       ]
 		}""")
-}
+  }
 
   //https://api.slack.com/reference/surfaces/views
   def createModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
     //mrkdwn
 
-    val (headerText, submitButtonText) = if(zonedDateTimeOpt.isEmpty){
-      ("Queue this task immediately.","Queue")
-    }else{
-      ("Set later date/time to schedule.","Schedule")
+    val (headerText, submitButtonText) = if (zonedDateTimeOpt.isEmpty) {
+      ("Queue this task immediately.", "Queue")
+    } else {
+      ("Set later date/time to schedule.", "Schedule")
     }
 
     val dateTimeBlocks = zonedDateTimeOpt.fold("") {
       zonedDateTime =>
-       s""",{
+        s""",{
 			"type": "input",
 			"element": {
 				"type": "datepicker",
@@ -154,7 +168,8 @@ object ScheduleActionModal {
 		}"""
     }
 
-    val advancedOptions = s""",{
+    val advancedOptions =
+      s""",{
 			"type": "divider"
 		},
 		{
@@ -258,7 +273,8 @@ object ScheduleActionModal {
 }""")
   }
 
-  private def logLevelBlock(level: Level): String = s"""{
+  private def logLevelBlock(level: Level): String =
+    s"""{
     "text": {
       "type": "plain_text",
       "text": "${logLevelEmoji(level)} ${level.name}",

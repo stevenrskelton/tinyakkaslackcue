@@ -8,8 +8,8 @@ import java.time._
 import java.util
 import java.util.{Date, Timer, TimerTask, UUID}
 import scala.jdk.CollectionConverters.IterableHasAsScala
-import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 abstract class UUIDTask extends Cancellable {
   val uuid = UUID.randomUUID()
@@ -110,16 +110,16 @@ class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
     }.toSeq.sortBy(o => (!o.isRunning, o.executionStart.toInstant))
   }
 
-  def cancel(uuid: UUID): Boolean = {
+  def cancel(uuid: UUID): Option[ScheduledTask] = {
     val it = allTimerTasks.iterator
     while (it.hasNext) {
       val attrTimerTask = it.next
       if (attrTimerTask.task.uuid == uuid) {
         attrTimerTask.cancel
-        return true
+        return Some(toScheduledTask(attrTimerTask))
       }
     }
-    false
+    None
   }
 
   def cancel(): Boolean = {

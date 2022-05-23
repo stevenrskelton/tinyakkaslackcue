@@ -25,7 +25,7 @@ abstract class SlackTaskFactories(
 
   val tinySlackCue = new TinySlackCue(slackClient, logger, onComplete)(actorSystem, config)
 
-//  private implicit val materializer = SystemMaterializer.get(actorSystem)
+  //  private implicit val materializer = SystemMaterializer.get(actorSystem)
   def factories: Seq[SlackTaskFactory]
 
   implicit val ordering = new Ordering[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] {
@@ -41,10 +41,10 @@ abstract class SlackTaskFactories(
         var runningTask: Option[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] = None
         val cueTasks = allQueuedTasks.withFilter(_.task.name == slackTaskFactory.name).flatMap {
           scheduleTask =>
-            if(scheduleTask.isRunning){
+            if (scheduleTask.isRunning) {
               runningTask = Some(scheduleTask)
               None
-            }else {
+            } else {
               Some(scheduleTask)
             }
         }

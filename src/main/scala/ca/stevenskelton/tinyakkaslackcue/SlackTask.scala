@@ -14,8 +14,8 @@ abstract class SlackTask extends UUIDTask {
   var completedCount: Int = 0
 
   def percentComplete: Float =
-    if(completedCount == 0) 0f
-    else if(estimatedCount > 0) math.min(1f, completedCount.toFloat / estimatedCount.toFloat)
+    if (completedCount == 0) 0f
+    else if (estimatedCount > 0) math.min(1f, completedCount.toFloat / estimatedCount.toFloat)
     else 0f
 
   def notifyOnError: Seq[SlackUserId]

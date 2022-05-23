@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import ca.stevenskelton.tinyakkaslackcue.util.DateUtils
-import ca.stevenskelton.tinyakkaslackcue.{SlackBlocksAsString, SlackTask, SlackTs, SlackUserId}
+import ca.stevenskelton.tinyakkaslackcue.{SlackBlocksAsString, SlackTs, SlackUserId}
 
 import java.time.{Duration, ZonedDateTime}
 

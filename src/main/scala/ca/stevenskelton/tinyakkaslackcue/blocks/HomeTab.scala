@@ -12,17 +12,17 @@ import scala.concurrent.Future
 object HomeTab {
 
   def update(slackPayload: SlackPayload)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
-//    //TODO: sort
-//    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
-//    val response = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, slackView)
-//    if (response.isOk) {
-//      logger.debug(s"Updated home view for ${slackPayload.user}")
-//      Future.successful(Done)
-//    } else {
-//      logger.error(s"Home view update failed: ${response.getError}")
-//      logger.error(s"\n```${slackView.toString}```\n")
-//      Future.failed(new Exception(response.getError))
-//    }
+    //    //TODO: sort
+    //    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
+    //    val response = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, slackView)
+    //    if (response.isOk) {
+    //      logger.debug(s"Updated home view for ${slackPayload.user}")
+    //      Future.successful(Done)
+    //    } else {
+    //      logger.error(s"Home view update failed: ${response.getError}")
+    //      logger.error(s"\n```${slackView.toString}```\n")
+    //      Future.failed(new Exception(response.getError))
+    //    }
     openedEvent(slackPayload.user.id)
   }
 
@@ -43,7 +43,7 @@ object HomeTab {
   def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
     slackPayload.callbackId.getOrElse("") match {
       case CallbackId.View =>
-        if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_))) {
+        if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_).isDefined)) {
           HomeTab.update(slackPayload)
         } else {
           val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.fold("")(_.value)}")
@@ -103,24 +103,24 @@ object HomeTab {
               logger.error("handleAction", ex)
               throw ex
             }
-//          case ActionId.TaskCancel =>
-//            val privateMetadata = PrivateMetadata(action.value)
-//            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
-//              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
-//            }.getOrElse {
-//              val ex = new Exception(s"Task ${action.value} not found")
-//              logger.error("handleAction", ex)
-//              throw ex
-//            }
+          //          case ActionId.TaskCancel =>
+          //            val privateMetadata = PrivateMetadata(action.value)
+          //            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
+          //              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
+          //            }.getOrElse {
+          //              val ex = new Exception(s"Task ${action.value} not found")
+          //              logger.error("handleAction", ex)
+          //              throw ex
+          //            }
           case ActionId.TaskView =>
             val uuid = UUID.fromString(action.value)
             val list = slackTaskFactories.tinySlackCue.listScheduledTasks
             val index = list.indexWhere(_.uuid == uuid)
-            if(index == -1) {
+            if (index == -1) {
               val ex = new Exception(s"Task UUID $uuid not found")
               logger.error("handleAction", ex)
               throw ex
-            }else{
+            } else {
               ScheduleActionModal.viewModal(list, index)
             }
           //      case ActionIdTaskThread =>

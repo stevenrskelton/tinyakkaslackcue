@@ -8,8 +8,9 @@ case class SlackView(name: String, blocks: SlackBlocksAsString) {
 
 object SlackView {
   def createHomeTab(taskHistories: Seq[TaskHistory]): SlackView = {
-    if(taskHistories.isEmpty){
-      val header = s"""
+    if (taskHistories.isEmpty) {
+      val header =
+        s"""
       {
         "type": "header",
         "text": {
@@ -27,8 +28,9 @@ object SlackView {
         ]
       }"""
       SlackView("home", SlackBlocksAsString(header))
-    }else{
-      val header = s"""
+    } else {
+      val header =
+        s"""
       {
         "type": "actions",
         "elements": [

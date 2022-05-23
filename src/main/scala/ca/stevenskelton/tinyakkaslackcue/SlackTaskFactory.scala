@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackcue
 
 trait SlackTaskIdentifier {
   def name: String
+
   def description: Mrkdwn
 }
 

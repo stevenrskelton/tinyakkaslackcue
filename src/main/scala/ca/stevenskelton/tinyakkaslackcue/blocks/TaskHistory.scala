@@ -101,7 +101,7 @@ case class TaskHistory(
 }"""
     }.getOrElse("")
 
-    val queueText = if(running.isEmpty) "Run Immediately" else "Queue Immediately"
+    val queueText = if (running.isEmpty) "Run Immediately" else "Queue Immediately"
 
     SlackBlocksAsString {
       s"""
