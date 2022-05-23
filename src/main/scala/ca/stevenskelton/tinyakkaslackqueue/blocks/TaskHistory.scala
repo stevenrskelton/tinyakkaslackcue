@@ -91,14 +91,14 @@ case class TaskHistory(
   "type": "header",
   "text": {
     "type": "plain_text",
-    "text": "${slackTaskIdentifier.name}",
+    "text": "${slackTaskIdentifier.name.getText}",
     "emoji": true
   }
 },{
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": "${slackTaskIdentifier.description}"
+    "text": "${slackTaskIdentifier.description.getText}"
   }
 },{
   "type": "actions",
@@ -108,7 +108,7 @@ case class TaskHistory(
       "text": {
         "type": "plain_text",
         "emoji": true,
-        "text": "${queueText}"
+        "text": "$queueText"
       },
       "style": "primary",
       "action_id": "${ActionId.TaskQueue.value}",
@@ -123,7 +123,7 @@ case class TaskHistory(
       },
       "style": "primary",
       "action_id": "${ActionId.TaskSchedule.value}",
-      "value": "${slackTaskIdentifier.name}"
+      "value": "${slackTaskIdentifier.name.getText}"
     }
   ]
 }

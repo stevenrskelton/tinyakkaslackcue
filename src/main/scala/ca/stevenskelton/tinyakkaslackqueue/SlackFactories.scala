@@ -52,12 +52,8 @@ abstract class SlackFactories(
     }
   }
 
-  def findByName(name: String): Option[SlackTaskFactory] = {
-    factories.find(_.name == name)
-  }
-
   def findByPrivateMetadata(privateMetadata: PrivateMetadata): Option[SlackTaskFactory] = {
-    factories.find(_.name == privateMetadata.value)
+    factories.find(_.name.getText == privateMetadata.value)
   }
 
 }
