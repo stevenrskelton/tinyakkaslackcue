@@ -25,7 +25,7 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
       "text": "View Details",
       "emoji": true
     },
-    "value": "${scheduledTask.id.toString}",
+    "value": "${scheduledTask.id.value}",
     "action_id": "${ActionId.TaskView}"
   }
 }"""
