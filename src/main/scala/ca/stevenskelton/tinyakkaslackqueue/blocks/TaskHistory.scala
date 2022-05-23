@@ -1,16 +1,15 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 
 import scala.collection.SortedSet
 
 case class TaskHistory(
                         slackTaskIdentifier: SlackTaskIdentifier,
-                        running: Option[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask],
+                        running: Option[ScheduledSlackTask],
                         executed: SortedSet[TaskHistoryItem],
-                        pending: SortedSet[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask]
+                        pending: SortedSet[ScheduledSlackTask]
                       ) {
 
   val nextTs: Option[SlackTs] = pending.headOption.map(_.task.id)

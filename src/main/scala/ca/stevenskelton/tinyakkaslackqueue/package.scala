@@ -1,6 +1,7 @@
 package ca.stevenskelton
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
+import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.model.Message
 import play.api.libs.functional.syntax._
@@ -9,6 +10,8 @@ import play.api.libs.json._
 package object tinyakkaslackqueue {
 
   val AppModalTitle = "Tiny Akka Slack Cue"
+
+  type ScheduledSlackTask = InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask
 
   case class SlackTs(value: String) extends AnyVal
 

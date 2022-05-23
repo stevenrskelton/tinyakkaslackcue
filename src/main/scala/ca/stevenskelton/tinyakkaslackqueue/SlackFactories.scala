@@ -3,7 +3,6 @@ package ca.stevenskelton.tinyakkaslackqueue
 import akka.Done
 import akka.actor.ActorSystem
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{PrivateMetadata, TaskHistory}
-import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import com.typesafe.config.Config
 import org.slf4j.Logger
 
@@ -29,8 +28,8 @@ abstract class SlackFactories(
   //  private implicit val materializer = SystemMaterializer.get(actorSystem)
   def factories: Seq[SlackTaskFactory]
 
-  implicit val ordering = new Ordering[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask] {
-    override def compare(x: InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask, y: InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask): Int = x.executionStart.compareTo(y.executionStart)
+  implicit val ordering = new Ordering[ScheduledSlackTask] {
+    override def compare(x: ScheduledSlackTask, y: ScheduledSlackTask): Int = x.executionStart.compareTo(y.executionStart)
   }
 
   def history: Seq[TaskHistory] = {
@@ -39,7 +38,7 @@ abstract class SlackFactories(
       slackTaskFactory =>
         //TODO: read Slack thread
 
-        var runningTask: Option[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask] = None
+        var runningTask: Option[ScheduledSlackTask] = None
         val cueTasks = allQueuedTasks.withFilter(_.task.name == slackTaskFactory.name).flatMap {
           scheduleTask =>
             if (scheduleTask.isRunning) {
@@ -58,7 +57,7 @@ abstract class SlackFactories(
   }
 
   def findByPrivateMetadata(privateMetadata: PrivateMetadata): Option[SlackTaskFactory] = {
-    factories.find(o => PrivateMetadata(o.name) == privateMetadata)
+    factories.find(_.name == privateMetadata.value)
   }
 
 }

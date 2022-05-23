@@ -86,7 +86,7 @@ object TestData {
     override def factories: Seq[SlackTaskFactory] = Seq(new TestSlackTaskFactory("One"), new TestSlackTaskFactory("Two"), new TestSlackTaskFactory("Three"))
   }
 
-  def toScheduledTask(slackTask: SlackTask): InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask = new InteractiveJavaUtilTimer[SlackTs, SlackTask](TestData.logger).ScheduledTask(
+  def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackTs, SlackTask](TestData.logger).ScheduledTask(
     slackTask,
     ZonedDateTime.of(2100, 1, 1, 12, 30, 0, 0, ZoneId.systemDefault()),
     isRunning = false

@@ -6,5 +6,4 @@ case class PrivateMetadata private(value: String) extends AnyVal {
 
 object PrivateMetadata {
   val Empty = PrivateMetadata("")
-  //  def apply(value: String): PrivateMetadata = new PrivateMetadata(value.take(25))
 }

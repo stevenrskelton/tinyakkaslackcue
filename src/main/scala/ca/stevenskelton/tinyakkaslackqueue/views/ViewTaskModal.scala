@@ -1,10 +1,9 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
-import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
-import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, SlackTask, SlackTs}
+import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
 
-class ViewTaskModal(scheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask], index: Int) extends SlackView {
+class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackView {
   override def toString: String = {
     val scheduledTask = scheduledTasks(index)
     val bodyBlocks = if (scheduledTask.isRunning) {

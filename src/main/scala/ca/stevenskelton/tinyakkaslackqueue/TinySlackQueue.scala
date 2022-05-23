@@ -13,9 +13,9 @@ import scala.util.Try
 class TinySlackQueue(slackClient: SlackClient, logger: Logger, onComplete: (SlackTask, Try[Done]) => Unit)(implicit actorSystem: ActorSystem, config: Config) {
   private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTs, SlackTask](logger)
 
-  def listScheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask] = interactiveTimer.list
+  def listScheduledTasks: Seq[ScheduledSlackTask] = interactiveTimer.list
 
-  def cancelScheduledTask(slackTs: SlackTs): Option[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask] = interactiveTimer.cancel(slackTs)
+  def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
   def scheduleSlackTask(slackTaskFactory: SlackTaskFactory, time: Option[ZonedDateTime]): SlackTask = {
     val slackPlaceholder = slackClient.chatPostMessage(SlackTaskThread.placeholderThread(slackTaskFactory.name))
