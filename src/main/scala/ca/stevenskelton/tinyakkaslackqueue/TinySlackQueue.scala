@@ -15,6 +15,8 @@ class TinySlackQueue(slackClient: SlackClient, logger: Logger, onComplete: (Slac
 
   def listScheduledTasks: Seq[ScheduledSlackTask] = interactiveTimer.list
 
+  def isExecuting: Boolean = interactiveTimer.isExecuting
+
   def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
   def scheduleSlackTask(slackTaskFactory: SlackTaskFactory, time: Option[ZonedDateTime]): SlackTask = {

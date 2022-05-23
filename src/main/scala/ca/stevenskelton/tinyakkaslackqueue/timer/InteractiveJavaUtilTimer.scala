@@ -91,6 +91,8 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]](baseLogger: Logger) {
     }.toSeq.sortBy(o => (!o.isRunning, o.executionStart.toInstant))
   }
 
+  def isExecuting: Boolean = allTimerTasks.asScala.exists(_.isRunning)
+
   def cancel(id: S): Option[ScheduledTask] = {
     val it = allTimerTasks.iterator
     while (it.hasNext) {

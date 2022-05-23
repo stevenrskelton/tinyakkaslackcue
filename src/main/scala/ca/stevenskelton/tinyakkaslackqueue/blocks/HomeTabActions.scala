@@ -12,17 +12,6 @@ import scala.concurrent.Future
 object HomeTabActions {
 
   def update(slackPayload: SlackPayload)(implicit logger: Logger, slackTaskFactories: SlackFactories): Future[Done] = {
-    //    //TODO: sort
-    //    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
-    //    val response = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, slackView)
-    //    if (response.isOk) {
-    //      logger.debug(s"Updated home view for ${slackPayload.user}")
-    //      Future.successful(Done)
-    //    } else {
-    //      logger.error(s"Home view update failed: ${response.getError}")
-    //      logger.error(s"\n```${slackView.toString}```\n")
-    //      Future.failed(new Exception(response.getError))
-    //    }
     openedEvent(slackPayload.user.id)
   }
 
@@ -46,7 +35,7 @@ object HomeTabActions {
         if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => SlackTs(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackQueue.cancelScheduledTask(_).isDefined)) {
           HomeTabActions.update(slackPayload)
         } else {
-          val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.fold("")(_.value)}")
+          val ex = new Exception(s"Could not find task ts ${slackPayload.privateMetadata.fold("")(_.value)}")
           logger.error("handleSubmission", ex)
           Future.failed(ex)
         }
