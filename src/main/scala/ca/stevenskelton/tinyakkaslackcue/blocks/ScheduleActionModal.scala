@@ -8,6 +8,20 @@ import java.time.format.DateTimeFormatter
 
 object ScheduleActionModal {
 
+  def cancelledModal: SlackView = {
+    val blocks = """
+    {
+			"type": "section",
+			"text": {
+				"type": "plain_text",
+				"text": "Please choose an option where you'd like to stay from Oct 21 - Oct 23 (2 nights).",
+				"emoji": true
+			}
+		}
+    """
+    SlackView("modal", SlackBlocksAsString(blocks))
+  }
+
   def viewModal(scheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask], index: Int): SlackBlocksAsString = {
     val scheduledTask = scheduledTasks(index)
     val bodyBlocks = if(scheduledTask.isRunning) {

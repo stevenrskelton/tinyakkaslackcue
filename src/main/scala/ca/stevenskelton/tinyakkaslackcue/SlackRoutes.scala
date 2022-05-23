@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue
 
+import akka.Done
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.server.Directives.{as, complete, entity, extractExecutionContext, formField}
@@ -78,6 +79,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
               if(slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TaskCancel)){
                 val uuid = UUID.fromString(slackPayload.actions.head.value)
                 if (slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid)) {
+                  slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, ScheduleActionModal.cancelledModal)
                   HomeTab.update(slackPayload)
                 }else{
                   val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
