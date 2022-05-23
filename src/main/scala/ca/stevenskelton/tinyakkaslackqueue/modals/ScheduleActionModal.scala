@@ -1,5 +1,6 @@
-package ca.stevenskelton.tinyakkaslackqueue.blocks
+package ca.stevenskelton.tinyakkaslackqueue.modals
 
+import ca.stevenskelton.tinyakkaslackqueue.blocks._
 import ca.stevenskelton.tinyakkaslackqueue._
 import org.slf4j.event.Level
 
@@ -8,78 +9,7 @@ import java.time.format.DateTimeFormatter
 
 object ScheduleActionModal {
 
-  def cancelledModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackView = {
-    val blocks = if (scheduledTask.isRunning) {
-      s"""
-{
-  "type": "section",
-  "text": {
-    "type": "mrkdwn",
-    "text": "Task has already started, attempting to cancel."
-  },
-  "accessory": {
-    "type": "button",
-    "text": {
-      "type": "plain_text",
-      "text": "View Logs",
-      "emoji": true
-    },
-    "value": "${scheduledTask.uuid}",
-    "action_id": "${ActionId.TaskThread}"
-  }
-}"""
-    } else {
-      """
-    {
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": "Removed task from queue.",
-				"emoji": true
-			}
-		}
-    """
-    }
-    new SlackView {
-      override def toString: String = s"""
-{
-	"type": "modal",
-	"close": {
-		"type": "plain_text",
-		"text": "Close",
-		"emoji": true
-	},
-	"clear_on_close": true,
-	"title": {
-		"type": "plain_text",
-		"text": "$AppModalTitle",
-		"emoji": true
-	},
-	"blocks": [
- 		{
-			"type": "header",
-			"text": {
-				"type": "plain_text",
-				"text": "${scheduledTask.task.name}",
-				"emoji": true
-			}
-		},{
-			"type": "context",
-			"elements": [
-				{
-					"type": "mrkdwn",
-					"text": "${scheduledTask.task.description}"
-				}
-			]
-		},
-		$blocks
-	]
-}"""
-      override def name: String = "modal"
-    }
-  }
-
-  def viewModal(scheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask], index: Int): SlackBlocksAsString = {
+  def viewModal(scheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask], index: Int): SlackBlocksAsString = {
     val scheduledTask = scheduledTasks(index)
     val bodyBlocks = if (scheduledTask.isRunning) {
       s""",{
@@ -134,7 +64,7 @@ object ScheduleActionModal {
                 "emoji": true
               },
               "style": "danger",
-              "value": "${scheduledTask.uuid.toString}",
+              "value": "${scheduledTask.id.toString}",
               "action_id": "${ActionId.TaskCancel}",
               "confirm": {
                 "title": {

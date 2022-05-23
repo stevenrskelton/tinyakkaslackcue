@@ -75,7 +75,7 @@ trait SlackClient {
 
   def pinsList(): Iterable[MessageItem]
 
-  def pinnedTasks(slackTaskFactories: SlackTaskFactories): Iterable[(SlackTask, Fields)]
+  def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)]
 
   def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse
 
@@ -110,8 +110,8 @@ class SlackClientImpl(val botOAuthToken: String, botUserId: SlackUserId, botChan
     client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannelId)).getItems.asScala
   }
 
-  override def pinnedTasks(slackTaskFactories: SlackTaskFactories): Iterable[(SlackTask, Fields)] = {
-    pinsList().flatMap(SlackTaskThread.parse(_, this, slackTaskFactories))
+  override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)] = {
+    pinsList().flatMap(SlackTaskThread.parse(_, slackTaskFactories))
   }
 
   override def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse = {

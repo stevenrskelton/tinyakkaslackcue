@@ -27,7 +27,7 @@ object TestData {
     override def pinsAdd(ts: tinyakkaslackqueue.SlackTs): PinsAddResponse = ???
     override def pinsRemove(ts: tinyakkaslackqueue.SlackTs): PinsRemoveResponse = ???
     override def pinsList(): Iterable[PinsListResponse.MessageItem] = ???
-    override def pinnedTasks(slackTaskFactories: SlackTaskFactories): Iterable[(SlackTask, SlackTaskThread.Fields)] = ???
+    override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, SlackTaskThread.Fields)] = ???
     override def chatPostMessageInThread(text: String, thread: tinyakkaslackqueue.SlackTs): ChatPostMessageResponse = ???
     override def chatPostMessage(text: String): ChatPostMessageResponse = ???
     override def viewsPublish(userId: tinyakkaslackqueue.SlackUserId, view: SlackView): ViewsPublishResponse = ???
@@ -59,11 +59,11 @@ object TestData {
     override def description: tinyakkaslackqueue.Mrkdwn = tinyakkaslackqueue.Mrkdwn(s"Description$number")
   }
 
-  implicit val slackTaskFactories = new SlackTaskFactories(slackClient, logger, actorSystem, config){
+  implicit val slackTaskFactories = new SlackFactories(slackClient, logger, actorSystem, config){
     override def factories: Seq[SlackTaskFactory] = Seq(new TestSlackTaskFactory("One"), new TestSlackTaskFactory("Two"), new TestSlackTaskFactory("Three"))
   }
 
-  def toScheduledTask(slackTask: SlackTask):InteractiveJavaUtilTimer[SlackTask]#ScheduledTask = new InteractiveJavaUtilTimer[SlackTask](TestData.logger).ScheduledTask(
+  def toScheduledTask(slackTask: SlackTask):InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask = new InteractiveJavaUtilTimer[SlackTs,SlackTask](TestData.logger).ScheduledTask(
     slackTask,
     ZonedDateTime.of(2100, 1, 1, 12, 30, 0, 0, ZoneId.systemDefault()),
     isRunning = false

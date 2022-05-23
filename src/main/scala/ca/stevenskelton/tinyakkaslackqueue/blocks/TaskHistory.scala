@@ -7,12 +7,12 @@ import scala.collection.SortedSet
 
 case class TaskHistory(
                         slackTaskIdentifier: SlackTaskIdentifier,
-                        running: Option[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask],
+                        running: Option[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask],
                         executed: SortedSet[TaskHistoryItem],
-                        pending: SortedSet[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask]
+                        pending: SortedSet[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask]
                       ) {
 
-  val nextTs: Option[SlackTs] = pending.headOption.map(_.task.ts)
+  val nextTs: Option[SlackTs] = pending.headOption.map(_.task.id)
 
   private val HeaderPreamble = "Scheduled Task "
   private val CreatedByPreamble = "*Created by* "
@@ -37,7 +37,7 @@ case class TaskHistory(
       "text": "View Details",
       "emoji": true
     },
-    "value": "${scheduledTask.uuid.toString}",
+    "value": "${scheduledTask.id.toString}",
     "action_id": "${ActionId.TaskView}"
   }
 }"""
@@ -72,7 +72,7 @@ case class TaskHistory(
         "text": "View Logs"
       },
       "action_id": "${ActionId.TaskThread.value}",
-      "value": "${scheduledTask.uuid}"
+      "value": "${scheduledTask.id}"
     },
     {
       "type": "button",
@@ -83,7 +83,7 @@ case class TaskHistory(
       },
       "style": "danger",
       "action_id": "${ActionId.TaskCancel.value}",
-      "value": "${scheduledTask.uuid}"
+      "value": "${scheduledTask.id}"
     }
   ]
 }"""

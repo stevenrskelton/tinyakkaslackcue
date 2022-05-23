@@ -9,7 +9,7 @@ import org.slf4j.Logger
 import scala.collection.SortedSet
 import scala.util.{Failure, Success, Try}
 
-abstract class SlackTaskFactories(
+abstract class SlackFactories(
                                    val slackClient: SlackClient,
                                    val logger: Logger,
                                    val actorSystem: ActorSystem,
@@ -23,22 +23,22 @@ abstract class SlackTaskFactories(
     }
   }
 
-  val tinySlackCue = new TinySlackCue(slackClient, logger, onComplete)(actorSystem, config)
+  val tinySlackQueue = new TinySlackQueue(slackClient, logger, onComplete)(actorSystem, config)
 
   //  private implicit val materializer = SystemMaterializer.get(actorSystem)
   def factories: Seq[SlackTaskFactory]
 
-  implicit val ordering = new Ordering[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] {
-    override def compare(x: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask, y: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): Int = x.executionStart.compareTo(y.executionStart)
+  implicit val ordering = new Ordering[InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask] {
+    override def compare(x: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask, y: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask): Int = x.executionStart.compareTo(y.executionStart)
   }
 
   def history: Seq[TaskHistory] = {
-    val allQueuedTasks = tinySlackCue.listScheduledTasks
+    val allQueuedTasks = tinySlackQueue.listScheduledTasks
     factories.map {
       slackTaskFactory =>
         //TODO: read Slack thread
 
-        var runningTask: Option[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] = None
+        var runningTask: Option[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask] = None
         val cueTasks = allQueuedTasks.withFilter(_.task.name == slackTaskFactory.name).flatMap {
           scheduleTask =>
             if (scheduleTask.isRunning) {

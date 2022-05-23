@@ -10,12 +10,12 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import scala.util.Try
 
-class TinySlackCue(slackClient: SlackClient, logger: Logger, onComplete: (SlackTask, Try[Done]) => Unit)(implicit actorSystem: ActorSystem, config: Config) {
-  private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTask](logger)
+class TinySlackQueue(slackClient: SlackClient, logger: Logger, onComplete: (SlackTask, Try[Done]) => Unit)(implicit actorSystem: ActorSystem, config: Config) {
+  private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTs,SlackTask](logger)
 
-  def listScheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] = interactiveTimer.list
+  def listScheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask] = interactiveTimer.list
 
-  def cancelScheduledTask(uuid: UUID): Option[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask] = interactiveTimer.cancel(uuid)
+  def cancelScheduledTask(slackTs: SlackTs): Option[InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask] = interactiveTimer.cancel(slackTs)
 
   def scheduleSlackTask(slackTaskFactory: SlackTaskFactory, time: Option[ZonedDateTime]): SlackTask = {
     val slackPlaceholder = slackClient.chatPostMessage(SlackTaskThread.placeholderThread(slackTaskFactory.name))
@@ -27,7 +27,7 @@ class TinySlackCue(slackClient: SlackClient, logger: Logger, onComplete: (SlackT
       notifyOnComplete = Nil
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
-    slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
+    slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.id)
     slackTask
   }
 

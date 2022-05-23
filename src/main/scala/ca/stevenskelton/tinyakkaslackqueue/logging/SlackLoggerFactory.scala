@@ -76,7 +76,7 @@ object SlackLoggerFactory {
         slackClient.chatUpdate(SlackTaskThread.completed(slackTask, startTimeMs), slackTask.ts)
         slackClient.pinsRemove(slackTask.ts)
     }
-    new SlackLogger(getName = slackTask.uuid.toString, sourceQueue, base)
+    new SlackLogger(getName = slackTask.ts.toString, sourceQueue, base)
   }
 
 }

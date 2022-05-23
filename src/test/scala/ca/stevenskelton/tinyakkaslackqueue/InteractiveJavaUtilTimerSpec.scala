@@ -8,6 +8,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time._
+import java.util.UUID
 
 class InteractiveJavaUtilTimerSpec extends AnyWordSpec
   with Matchers
@@ -15,10 +16,12 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
 
   var i = 0
 
-  abstract class NamedTask(val name: String) extends UUIDTask
+  abstract class NamedTask(val name: String) extends IDTask[UUID] {
+    override val id = UUID.randomUUID()
+  }
 
   implicit val logger: Logger = LoggerFactory.getLogger("Specs")
-  val timer = new InteractiveJavaUtilTimer[NamedTask](logger)
+  val timer = new InteractiveJavaUtilTimer[UUID, NamedTask](logger)
   val timeout2sec = timeout(Span(5, Seconds))
 
   def createTask1 = new NamedTask("name1") {
@@ -111,7 +114,7 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       name3.executionStart.toInstant should be < ZonedDateTime.now().toInstant
 
       i shouldBe 0
-      timer.cancel(task2.uuid)
+      timer.cancel(task2.id)
       eventually(timeout2sec) {
         i shouldBe 1
       }
@@ -151,7 +154,7 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       name2.executionStart.toInstant should be < ZonedDateTime.now().toInstant
 
       i shouldBe 0
-      timer.cancel(task1.uuid)
+      timer.cancel(task1.id)
 
       val postlist = timer.list
       postlist should have size 2

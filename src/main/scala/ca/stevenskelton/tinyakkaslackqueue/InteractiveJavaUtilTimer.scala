@@ -11,8 +11,8 @@ import scala.jdk.CollectionConverters.IterableHasAsScala
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-abstract class UUIDTask extends Cancellable {
-  val uuid = UUID.randomUUID()
+abstract class IDTask[S] extends Cancellable {
+  def id: S
 
   private var shouldCancel: Boolean = false
 
@@ -29,9 +29,9 @@ abstract class UUIDTask extends Cancellable {
   def run(logger: Logger): Unit
 }
 
-class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
+class InteractiveJavaUtilTimer[S, T <: IDTask[S]](baseLogger: Logger) {
 
-  protected def createLogger(uuid: UUID): Logger = baseLogger
+  protected def createLogger(id: S): Logger = baseLogger
 
   protected def humanReadableFormat(duration: Duration): String = {
     duration.toString.substring(2).replaceAll("(\\d[HMS])(?!$)", "$1 ").toLowerCase
@@ -52,7 +52,7 @@ class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
 
     override def run: Unit = if (!task.isCancelled) {
       isRunning = true
-      val logger = createLogger(task.uuid)
+      val logger = createLogger(task.id)
       val starttime = System.currentTimeMillis
       val result = try {
         task.run(logger)
@@ -72,7 +72,7 @@ class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
   }
 
   case class ScheduledTask(task: T, executionStart: ZonedDateTime, isRunning: Boolean) {
-    val uuid: UUID = task.uuid
+    val id: S = task.id
   }
 
   private def toScheduledTask(innerTimerTask: InnerTimerTask): ScheduledTask = {
@@ -110,11 +110,11 @@ class InteractiveJavaUtilTimer[T <: UUIDTask](baseLogger: Logger) {
     }.toSeq.sortBy(o => (!o.isRunning, o.executionStart.toInstant))
   }
 
-  def cancel(uuid: UUID): Option[ScheduledTask] = {
+  def cancel(id: S): Option[ScheduledTask] = {
     val it = allTimerTasks.iterator
     while (it.hasNext) {
       val attrTimerTask = it.next
-      if (attrTimerTask.task.uuid == uuid) {
+      if (attrTimerTask.task.id == id) {
         attrTimerTask.cancel
         return Some(toScheduledTask(attrTimerTask))
       }

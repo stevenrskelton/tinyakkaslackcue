@@ -1,11 +1,14 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-abstract class SlackTask extends UUIDTask {
+abstract class SlackTask extends IDTask[SlackTs] {
+
+  def ts: SlackTs
+
+  override def id: SlackTs = ts
+
   def name: String
 
   def description: Mrkdwn
-
-  def ts: SlackTs
 
   def createdBy: SlackUserId
 

@@ -24,7 +24,7 @@ object SlackTaskThread {
                      notifyOnComplete: Seq[String]
                    )
 
-  def parse(messageItem: MessageItem, slackClient: SlackClient, slackTaskFactories: SlackTaskFactories): Option[(SlackTask, Fields)] = Try {
+  def parse(messageItem: MessageItem, slackTaskFactories: SlackFactories): Option[(SlackTask, Fields)] = Try {
     val created = messageItem.getCreated
     val message = messageItem.getMessage
     val blocks = message.getBlocks.asScala.toList
@@ -51,7 +51,7 @@ object SlackTaskThread {
     s"Scheduling task *$taskName*"
   }
 
-  def schedule(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackBlocksAsString = {
+  def schedule(scheduledTask: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask): SlackBlocksAsString = {
 
     val createdByUser = "@Steven Skelton"
     val scheduledTime = scheduledTask.executionStart.format(DateTimeFormatter.ofPattern("YYYY-mm-dd hh:MM"))
@@ -83,7 +83,7 @@ object SlackTaskThread {
   }""")
   }
 
-  def update(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): String = {
+  def update(scheduledTask: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask): String = {
     update(scheduledTask.task, scheduledTask.task.percentComplete, scheduledTask.executionStart.toEpochSecond, width = 40)
   }
 

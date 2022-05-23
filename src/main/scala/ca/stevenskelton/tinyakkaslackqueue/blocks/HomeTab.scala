@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import akka.Done
 import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.modals.ScheduleActionModal
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 
@@ -11,7 +12,7 @@ import scala.concurrent.Future
 
 object HomeTab {
 
-  def update(slackPayload: SlackPayload)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
+  def update(slackPayload: SlackPayload)(implicit logger: Logger, slackTaskFactories: SlackFactories): Future[Done] = {
     //    //TODO: sort
     //    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
     //    val response = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, slackView)
@@ -26,7 +27,7 @@ object HomeTab {
     openedEvent(slackPayload.user.id)
   }
 
-  def openedEvent(slackUserId: SlackUserId)(implicit logger: Logger, slackTaskFactories: SlackTaskFactories): Future[Done] = {
+  def openedEvent(slackUserId: SlackUserId)(implicit logger: Logger, slackTaskFactories: SlackFactories): Future[Done] = {
     //TODO: sort
     val slackView = SlackView.createHomeTab(slackTaskFactories.history)
     val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, slackView)
@@ -40,10 +41,10 @@ object HomeTab {
     }
   }
 
-  def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
+  def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackFactories, logger: Logger): Future[Done] = {
     slackPayload.callbackId.getOrElse("") match {
       case CallbackId.View =>
-        if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => UUID.fromString(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackCue.cancelScheduledTask(_).isDefined)) {
+        if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => SlackTs(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackQueue.cancelScheduledTask(_).isDefined)) {
           HomeTab.update(slackPayload)
         } else {
           val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.fold("")(_.value)}")
@@ -59,7 +60,7 @@ object HomeTab {
             } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
             //TODO zone should be from Slack
 
-            val slackTask = slackTaskFactories.tinySlackCue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
+            val slackTask = slackTaskFactories.tinySlackQueue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
             val msg = zonedDateTimeOpt.fold("Queued")(_ => "Scheduled")
             //TODO: can we quote the task thread
             slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
@@ -81,7 +82,7 @@ object HomeTab {
     }
   }
 
-  def handleAction(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackTaskFactories, logger: Logger): Future[Done] = {
+  def handleAction(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackFactories, logger: Logger): Future[Done] = {
     slackPayload.actions.headOption.map {
       action =>
         val view = action.actionId match {
@@ -104,11 +105,11 @@ object HomeTab {
               throw ex
             }
           case ActionId.TaskView =>
-            val uuid = UUID.fromString(action.value)
-            val list = slackTaskFactories.tinySlackCue.listScheduledTasks
-            val index = list.indexWhere(_.uuid == uuid)
+            val ts = SlackTs(action.value)
+            val list = slackTaskFactories.tinySlackQueue.listScheduledTasks
+            val index = list.indexWhere(_.id == ts)
             if (index == -1) {
-              val ex = new Exception(s"Task UUID $uuid not found")
+              val ex = new Exception(s"Task UUID $ts not found")
               logger.error("handleAction", ex)
               throw ex
             } else {

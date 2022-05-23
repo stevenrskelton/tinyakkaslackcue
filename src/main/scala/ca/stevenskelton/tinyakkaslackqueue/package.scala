@@ -18,9 +18,22 @@ package object tinyakkaslackqueue {
     def apply(chatPostMessageResponse: ChatPostMessageResponse): SlackTs = SlackTs(chatPostMessageResponse.getTs)
 
     def apply(message: Message): SlackTs = SlackTs(message.getTs)
+
+    implicit val reads = implicitly[Reads[String]].map(SlackTs(_))
+    implicit val writes = new Writes[SlackTs] {
+      override def writes(o: SlackTs): JsValue = JsString(o.value)
+    }
   }
 
   case class SlackUserId(value: String) extends AnyVal
+
+  object SlackUserId {
+    val Empty = SlackUserId("")
+    implicit val reads = implicitly[Reads[String]].map(SlackUserId(_))
+    implicit val writes = new Writes[SlackUserId] {
+      override def writes(o: SlackUserId): JsValue = JsString(o.value)
+    }
+  }
 
   case class SlackUser(id: SlackUserId, username: String, name: String, teamId: String)
 
@@ -46,10 +59,6 @@ package object tinyakkaslackqueue {
 
   case class Mrkdwn(value: String) extends AnyVal {
     override def toString: String = value
-  }
-
-  object SlackUserId {
-    val Empty = SlackUserId("")
   }
 
 }
