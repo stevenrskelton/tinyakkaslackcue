@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
+import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
 
 class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackView {
@@ -11,7 +12,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
           "type": "section",
           "text": {
             "type": "plain_text",
-            "text": "*Started:* ${scheduledTask.executionStart.toString}"
+            "text": "*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart)}"
           }
         }"""
     } else {
@@ -43,11 +44,18 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
           "type": "header",
           "text": {
             "type": "plain_text",
-            "text": "${scheduledTask.task.name}",
+            "text": "${scheduledTask.task.name.getText}",
             "emoji": true
           }
-        },
-        {
+        },{
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": "${scheduledTask.task.description.getText}"
+            }
+          ]
+        },{
           "type": "actions",
           "elements": [
             {
@@ -63,7 +71,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
               "confirm": {
                 "title": {
                     "type": "plain_text",
-                    "text": "Cancel task ${scheduledTask.task.name}"
+                    "text": "Cancel task ${scheduledTask.task.name.getText}"
                 },
                 "text": {
                     "type": "mrkdwn",

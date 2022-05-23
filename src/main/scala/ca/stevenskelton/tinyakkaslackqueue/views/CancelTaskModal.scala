@@ -20,7 +20,7 @@ class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackView {
       "text": "View Logs",
       "emoji": true
     },
-    "value": "${scheduledTask.id}",
+    "value": "${scheduledTask.id.value}",
     "action_id": "${ActionId.TaskThread}"
   }
 }"""
@@ -57,7 +57,7 @@ class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackView {
 			"type": "header",
 			"text": {
 				"type": "plain_text",
-				"text": "${scheduledTask.task.name}",
+				"text": "${scheduledTask.task.name.getText}",
 				"emoji": true
 			}
 		},{
@@ -65,7 +65,7 @@ class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackView {
 			"elements": [
 				{
 					"type": "mrkdwn",
-					"text": "${scheduledTask.task.description}"
+					"text": "${scheduledTask.task.description.getText}"
 				}
 			]
 		},

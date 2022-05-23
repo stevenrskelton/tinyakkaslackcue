@@ -127,7 +127,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, 
       "type": "header",
       "text": {
         "type": "plain_text",
-        "text": "${slackTaskFactory.name}",
+        "text": "${slackTaskFactory.name.getText}",
         "emoji": true
       }
     },{
@@ -135,7 +135,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, 
 			"elements": [
 				{
 					"type": "mrkdwn",
-					"text": "${slackTaskFactory.description}"
+					"text": "${slackTaskFactory.description.getText}"
 				}
 			]
 		}
