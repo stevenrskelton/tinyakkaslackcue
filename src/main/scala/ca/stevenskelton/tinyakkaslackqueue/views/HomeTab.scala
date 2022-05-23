@@ -113,14 +113,14 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
   "type": "header",
   "text": {
     "type": "plain_text",
-    "text": "${taskHistory.slackTaskIdentifier.name.getText}",
+    "text": "${taskHistory.slackTaskMeta.factory.name.getText}",
     "emoji": true
   }
 },{
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": "${taskHistory.slackTaskIdentifier.description.getText}"
+    "text": "${taskHistory.slackTaskMeta.factory.description.getText}"
   }
 },{
   "type": "actions",
@@ -134,7 +134,7 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
       },
       "style": "primary",
       "action_id": "${ActionId.TaskQueue.value}",
-      "value": "${taskHistory.slackTaskIdentifier.name.getText}"
+      "value": "${taskHistory.slackTaskMeta.channel.value}"
     },
     {
       "type": "button",
@@ -145,7 +145,7 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
       },
       "style": "primary",
       "action_id": "${ActionId.TaskSchedule.value}",
-      "value": "${taskHistory.slackTaskIdentifier.name.getText}"
+      "value": "${taskHistory.slackTaskMeta.channel.value}"
     }
   ]
 }

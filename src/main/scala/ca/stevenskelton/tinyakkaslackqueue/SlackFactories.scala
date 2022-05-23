@@ -33,7 +33,7 @@ abstract class SlackFactories(
   //  private implicit val materializer = SystemMaterializer.get(actorSystem)
   protected val factories: Seq[SlackTaskFactory]
 
-//  private def parsePinnedMessage(message: Message): Seq[SlackTaskMeta] = {
+  private def parsePinnedMessage(message: Message): Seq[SlackTaskMeta] = {
 //    val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
 //    val channels = conversationsResult.getChannels.asScala
 //    val results = message.getText.lines.toList.asScala.flatMap {
@@ -57,7 +57,8 @@ abstract class SlackFactories(
 //        }
 //    }
 //    results.toSeq
-//  }
+    Nil
+  }
 
   lazy val slackTaskMetaFactories: Seq[SlackTaskMeta] = {
 
@@ -82,6 +83,7 @@ abstract class SlackFactories(
         val name = factory.name.getText.filter(_.isLetterOrDigit)
         val channel = channels.find(_.getName == name).getOrElse {
           val createdChannel = slackClient.client.conversationsCreate((r: ConversationsCreateRequest.ConversationsCreateRequestBuilder) => r.token(slackClient.botOAuthToken).name(name).isPrivate(false))
+          if(!createdChannel.isOk) logger.error(createdChannel.getError)
           createdChannel.getChannel
         }
         val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId)).getItems).map(_.asScala).getOrElse(Nil)
@@ -90,7 +92,9 @@ abstract class SlackFactories(
         }
         val historyThread = pinnedResult.headOption.map(o => SlackTs(o.getMessage)).getOrElse {
           val pinnedMessageResult = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).text("History"))
-          slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).timestamp(pinnedMessageResult.getTs))
+          if(!pinnedMessageResult.isOk) logger.error(pinnedMessageResult.getError)
+          val pinsAddedResult = slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).timestamp(pinnedMessageResult.getTs))
+          if(!pinsAddedResult.isOk) logger.error(pinsAddedResult.getError)
           SlackTs(pinnedMessageResult.getMessage)
         }
         SlackTaskMeta(SlackChannel(channel),historyThread,factory )
@@ -117,7 +121,7 @@ abstract class SlackFactories(
               Some(scheduleTask)
             }
         }
-        TaskHistory(slackTaskMeta.factory, runningTask, executed = SortedSet.empty, pending = SortedSet.from(cueTasks))
+        TaskHistory(slackTaskMeta, runningTask, executed = SortedSet.empty, pending = SortedSet.from(cueTasks))
     }
   }
 

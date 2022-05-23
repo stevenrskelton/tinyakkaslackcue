@@ -5,7 +5,7 @@ import ca.stevenskelton.tinyakkaslackqueue._
 import scala.collection.SortedSet
 
 case class TaskHistory(
-                        slackTaskIdentifier: SlackTaskIdentifier,
+                        slackTaskMeta: SlackTaskMeta,
                         running: Option[ScheduledSlackTask],
                         executed: SortedSet[TaskHistoryItem],
                         pending: SortedSet[ScheduledSlackTask]
