@@ -32,7 +32,15 @@ object ScheduleActionModal {
 		}
     """
     }
-    SlackView("modal", SlackBlocksAsString(blocks))
+    val header =
+      """{
+        	"close": {
+		"type": "plain_text",
+		"text": "Cancel",
+		"emoji": true
+	}
+        """
+    SlackView("modal", SlackBlocksAsString(s"$header,$blocks"))
   }
 
   def viewModal(scheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask], index: Int): SlackBlocksAsString = {
