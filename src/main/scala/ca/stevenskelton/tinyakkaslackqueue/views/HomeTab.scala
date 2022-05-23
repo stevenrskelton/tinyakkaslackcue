@@ -71,7 +71,7 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
       },
       "style": "danger",
       "action_id": "${ActionId.TaskCancel.value}",
-      "value": "${scheduledTask.id}"
+      "value": "${scheduledTask.id.value}"
     }
   ]
 }"""
