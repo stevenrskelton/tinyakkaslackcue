@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
-import ca.stevenskelton.tinyakkaslackqueue.modals.ScheduleActionModal
+import ca.stevenskelton.tinyakkaslackqueue.views.CreateTaskModal
 import ca.stevenskelton.tinyakkaslackqueue.util.FileUtils
 import ca.stevenskelton.tinyakkaslackqueue.{SlackUserId, TestData}
 import org.scalatest.concurrent.ScalaFutures
@@ -24,7 +24,7 @@ class ScheduleActionModalSpec extends AnyWordSpec
         notifyOnComplete = Nil
       )
       val scheduledTask = TestData.toScheduledTask(slackTask)
-      val modal = ScheduleActionModal.viewModal(scheduledTask)
+      val modal = CreateTaskModal.viewModal(scheduledTask)
       val json = Json.parse(modal.value)
       json \ "type" shouldBe JsDefined(JsString("modal"))
     }
@@ -35,7 +35,7 @@ class ScheduleActionModalSpec extends AnyWordSpec
     val viewSubmission = FileUtils.readJson(new File("../tinyakkaslackqueue/src/test/resources/actions/view_submission_queue.json")).get.as[JsObject]
 
     "read fields" in {
-      val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(viewSubmission)
+      val (privateMetadata, actionStates, callbackId) = CreateTaskModal.parseViewSubmission(viewSubmission)
       privateMetadata.value shouldBe "Exchange Listings"
 
       actionStates should have size 3
@@ -50,7 +50,7 @@ class ScheduleActionModalSpec extends AnyWordSpec
     val viewSubmission = FileUtils.readJson(new File("../tinyakkaslackqueue/src/test/resources/actions/view_submission_schedule.json")).get.as[JsObject]
 
     "read fields" in {
-      val (privateMetadata, actionStates, callbackId) = ScheduleActionModal.parseViewSubmission(viewSubmission)
+      val (privateMetadata, actionStates, callbackId) = CreateTaskModal.parseViewSubmission(viewSubmission)
       privateMetadata.value shouldBe "Yahoo 2min Prices"
 
       actionStates should have size 5

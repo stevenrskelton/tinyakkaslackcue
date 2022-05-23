@@ -1,10 +1,10 @@
-package ca.stevenskelton.tinyakkaslackqueue.modals
+package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, SlackView}
-import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, InteractiveJavaUtilTimer, SlackTask, SlackTs}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
+import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
+import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, SlackTask, SlackTs}
 
 class CancelTaskModal(scheduledTask: InteractiveJavaUtilTimer[SlackTs,SlackTask]#ScheduledTask) extends SlackView {
-  override def name: String = "modal"
 
   private val blocks = if (scheduledTask.isRunning) {
     s"""

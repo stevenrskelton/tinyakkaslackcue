@@ -1,4 +1,4 @@
-package ca.stevenskelton.tinyakkaslackqueue
+package ca.stevenskelton.tinyakkaslackqueue.timer
 
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures
@@ -16,7 +16,7 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
 
   var i = 0
 
-  abstract class NamedTask(val name: String) extends IDTask[UUID] {
+  abstract class NamedTask(val name: String) extends IdTask[UUID] {
     override val id = UUID.randomUUID()
   }
 

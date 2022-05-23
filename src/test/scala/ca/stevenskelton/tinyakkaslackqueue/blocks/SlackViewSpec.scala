@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import ca.stevenskelton.tinyakkaslackqueue.{SlackAction, SlackTriggerId, TestData}
 import ca.stevenskelton.tinyakkaslackqueue.util.FileUtils
+import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

@@ -1,6 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-abstract class SlackTask extends IDTask[SlackTs] {
+import ca.stevenskelton.tinyakkaslackqueue.timer.IdTask
+
+abstract class SlackTask extends IdTask[SlackTs] {
 
   def ts: SlackTs
 

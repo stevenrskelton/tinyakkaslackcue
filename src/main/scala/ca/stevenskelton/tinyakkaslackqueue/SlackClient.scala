@@ -1,7 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.SlackTaskThread.Fields
-import ca.stevenskelton.tinyakkaslackqueue.blocks.{SlackTaskThread, SlackView}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.SlackTaskThread
+import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.Slack
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateRequest}
@@ -85,7 +86,7 @@ trait SlackClient {
 
   def viewsPublish(userId: SlackUserId, slackView: SlackView): ViewsPublishResponse
 
-  def viewsOpen(slackTriggerId: SlackTriggerId, view: SlackBlocksAsString): ViewsOpenResponse
+  def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse
 }
 
 class SlackClientImpl(val botOAuthToken: String, botUserId: SlackUserId, botChannelId: String, val historyThread: SlackTs, client: MethodsClient) extends SlackClient {
@@ -130,8 +131,8 @@ class SlackClientImpl(val botOAuthToken: String, botUserId: SlackUserId, botChan
     client.viewsPublish((r: ViewsPublishRequest.ViewsPublishRequestBuilder) => r.token(botOAuthToken).userId(userId.value).viewAsString(slackView.toString))
   }
 
-  override def viewsOpen(slackTriggerId: SlackTriggerId, view: SlackBlocksAsString): ViewsOpenResponse = {
-    client.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(botOAuthToken).triggerId(slackTriggerId.value).viewAsString(view.value))
+  override def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse = {
+    client.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(botOAuthToken).triggerId(slackTriggerId.value).viewAsString(slackView.toString))
   }
 
 }

@@ -1,4 +1,4 @@
-package ca.stevenskelton.tinyakkaslackqueue
+package ca.stevenskelton.tinyakkaslackqueue.timer
 
 import akka.Done
 import akka.actor.Cancellable
@@ -6,30 +6,12 @@ import org.slf4j.Logger
 
 import java.time._
 import java.util
-import java.util.{Date, Timer, TimerTask, UUID}
+import java.util.{Date, Timer, TimerTask}
 import scala.jdk.CollectionConverters.IterableHasAsScala
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-abstract class IDTask[S] extends Cancellable {
-  def id: S
-
-  private var shouldCancel: Boolean = false
-
-  override def isCancelled: Boolean = shouldCancel
-
-  override def cancel(): Boolean = {
-    if (shouldCancel) false
-    else {
-      shouldCancel = true
-      true
-    }
-  }
-
-  def run(logger: Logger): Unit
-}
-
-class InteractiveJavaUtilTimer[S, T <: IDTask[S]](baseLogger: Logger) {
+class InteractiveJavaUtilTimer[S, T <: IdTask[S]](baseLogger: Logger) {
 
   protected def createLogger(id: S): Logger = baseLogger
 

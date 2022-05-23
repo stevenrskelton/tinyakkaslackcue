@@ -3,6 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 import akka.Done
 import akka.actor.ActorSystem
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{PrivateMetadata, TaskHistory}
+import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import com.typesafe.config.Config
 import org.slf4j.Logger
 

@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import akka.Done
 import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.modals.ScheduleActionModal
+import ca.stevenskelton.tinyakkaslackqueue.views.{CreateTaskModal, HomeTab, SlackView, ViewTaskModal}
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 
@@ -10,7 +10,7 @@ import java.time.{ZoneId, ZonedDateTime}
 import java.util.UUID
 import scala.concurrent.Future
 
-object HomeTab {
+object HomeTabActions {
 
   def update(slackPayload: SlackPayload)(implicit logger: Logger, slackTaskFactories: SlackFactories): Future[Done] = {
     //    //TODO: sort
@@ -29,7 +29,7 @@ object HomeTab {
 
   def openedEvent(slackUserId: SlackUserId)(implicit logger: Logger, slackTaskFactories: SlackFactories): Future[Done] = {
     //TODO: sort
-    val slackView = SlackView.createHomeTab(slackTaskFactories.history)
+    val slackView = new HomeTab(slackTaskFactories.history)
     val response = slackTaskFactories.slackClient.viewsPublish(slackUserId, slackView)
     if (response.isOk) {
       logger.debug(s"Created home view for ${slackUserId.value}")
@@ -45,7 +45,7 @@ object HomeTab {
     slackPayload.callbackId.getOrElse("") match {
       case CallbackId.View =>
         if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => SlackTs(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.tinySlackQueue.cancelScheduledTask(_).isDefined)) {
-          HomeTab.update(slackPayload)
+          HomeTabActions.update(slackPayload)
         } else {
           val ex = new Exception(s"Could not find task uuid ${slackPayload.privateMetadata.fold("")(_.value)}")
           logger.error("handleSubmission", ex)
@@ -65,7 +65,7 @@ object HomeTab {
             //TODO: can we quote the task thread
             slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
 
-            HomeTab.update(slackPayload)
+            HomeTabActions.update(slackPayload)
           //        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))
           //        actionStates(ActionIdNotifyOnFailure).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"), SlackUserId("U039TCGLX5G"))
           //        actionStates(ActionIdLogLevel)
@@ -89,7 +89,7 @@ object HomeTab {
           case ActionId.TaskQueue =>
             val privateMetadata = PrivateMetadata(action.value)
             slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
-              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
+              new CreateTaskModal(slackPayload.user, _, None, privateMetadata)
             }.getOrElse {
               val ex = new Exception(s"Task ${action.value} not found")
               logger.error("handleAction", ex)
@@ -98,7 +98,7 @@ object HomeTab {
           case ActionId.TaskSchedule =>
             val privateMetadata = PrivateMetadata(action.value)
             slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
-              ScheduleActionModal.createModal(slackPayload.user, _, Some(ZonedDateTime.now()), privateMetadata)
+              new CreateTaskModal(slackPayload.user, _, Some(ZonedDateTime.now()), privateMetadata)
             }.getOrElse {
               val ex = new Exception(s"Task ${action.value} not found")
               logger.error("handleAction", ex)
@@ -113,13 +113,13 @@ object HomeTab {
               logger.error("handleAction", ex)
               throw ex
             } else {
-              ScheduleActionModal.viewModal(list, index)
+              new ViewTaskModal(list, index)
             }
           //      case ActionIdTaskThread =>
         }
         val result: SlackApiTextResponse = slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, view)
         if (!result.isOk) {
-          logger.debug(s"\n```${view.value}```\n")
+          logger.debug(s"\n```$view```\n")
           logger.error(result.getError)
         }
         Future.successful(Done)

@@ -10,7 +10,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
-import ca.stevenskelton.tinyakkaslackqueue.modals.{CancelTaskModal, ScheduleActionModal}
+import ca.stevenskelton.tinyakkaslackqueue.views.{CancelTaskModal, CreateTaskModal}
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
@@ -40,7 +40,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
         val flow = (eventObject \ "type").as[String] match {
           case "app_home_opened" =>
             val slackUserId = SlackUserId((eventObject \ "user").as[String])
-            HomeTab.openedEvent(slackUserId)
+            HomeTabActions.openedEvent(slackUserId)
           case unknown => throw new NotImplementedError(s"Slack event $unknown not implemented: ${Json.stringify(jsObject)}")
         }
         extractExecutionContext {
@@ -62,9 +62,9 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
           val viewType = (jsObject \ "view" \ "type").asOpt[String]
           if (viewType == Some("home")) {
             if (slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TabRefresh)) {
-              HomeTab.update(slackPayload)
+              HomeTabActions.update(slackPayload)
             } else {
-              HomeTab.handleAction(slackPayload)
+              HomeTabActions.handleAction(slackPayload)
             }
           } else if (slackPayload.callbackId == Some(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
@@ -81,10 +81,10 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
               }
             }
           } else {
-            HomeTab.update(slackPayload)
+            HomeTabActions.update(slackPayload)
           }
         case SlackPayload.ViewSubmission =>
-          HomeTab.handleSubmission(slackPayload)
+          HomeTabActions.handleSubmission(slackPayload)
         case x =>
           val ex = new NotImplementedError(s"Slack type $x, for:\n```$payload```")
           logger.error("slackActionRoute", ex)
@@ -108,7 +108,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
           logger.error(view.toString)
           logger.error(update.getError)
         }
-        HomeTab.update(slackPayload)
+        HomeTabActions.update(slackPayload)
     }.getOrElse {
       val ex = new Exception(s"Could not find task ts ${ts.toString}")
       logger.error("handleSubmission", ex)
