@@ -58,35 +58,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
         },{
           "type": "actions",
           "elements": [
-            {
-              "type": "button",
-              "text": {
-                "type": "plain_text",
-                "text": "Cancel Task",
-                "emoji": true
-              },
-              "style": "danger",
-              "value": "${scheduledTask.id.value}",
-              "action_id": "${ActionId.TaskCancel}",
-              "confirm": {
-                "title": {
-                    "type": "plain_text",
-                    "text": "Cancel task ${scheduledTask.task.name.getText}"
-                },
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "${if (scheduledTask.isRunning) "Task will be notified to abort execution as soon as possible." else "This task hasn't been started and will be removed from queue."}"
-                },
-                "confirm": {
-                    "type": "plain_text",
-                    "text": "Cancel Task"
-                },
-                "deny": {
-                    "type": "plain_text",
-                    "text": "Do not Cancel"
-                }
-              }
-            }
+            ${HomeTab.cancelTaskButton(scheduledTask)}
           ]
         }
         $bodyBlocks

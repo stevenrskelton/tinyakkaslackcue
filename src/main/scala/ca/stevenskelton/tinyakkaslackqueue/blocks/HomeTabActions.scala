@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import akka.Done
 import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.views.{CreateTaskModal, HomeTab, ViewTaskModal}
+import ca.stevenskelton.tinyakkaslackqueue.views.{CancelTaskModal, CreateTaskModal, HomeTab, SlackView, ViewTaskModal}
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 
@@ -71,9 +71,8 @@ object HomeTabActions {
   }
 
   def handleAction(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackFactories, logger: Logger): Future[Done] = {
-    slackPayload.actions.headOption.map {
-      action =>
-        val view = action.actionId match {
+    val action = slackPayload.action
+        val view: SlackView = action.actionId match {
           case ActionId.TaskQueue =>
             val privateMetadata = PrivateMetadata(action.value)
             slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
@@ -103,7 +102,6 @@ object HomeTabActions {
             } else {
               new ViewTaskModal(list, index)
             }
-          //      case ActionIdTaskThread =>
         }
         val result: SlackApiTextResponse = slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, view)
         if (!result.isOk) {
@@ -111,9 +109,21 @@ object HomeTabActions {
           logger.error(result.getError)
         }
         Future.successful(Done)
+  }
+
+  def cancelTask(ts: SlackTs, slackPayload: SlackPayload)(implicit slackFactories: SlackFactories, logger:Logger): Future[Done] = {
+    slackFactories.tinySlackQueue.cancelScheduledTask(ts).map {
+      cancelledTask =>
+        val view = new CancelTaskModal(cancelledTask)
+        val update = slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
+        if (!update.isOk) {
+          logger.error(view.toString)
+          logger.error(update.getError)
+        }
+        HomeTabActions.update(slackPayload)
     }.getOrElse {
-      val ex = new Exception(s"No actions found")
-      logger.error("handleAction", ex)
+      val ex = new Exception(s"Could not find task ts ${ts.value}")
+      logger.error("handleSubmission", ex)
       Future.failed(ex)
     }
   }

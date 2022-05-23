@@ -60,19 +60,24 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
         case SlackPayload.BlockActions =>
           val viewType = (jsObject \ "view" \ "type").asOpt[String]
           if (viewType == Some("home")) {
-            if (slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TabRefresh)) {
-              HomeTabActions.update(slackPayload)
-            } else {
-              HomeTabActions.handleAction(slackPayload)
+            val action = slackPayload.action
+            action.actionId match {
+              case ActionId.TabRefresh =>
+                HomeTabActions.update(slackPayload)
+              case ActionId.TaskCancel =>
+                HomeTabActions.cancelTask(SlackTs(action.value), slackPayload)
+              case _ =>
+                HomeTabActions.handleAction(slackPayload)
             }
           } else if (slackPayload.callbackId == Some(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
               val ts = SlackTs(state.asInstanceOf[ButtonState].value)
-              cancelTask(ts, slackPayload)
+              HomeTabActions.cancelTask(ts, slackPayload)
             }.getOrElse {
-              if (slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TaskCancel)) {
+              val action = slackPayload.action
+              if (action.actionId == ActionId.TaskCancel) {
                 val ts = SlackTs(slackPayload.actions.head.value)
-                cancelTask(ts, slackPayload)
+                HomeTabActions.cancelTask(ts, slackPayload)
               } else {
                 val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
                 logger.error("handleSubmission", ex)
@@ -98,20 +103,4 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
     }
   }
 
-  def cancelTask(ts: SlackTs, slackPayload: SlackPayload): Future[Done] = {
-    slackTaskFactories.tinySlackQueue.cancelScheduledTask(ts).map {
-      cancelledTask =>
-        val view = new CancelTaskModal(cancelledTask)
-        val update = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
-        if (!update.isOk) {
-          logger.error(view.toString)
-          logger.error(update.getError)
-        }
-        HomeTabActions.update(slackPayload)
-    }.getOrElse {
-      val ex = new Exception(s"Could not find task ts ${ts.value}")
-      logger.error("handleSubmission", ex)
-      Future.failed(ex)
-    }
-  }
 }

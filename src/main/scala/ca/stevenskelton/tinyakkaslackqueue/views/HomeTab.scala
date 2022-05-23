@@ -1,18 +1,65 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.TextProgressBar
+import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, TextProgressBar}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, TaskHistory}
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
+import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab.{cancelTaskButton, viewLogsButton}
+
+object HomeTab {
+
+  def viewLogsButton(scheduledTask: ScheduledSlackTask) = s"""
+    {
+      "type": "button",
+      "text": {
+        "type": "plain_text",
+        "emoji": true,
+        "text": "View Logs"
+      },
+      "action_id": "${ActionId.TaskThread}",
+      "value": "${scheduledTask.id.value}"
+    }"""
+
+  def cancelTaskButton(scheduledTask: ScheduledSlackTask) = s"""
+    {
+      "type": "button",
+      "text": {
+        "type": "plain_text",
+        "text": "Cancel Task",
+        "emoji": true
+      },
+      "style": "danger",
+      "value": "${scheduledTask.id.value}",
+      "action_id": "${ActionId.TaskCancel}",
+      "confirm": {
+        "title": {
+            "type": "plain_text",
+            "text": "Cancel task ${scheduledTask.task.name.getText}"
+        },
+        "text": {
+            "type": "mrkdwn",
+            "text": "${if (scheduledTask.isRunning) "Task will be notified to abort execution as soon as possible." else "This task hasn't been started and will be removed from queue."}"
+        },
+        "confirm": {
+            "type": "plain_text",
+            "text": "Cancel Task"
+        },
+        "deny": {
+            "type": "plain_text",
+            "text": "Do not Cancel"
+        }
+      }
+    }"""
+}
 
 class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
 
   private def taskHistoryBlocks(taskHistory: TaskHistory): String = {
 
-      val executedBlocks = if (taskHistory.executed.isEmpty) "" else taskHistory.executed.toSeq.reverse.map(_.toBlocks.value).mkString(",", """,{"type": "divider"},""", "")
+    val executedBlocks = if (taskHistory.executed.isEmpty) "" else taskHistory.executed.toSeq.reverse.map(_.toBlocks.value).mkString(",", """,{"type": "divider"},""", "")
 
-      val pendingBlocks = if (taskHistory.pending.isEmpty) "" else taskHistory.pending.map {
-        scheduledTask =>
-          s"""{
+    val pendingBlocks = if (taskHistory.pending.isEmpty) "" else taskHistory.pending.map {
+      scheduledTask =>
+        s"""{
   "type": "section",
   "text": {
     "type": "mrkdwn",
@@ -29,12 +76,12 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
     "action_id": "${ActionId.TaskView}"
   }
 }"""
-      }.mkString(",", """,{"type": "divider"},""", "")
+    }.mkString(",", """,{"type": "divider"},""", "")
 
 
-      val runningBlocks = taskHistory.running.map {
-        scheduledTask =>
-          s""",
+    val runningBlocks = taskHistory.running.map {
+      scheduledTask =>
+        s""",
 {
   "type": "section",
   "text": {
@@ -52,34 +99,15 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
 },{
   "type": "actions",
   "elements": [
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "View Logs"
-      },
-      "action_id": "${ActionId.TaskThread}",
-      "value": "${scheduledTask.id.value}"
-    },
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "Cancel"
-      },
-      "style": "danger",
-      "action_id": "${ActionId.TaskCancel}",
-      "value": "${scheduledTask.id.value}"
-    }
+    ${viewLogsButton(scheduledTask)},
+    ${cancelTaskButton(scheduledTask)}
   ]
 },{"type": "divider"}"""
-      }.getOrElse("")
+    }.getOrElse("")
 
-      val queueText = if (taskHistory.running.isEmpty) "Run Immediately" else "Queue Immediately"
+    val queueText = if (taskHistory.running.isEmpty) "Run Immediately" else "Queue Immediately"
 
-        s"""
+    s"""
 {
   "type": "header",
   "text": {
@@ -145,7 +173,8 @@ $executedBlocks
         ]
       }"""
   } else {
-    val header = s"""
+    val header =
+      s"""
       {
         "type": "actions",
         "elements": [

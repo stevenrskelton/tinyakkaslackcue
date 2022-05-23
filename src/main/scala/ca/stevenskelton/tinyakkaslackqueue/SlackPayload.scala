@@ -2,7 +2,10 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.SlackPayload.SlackPayloadType
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId, PrivateMetadata, State}
+import org.slf4j.Logger
 import play.api.libs.json.JsObject
+
+import scala.concurrent.Future
 
 object SlackPayload {
 
@@ -30,4 +33,11 @@ object SlackPayload {
 }
 
 case class SlackPayload(payloadType: SlackPayloadType, viewId: String, user: SlackUser, actions: Seq[SlackAction], triggerId: SlackTriggerId,
-                        privateMetadata: Option[PrivateMetadata], callbackId: Option[CallbackId], actionStates: Map[ActionId, State])
+                        privateMetadata: Option[PrivateMetadata], callbackId: Option[CallbackId], actionStates: Map[ActionId, State]){
+
+  def action(implicit logger: Logger): SlackAction = actions.headOption.getOrElse {
+    val ex = new Exception(s"No actions found")
+    logger.error("handleAction", ex)
+    throw ex
+  }
+}
