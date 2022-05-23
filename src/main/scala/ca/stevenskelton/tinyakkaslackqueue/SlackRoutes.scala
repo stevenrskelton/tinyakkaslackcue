@@ -109,7 +109,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
         }
         HomeTabActions.update(slackPayload)
     }.getOrElse {
-      val ex = new Exception(s"Could not find task ts ${ts.toString}")
+      val ex = new Exception(s"Could not find task ts ${ts.value}")
       logger.error("handleSubmission", ex)
       Future.failed(ex)
     }
