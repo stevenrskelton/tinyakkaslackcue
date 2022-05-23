@@ -1,9 +1,10 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-trait SlackTaskIdentifier {
-  def name: String
+import com.slack.api.model.block.composition.MarkdownTextObject
 
-  def description: Mrkdwn
+trait SlackTaskIdentifier {
+  def name: MarkdownTextObject
+  def description: MarkdownTextObject
 }
 
 trait SlackTaskFactory extends SlackTaskIdentifier {

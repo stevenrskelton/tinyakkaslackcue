@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.timer.IdTask
+import com.slack.api.model.block.composition.MarkdownTextObject
 
 abstract class SlackTask extends IdTask[SlackTs] {
 
@@ -8,9 +9,9 @@ abstract class SlackTask extends IdTask[SlackTs] {
 
   override def id: SlackTs = ts
 
-  def name: String
+  def name: MarkdownTextObject
 
-  def description: Mrkdwn
+  def description: MarkdownTextObject
 
   def createdBy: SlackUserId
 

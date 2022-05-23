@@ -12,12 +12,6 @@ case class TaskHistory(
                         pending: SortedSet[ScheduledSlackTask]
                       ) {
 
-  val nextTs: Option[SlackTs] = pending.headOption.map(_.task.id)
-
-  private val HeaderPreamble = "Scheduled Task "
-  private val CreatedByPreamble = "*Created by* "
-  private val ScheduledForPreamble = "*Scheduled for* "
-
   def toBlocks: SlackBlocksAsString = {
 
     val executedBlocks = if (executed.isEmpty) "" else executed.toSeq.reverse.map(_.toBlocks.value).mkString(",", """,{"type": "divider"},""", "")

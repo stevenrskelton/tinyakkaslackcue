@@ -47,8 +47,8 @@ object SlackTaskThread {
     }
   }.toOption.flatten
 
-  def placeholderThread(taskName: String): String = {
-    s"Scheduling task *$taskName*"
+  def placeholderThread(slackTaskIdentifier: SlackTaskIdentifier): String = {
+    s"Scheduling task *${slackTaskIdentifier.name.getText}*"
   }
 
   def schedule(scheduledTask: ScheduledSlackTask): SlackBlocksAsString = {
@@ -61,7 +61,7 @@ object SlackTaskThread {
     "type": "header",
     "text": {
       "type": "plain_text",
-      "text": "$HeaderPreamble${scheduledTask.task.name}",
+      "text": "$HeaderPreamble${scheduledTask.task.name.getText}",
       "emoji": true
     }
 	},{
@@ -91,17 +91,17 @@ object SlackTaskThread {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
     val bar = s"|${TextProgressBar.SlackEmoji.bar(percentComplete, width)}| ${("  " + math.round(percentComplete * 100)).takeRight(3)}%"
     val elapsed = if (startTimeMs != 0) s"\nStarted ${DateUtils.humanReadable(duration)} ago" else ""
-    s"Running *${slackTask.name}*\n$bar$elapsed"
+    s"Running *${slackTask.name.getText}*\n$bar$elapsed"
   }
 
   def cancelled(slackTask: SlackTask, startTimeMs: Long): String = {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
-    s":headstone: Cancelled *${slackTask.name}* after ${DateUtils.humanReadable(duration)}"
+    s":headstone: Cancelled *${slackTask.name.getText}* after ${DateUtils.humanReadable(duration)}"
   }
 
   def completed(slackTask: SlackTask, startTimeMs: Long): String = {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
-    s":doughnut: Completed *${slackTask.name}* in ${DateUtils.humanReadable(duration)}"
+    s":doughnut: Completed *${slackTask.name.getText}* in ${DateUtils.humanReadable(duration)}"
   }
 
 }

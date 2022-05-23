@@ -60,8 +60,4 @@ package object tinyakkaslackqueue {
         (__ \ "value").readNullable[String].map(_.getOrElse(""))) (SlackAction.apply _)
   }
 
-  case class Mrkdwn(value: String) extends AnyVal {
-    override def toString: String = value
-  }
-
 }

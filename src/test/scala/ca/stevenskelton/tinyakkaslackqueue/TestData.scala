@@ -8,6 +8,7 @@ import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateResponse}
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsListResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse}
+import com.slack.api.model.block.composition.MarkdownTextObject
 import com.typesafe.config.ConfigFactory
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -54,9 +55,9 @@ object TestData {
 
     override def create(ts: tinyakkaslackqueue.SlackTs, createdBy: tinyakkaslackqueue.SlackUserId, notifyOnError: Seq[tinyakkaslackqueue.SlackUserId], notifyOnComplete: Seq[tinyakkaslackqueue.SlackUserId]): SlackTask = {
       new SlackTask {
-        override def name: String = self.name
+        override def name: MarkdownTextObject = self.name
 
-        override def description: tinyakkaslackqueue.Mrkdwn = self.description
+        override def description: MarkdownTextObject = self.description
 
         override def ts: tinyakkaslackqueue.SlackTs = SlackTs(Random.alphanumeric.take(5).toString)
 
@@ -77,9 +78,9 @@ object TestData {
       }
     }
 
-    override def name: String = s"Name$number"
+    override def name: MarkdownTextObject = MarkdownTextObject.builder().text(s"Name$number").build()
 
-    override def description: tinyakkaslackqueue.Mrkdwn = tinyakkaslackqueue.Mrkdwn(s"Description$number")
+    override def description: MarkdownTextObject = MarkdownTextObject.builder().text(s"Description$number").build()
   }
 
   implicit val slackTaskFactories = new SlackFactories(slackClient, logger, actorSystem, config) {
