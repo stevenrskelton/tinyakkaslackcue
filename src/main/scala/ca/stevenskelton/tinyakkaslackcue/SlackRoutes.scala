@@ -102,10 +102,11 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
     slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid).map {
       cancelledTask =>
         val view = ScheduleActionModal.cancelledModal(cancelledTask)
-        logger.info(view.toString)
         val update = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
-        logger.info(update.toString)
-        logger.info(update.getError)
+        if(!update.isOk){
+          logger.error(view.toString)
+          logger.error(update.getError)
+        }
         HomeTab.update(slackPayload)
     }.getOrElse {
       val ex = new Exception(s"Could not find task uuid ${uuid.toString}")

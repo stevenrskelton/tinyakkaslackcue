@@ -10,16 +10,24 @@ object ScheduleActionModal {
 
   def cancelledModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackView = {
     val blocks = if (scheduledTask.isRunning) {
-      """
-    {
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": "Task has already started, attempting to abort.",
-				"emoji": true
-			}
-		}
-    """
+      s"""
+{
+  "type": "section",
+  "text": {
+    "type": "mrkdwn",
+    "text": "Task has already started, attempting to cancel."
+  },
+  "accessory": {
+    "type": "button",
+    "text": {
+      "type": "plain_text",
+      "text": "View Logs",
+      "emoji": true
+    },
+    "value": "${scheduledTask.uuid}",
+    "action_id": "${ActionId.TaskThread}"
+  }
+}"""
     } else {
       """
     {
@@ -32,7 +40,8 @@ object ScheduleActionModal {
 		}
     """
     }
-    val body = SlackBlocksAsString(s"""
+    new SlackView {
+      override def toString: String = s"""
 {
 	"type": "modal",
 	"close": {
@@ -43,15 +52,29 @@ object ScheduleActionModal {
 	"clear_on_close": true,
 	"title": {
 		"type": "plain_text",
-		"text": "${scheduledTask.task.name}",
+		"text": "$AppModalTitle",
 		"emoji": true
 	},
 	"blocks": [
+ 		{
+			"type": "header",
+			"text": {
+				"type": "plain_text",
+				"text": "${scheduledTask.task.name}",
+				"emoji": true
+			}
+		},{
+			"type": "context",
+			"elements": [
+				{
+					"type": "mrkdwn",
+					"text": "${scheduledTask.task.description}"
+				}
+			]
+		},
 		$blocks
 	]
-}""")
-    new SlackView {
-      override def toString: String = body.value
+}"""
       override def name: String = "modal"
     }
   }
@@ -143,11 +166,7 @@ object ScheduleActionModal {
   def createModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata): SlackBlocksAsString = {
     //mrkdwn
 
-    val (headerText, submitButtonText) = if (zonedDateTimeOpt.isEmpty) {
-      ("Queue this task immediately.", "Queue")
-    } else {
-      ("Set later date/time to schedule.", "Schedule")
-    }
+    val submitButtonText = if (zonedDateTimeOpt.isEmpty) "Queue" else "Schedule"
 
     val dateTimeBlocks = zonedDateTimeOpt.fold("") {
       zonedDateTime =>
@@ -255,16 +274,17 @@ object ScheduleActionModal {
       "type": "header",
       "text": {
         "type": "plain_text",
-        "text": "New ${slackTaskFactory.name}",
+        "text": "${slackTaskFactory.name}",
         "emoji": true
       }
-    },
-		{
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": "$headerText"
-			}
+    },{
+			"type": "context",
+			"elements": [
+				{
+					"type": "mrkdwn",
+					"text": "${slackTaskFactory.description}"
+				}
+			]
 		}
 		$dateTimeBlocks
     $advancedOptions

@@ -51,26 +51,14 @@ case class TaskHistory(
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": "${SlackTaskThread.update(scheduledTask)}"
+    "text": "${TextProgressBar.SlackEmoji.bar(scheduledTask.task.percentComplete, 40)}"
   }
 },{
   "type": "section",
   "fields": [
     {
       "type": "mrkdwn",
-      "text": "*When:*\nSubmitted Aut 10"
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*Last Update:*\nMar 10, 2015 (3 years, 5 months)"
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*Reason:*\nAll vowel keys aren't working."
-    },
-    {
-      "type": "mrkdwn",
-      "text": "*Specs:*\n\"Cheetah Pro 15\" - Fast, really fast\""
+      "text": "*When:*Submitted Aut 10"
     }
   ]
 },{

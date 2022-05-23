@@ -38,7 +38,7 @@ case class HomeView(blocks: SlackBlocksAsString) extends SlackView {
 //}
 
 object SlackView {
-  def createHomeTab(taskHistories: Seq[TaskHistory]): SlackView = {
+  def createHomeTab(taskHistories: Seq[TaskHistory]): HomeView = {
     if (taskHistories.isEmpty) {
       val header =
         s"""

@@ -103,15 +103,6 @@ object HomeTab {
               logger.error("handleAction", ex)
               throw ex
             }
-          //          case ActionId.TaskCancel =>
-          //            val privateMetadata = PrivateMetadata(action.value)
-          //            slackTaskFactories.findByPrivateMetadata(privateMetadata).map {
-          //              ScheduleActionModal.createModal(slackPayload.user, _, None, privateMetadata)
-          //            }.getOrElse {
-          //              val ex = new Exception(s"Task ${action.value} not found")
-          //              logger.error("handleAction", ex)
-          //              throw ex
-          //            }
           case ActionId.TaskView =>
             val uuid = UUID.fromString(action.value)
             val list = slackTaskFactories.tinySlackCue.listScheduledTasks
@@ -125,11 +116,6 @@ object HomeTab {
             }
           //      case ActionIdTaskThread =>
         }
-
-        //    slackActions.headOption.map {
-        //      slackAction =>
-        //        Slack.getInstance.methods.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token())
-        //    }
         val result: SlackApiTextResponse = slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, view)
         if (!result.isOk) {
           logger.debug(s"\n```${view.value}```\n")
@@ -142,51 +128,4 @@ object HomeTab {
       Future.failed(ex)
     }
   }
-  //  def toAddInstanceToBlocks(existing: Seq[Fields], slackTask: SlackTask, instance: FieldsInstance): Seq[Fields] = {
-  //    val updatedFields = if (existing.exists(_.name == slackTask)) {
-  //      existing.map {
-  //        fields =>
-  //          if (fields.name == slackTask.name) {
-  //            val (lastSuccess, lastFailure) = instance.state match {
-  //              case State.Scheduled => (fields.lastSuccess, fields.lastFailure)
-  //              case State.Success => (Some(instance), fields.lastFailure)
-  //              case State.Failure => (fields.lastSuccess, Some(instance))
-  //            }
-  //            val nextTs = if (instance.state == State.Scheduled) {
-  //              Some(fields.nextTs.map { s =>
-  //                SlackTs(Seq(s.value, slackTask.ts.value).min)
-  //              }.getOrElse {
-  //                slackTask.ts
-  //              })
-  //            } else {
-  //              //TODO: read from queue
-  //              fields.nextTs.filterNot(_ == slackTask.ts)
-  //            }
-  //            Fields(
-  //              name = slackTask.name,
-  //              description = slackTask.description,
-  //              nextTs = nextTs,
-  //              lastSuccess = lastSuccess,
-  //              lastFailure = lastFailure
-  //            )
-  //          } else {
-  //            fields
-  //          }
-  //      }
-  //    } else {
-  //      val (lastSuccess, lastFailure) = instance.state match {
-  //        case State.Scheduled => (None, None)
-  //        case State.Success => (Some(instance), None)
-  //        case State.Failure => (None, Some(instance))
-  //      }
-  //      existing :+ Fields(
-  //        name = slackTask.name,
-  //        description = slackTask.description,
-  //        nextTs = None,
-  //        lastSuccess = lastSuccess,
-  //        lastFailure = lastFailure
-  //      )
-  //    }
-  //    updatedFields.sorted
-  //  }
 }
