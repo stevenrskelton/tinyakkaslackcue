@@ -15,6 +15,14 @@ object TaskHistoryItem {
 
 case class TaskHistoryItem(slackTs: SlackTs, date: ZonedDateTime, duration: Duration, createdBy: SlackUserId, isSuccess: Boolean) {
 
+  /*
+    def cancel(slackTask: SlackTask, slackUserId: SlackUserId)(implicit slackFactories: SlackFactories): ChatPostMessageResponse = {
+    val isRunning = slackFactories.tinySlackQueue.listScheduledTasks.find(_.id == slackTask.id).fold(false)(_.isRunning)
+    val json = Json.obj("cancel" -> slackTask.id, "by" -> slackUserId, "running" -> isRunning)
+    slackFactories.slackClient.chatPostMessageInThread(toMessage(json), slackFactories.slackClient.historyThread)
+    }
+   */
+
   def toBlocks: SlackBlocksAsString = {
     val blocksAsString = if (isSuccess) {
       s"""

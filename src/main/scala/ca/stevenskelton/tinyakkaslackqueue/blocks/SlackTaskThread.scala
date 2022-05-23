@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.model.block.{HeaderBlock, SectionBlock}
@@ -30,7 +31,7 @@ object SlackTaskThread {
     val blocks = message.getBlocks.asScala.toList
     val header = blocks(0).asInstanceOf[HeaderBlock]
     val taskName = header.getText.getText.drop(HeaderPreamble.length)
-    slackTaskFactories.factories.find(_.name == taskName).map {
+    slackTaskFactories.factories.find(_.name.getText == taskName).map {
       slackFactory =>
         val slackTask = slackFactory.create(SlackTs(message),
           SlackUserId.Empty, notifyOnError = Nil, notifyOnComplete = Nil

@@ -48,10 +48,8 @@ object HomeTabActions {
             } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
             //TODO zone should be from Slack
 
-            val slackTask = slackTaskFactories.tinySlackQueue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
-            val msg = zonedDateTimeOpt.fold("Queued")(_ => "Scheduled")
-            //TODO: can we quote the task thread
-            slackTaskFactories.slackClient.chatPostMessageInThread(s"$msg ${slackTask.name}", slackTaskFactories.slackClient.historyThread)
+            val scheduledSlackTask = slackTaskFactories.tinySlackQueue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
+            SlackHistoryThread.schedule(scheduledSlackTask)
 
             HomeTabActions.update(slackPayload)
           //        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))

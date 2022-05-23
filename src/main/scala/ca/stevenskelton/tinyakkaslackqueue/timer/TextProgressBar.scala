@@ -1,4 +1,4 @@
-package ca.stevenskelton.tinyakkaslackqueue
+package ca.stevenskelton.tinyakkaslackqueue.timer
 
 object TextProgressBar {
   val Unicode = new TextProgressBar(Array(' ', '▏', '▎', '▍', '▌', '▋', '▊', '▉', '█'))

@@ -1,7 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, TextProgressBar}
+import ca.stevenskelton.tinyakkaslackqueue.ScheduledSlackTask
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, TaskHistory}
+import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab.{cancelTaskButton, viewLogsButton}
 

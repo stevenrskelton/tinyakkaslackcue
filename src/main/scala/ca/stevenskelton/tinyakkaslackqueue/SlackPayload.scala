@@ -5,8 +5,6 @@ import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId, Private
 import org.slf4j.Logger
 import play.api.libs.json.JsObject
 
-import scala.concurrent.Future
-
 object SlackPayload {
 
   final case class SlackPayloadType(value: String) extends AnyVal
