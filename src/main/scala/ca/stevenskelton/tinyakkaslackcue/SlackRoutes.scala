@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackcue
 
+import akka.Done
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.server.Directives.{as, complete, entity, extractExecutionContext, formField}
@@ -67,27 +68,11 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
           } else if (slackPayload.callbackId == Some(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
               val uuid = UUID.fromString(state.asInstanceOf[ButtonState].value)
-              slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid).map {
-                cancelledTask =>
-                  slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, ScheduleActionModal.cancelledModal(cancelledTask))
-                  HomeTab.update(slackPayload)
-              }.getOrElse {
-                val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
-                logger.error("handleSubmission", ex)
-                Future.failed(ex)
-              }
+              cancelTask(uuid, slackPayload)
             }.getOrElse {
               if (slackPayload.actions.size == 1 && slackPayload.actions.headOption.exists(_.actionId == ActionId.TaskCancel)) {
                 val uuid = UUID.fromString(slackPayload.actions.head.value)
-                slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid).map {
-                  cancelledTask =>
-                    slackTaskFactories.slackClient.viewsOpen(slackPayload.triggerId, ScheduleActionModal.cancelledModal(cancelledTask))
-                    HomeTab.update(slackPayload)
-                }.getOrElse {
-                  val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
-                  logger.error("handleSubmission", ex)
-                  Future.failed(ex)
-                }
+                cancelTask(uuid,slackPayload)
               } else {
                 val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
                 logger.error("handleSubmission", ex)
@@ -110,6 +95,20 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
           _ => HttpResponse(OK)
         }
       }
+    }
+  }
+
+  def cancelTask(uuid: UUID, slackPayload: SlackPayload):Future[Done] = {
+    slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid).map {
+      cancelledTask =>
+        val update = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, ScheduleActionModal.cancelledModal(cancelledTask))
+        logger.info(update.toString)
+        logger.info(update.getError)
+        HomeTab.update(slackPayload)
+    }.getOrElse {
+      val ex = new Exception(s"Could not find task uuid ${uuid.toString}")
+      logger.error("handleSubmission", ex)
+      Future.failed(ex)
     }
   }
 }

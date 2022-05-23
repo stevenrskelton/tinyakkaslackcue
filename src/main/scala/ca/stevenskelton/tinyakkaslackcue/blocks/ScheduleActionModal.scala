@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 
 object ScheduleActionModal {
 
-  def cancelledModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackBlocksAsString = {
+  def cancelledModal(scheduledTask: InteractiveJavaUtilTimer[SlackTask]#ScheduledTask): SlackView = {
     val blocks = if (scheduledTask.isRunning) {
       """
     {
@@ -32,7 +32,7 @@ object ScheduleActionModal {
 		}
     """
     }
-    SlackBlocksAsString(s"""
+    val body = SlackBlocksAsString(s"""
 {
   "type": "modal",
   "clear_on_close": true,
@@ -43,6 +43,9 @@ object ScheduleActionModal {
   },
   $blocks
 }""")
+    new SlackView("modal", body) {
+      override def toString: String = body.value
+    }
   }
 
   def viewModal(scheduledTasks: Seq[InteractiveJavaUtilTimer[SlackTask]#ScheduledTask], index: Int): SlackBlocksAsString = {
