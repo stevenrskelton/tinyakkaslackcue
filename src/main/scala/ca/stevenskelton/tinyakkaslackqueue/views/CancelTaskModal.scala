@@ -21,7 +21,26 @@ class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackView {
       "emoji": true
     },
     "value": "${scheduledTask.id.value}",
-    "action_id": "${ActionId.TaskThread}"
+    "action_id": "${ActionId.TaskThread}",
+    "style": "danger",
+    "confirm": {
+      "title": {
+          "type": "plain_text",
+          "text": "Cancel task ${scheduledTask.task.name.getText}"
+      },
+      "text": {
+          "type": "mrkdwn",
+          "text": "Task will be notified to abort execution as soon as possible."
+      },
+      "confirm": {
+          "type": "plain_text",
+          "text": "Cancel Task"
+      },
+      "deny": {
+          "type": "plain_text",
+          "text": "Do not Cancel"
+      }
+    }
   }
 }"""
   } else {

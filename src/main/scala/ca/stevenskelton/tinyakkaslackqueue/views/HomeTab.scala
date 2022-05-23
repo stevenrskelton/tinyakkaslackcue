@@ -59,8 +59,8 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
         "emoji": true,
         "text": "View Logs"
       },
-      "action_id": "${ActionId.TaskThread.value}",
-      "value": "${scheduledTask.id}"
+      "action_id": "${ActionId.TaskThread}",
+      "value": "${scheduledTask.id.value}"
     },
     {
       "type": "button",
@@ -70,11 +70,11 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
         "text": "Cancel"
       },
       "style": "danger",
-      "action_id": "${ActionId.TaskCancel.value}",
+      "action_id": "${ActionId.TaskCancel}",
       "value": "${scheduledTask.id.value}"
     }
   ]
-}"""
+},{"type": "divider"}"""
       }.getOrElse("")
 
       val queueText = if (taskHistory.running.isEmpty) "Run Immediately" else "Queue Immediately"
@@ -145,8 +145,7 @@ $executedBlocks
         ]
       }"""
   } else {
-    val header =
-      s"""
+    val header = s"""
       {
         "type": "actions",
         "elements": [

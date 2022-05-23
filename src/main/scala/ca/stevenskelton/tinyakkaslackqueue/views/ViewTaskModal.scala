@@ -66,7 +66,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
                 "emoji": true
               },
               "style": "danger",
-              "value": "${scheduledTask.id.toString}",
+              "value": "${scheduledTask.id.value}",
               "action_id": "${ActionId.TaskCancel}",
               "confirm": {
                 "title": {
