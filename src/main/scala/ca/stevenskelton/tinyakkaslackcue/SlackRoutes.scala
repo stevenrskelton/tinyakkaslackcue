@@ -101,7 +101,9 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackTa
   def cancelTask(uuid: UUID, slackPayload: SlackPayload):Future[Done] = {
     slackTaskFactories.tinySlackCue.cancelScheduledTask(uuid).map {
       cancelledTask =>
-        val update = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, ScheduleActionModal.cancelledModal(cancelledTask))
+        val view = ScheduleActionModal.cancelledModal(cancelledTask)
+        logger.info(view.toString)
+        val update = slackTaskFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
         logger.info(update.toString)
         logger.info(update.getError)
         HomeTab.update(slackPayload)

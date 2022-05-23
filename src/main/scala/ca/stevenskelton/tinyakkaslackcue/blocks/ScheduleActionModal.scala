@@ -34,14 +34,21 @@ object ScheduleActionModal {
     }
     val body = SlackBlocksAsString(s"""
 {
-  "type": "modal",
-  "clear_on_close": true,
-  "close": {
-    "type": "plain_text",
-    "text": "Cancel",
-    "emoji": true
-  },
-  $blocks
+	"type": "modal",
+	"close": {
+		"type": "plain_text",
+		"text": "Close",
+		"emoji": true
+	},
+	"clear_on_close": true,
+	"title": {
+		"type": "plain_text",
+		"text": "${scheduledTask.task.name}",
+		"emoji": true
+	},
+	"blocks": [
+		$blocks
+	]
 }""")
     new SlackView("modal", body) {
       override def toString: String = body.value
