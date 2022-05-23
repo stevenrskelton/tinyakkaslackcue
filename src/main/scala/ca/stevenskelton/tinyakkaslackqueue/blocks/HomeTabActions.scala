@@ -41,14 +41,14 @@ object HomeTabActions {
         }
       case CallbackId.Create =>
         slackTaskFactories.findByPrivateMetadata(slackPayload.privateMetadata.getOrElse(PrivateMetadata.Empty)).map {
-          taskFactory =>
+          slackTaskMeta =>
             val zonedDateTimeOpt = for {
               scheduledDate <- slackPayload.actionStates.get(ActionId.ScheduleDate).map(_.asInstanceOf[DatePickerState].value)
               scheduledTime <- slackPayload.actionStates.get(ActionId.ScheduleTime).map(_.asInstanceOf[TimePickerState].value)
             } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
             //TODO zone should be from Slack
 
-            val scheduledSlackTask = slackTaskFactories.tinySlackQueue.scheduleSlackTask(taskFactory, zonedDateTimeOpt)
+            val scheduledSlackTask = slackTaskFactories.tinySlackQueue.scheduleSlackTask(slackTaskMeta, zonedDateTimeOpt)
             SlackHistoryThread.schedule(scheduledSlackTask)
 
             HomeTabActions.update(slackPayload)

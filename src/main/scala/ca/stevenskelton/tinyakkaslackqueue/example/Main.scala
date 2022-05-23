@@ -1,4 +1,4 @@
-package ca.stevenskelton.tinyakkaslackqueue
+package ca.stevenskelton.tinyakkaslackqueue.example
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -8,13 +8,14 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.SystemMaterializer
 import ca.stevenskelton.tinyakkaslackqueue.logging.SlackLoggerFactory
+import ca.stevenskelton.tinyakkaslackqueue.{SlackClient, SlackFactories, SlackRoutes, SlackTaskFactory}
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.Future
 
-class Main extends App {
+object Main extends App {
 
   private implicit val config = ConfigFactory.defaultApplication().resolve()
 
@@ -29,8 +30,11 @@ class Main extends App {
   val port = config.getInt("env.http.port")
 
   implicit val slackTaskFactories = new SlackFactories(slackClient, httpLogger, httpActorSystem, config) {
-    override def factories: Seq[SlackTaskFactory] = Nil
+    override protected val factories: Seq[SlackTaskFactory] = Seq(
+      new TestSlackTaskFactory()(slackClient, materializer)
+    )
   }
+  slackTaskFactories.slackTaskMetaFactories
 
   val slackRoutes = new SlackRoutes()
 

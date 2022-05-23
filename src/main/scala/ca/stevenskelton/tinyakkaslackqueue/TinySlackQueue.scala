@@ -19,17 +19,18 @@ class TinySlackQueue(slackClient: SlackClient, logger: Logger, onComplete: (Slac
 
   def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
-  def scheduleSlackTask(slackTaskFactory: SlackTaskFactory, time: Option[ZonedDateTime]): ScheduledSlackTask = {
-    val slackPlaceholder = slackClient.chatPostMessage(SlackTaskThread.placeholderThread(slackTaskFactory))
+  def scheduleSlackTask(slackTaskMeta: SlackTaskMeta, time: Option[ZonedDateTime]): ScheduledSlackTask = {
+    val slackPlaceholder = slackClient.chatPostMessage(SlackTaskThread.placeholderThread(slackTaskMeta.factory))
     implicit val sc = slackClient
-    val slackTask = slackTaskFactory.create(
+    val slackTask = slackTaskMeta.factory.create(
+      slackTaskMeta,
       ts = SlackTs(slackPlaceholder),
       createdBy = SlackUserId.Empty,
       notifyOnError = Nil,
       notifyOnComplete = Nil
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
-    slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
+//    slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
     scheduledTask
   }
 

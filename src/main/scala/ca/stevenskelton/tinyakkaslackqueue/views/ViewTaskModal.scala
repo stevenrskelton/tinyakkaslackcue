@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
-import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
+import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask, SlackTaskMeta}
 
 class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackView {
   override def toString: String = {
@@ -44,7 +44,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
           "type": "header",
           "text": {
             "type": "plain_text",
-            "text": "${scheduledTask.task.name.getText}",
+            "text": "${scheduledTask.task.meta.factory.name.getText}",
             "emoji": true
           }
         },{
@@ -52,7 +52,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
           "elements": [
             {
               "type": "mrkdwn",
-              "text": "${scheduledTask.task.description.getText}"
+              "text": "${scheduledTask.task.meta.factory.description.getText}"
             }
           ]
         },{

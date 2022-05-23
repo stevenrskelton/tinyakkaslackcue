@@ -3,7 +3,7 @@ package ca.stevenskelton
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
-import com.slack.api.model.Message
+import com.slack.api.model.{Conversation, Message}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -27,6 +27,16 @@ package object tinyakkaslackqueue {
     implicit val reads = implicitly[Reads[String]].map(SlackTs(_))
     implicit val writes = new Writes[SlackTs] {
       override def writes(o: SlackTs): JsValue = JsString(o.value)
+    }
+  }
+
+  case class SlackChannel(value: String) extends AnyVal
+
+  object SlackChannel {
+    def apply(conversation: Conversation): SlackChannel = SlackChannel(conversation.getId)
+    implicit val reads = implicitly[Reads[String]].map(SlackChannel(_))
+    implicit val writes = new Writes[SlackChannel] {
+      override def writes(o: SlackChannel): JsValue = JsString(o.value)
     }
   }
 

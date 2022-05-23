@@ -17,7 +17,7 @@ object HomeTab {
         "text": "View Logs"
       },
       "action_id": "${ActionId.TaskThread}",
-      "value": "${scheduledTask.id.value}"
+      "value": "${scheduledTask.task.id.value}"
     }"""
 
   def cancelTaskButton(scheduledTask: ScheduledSlackTask) = s"""
@@ -29,12 +29,12 @@ object HomeTab {
         "emoji": true
       },
       "style": "danger",
-      "value": "${scheduledTask.id.value}",
+      "value": "${scheduledTask.task.id.value}",
       "action_id": "${ActionId.TaskCancel}",
       "confirm": {
         "title": {
             "type": "plain_text",
-            "text": "Cancel task ${scheduledTask.task.name.getText}"
+            "text": "Cancel task ${scheduledTask.task.meta.factory.name.getText}"
         },
         "text": {
             "type": "mrkdwn",
@@ -52,7 +52,7 @@ object HomeTab {
     }"""
 }
 
-class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
+class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
 
   private def taskHistoryBlocks(taskHistory: TaskHistory): String = {
 
@@ -73,7 +73,7 @@ class HomeTab(taskHistories: Seq[TaskHistory]) extends SlackView {
       "text": "View Details",
       "emoji": true
     },
-    "value": "${scheduledTask.id.value}",
+    "value": "${scheduledTask.task.id.value}",
     "action_id": "${ActionId.TaskView}"
   }
 }"""

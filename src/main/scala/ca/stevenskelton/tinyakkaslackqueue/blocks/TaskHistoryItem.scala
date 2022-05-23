@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
-import ca.stevenskelton.tinyakkaslackqueue.{SlackBlocksAsString, SlackTs, SlackUserId}
+import ca.stevenskelton.tinyakkaslackqueue.{SlackBlocksAsString, SlackChannel, SlackTs, SlackUserId}
 import play.api.libs.json.Json
 
 import java.time.{Duration, ZonedDateTime}
@@ -13,7 +13,7 @@ object TaskHistoryItem {
   implicit val fmt = Json.format[TaskHistoryItem]
 }
 
-case class TaskHistoryItem(slackTs: SlackTs, date: ZonedDateTime, duration: Duration, createdBy: SlackUserId, isSuccess: Boolean) {
+case class TaskHistoryItem(ts: SlackTs, channel: SlackChannel, date: ZonedDateTime, duration: Duration, createdBy: SlackUserId, isSuccess: Boolean) {
 
   /*
     def cancel(slackTask: SlackTask, slackUserId: SlackUserId)(implicit slackFactories: SlackFactories): ChatPostMessageResponse = {

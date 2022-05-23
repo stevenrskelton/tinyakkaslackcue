@@ -84,7 +84,11 @@ object TestData {
   }
 
   implicit val slackTaskFactories = new SlackFactories(slackClient, logger, actorSystem, config) {
-    override def factories: Seq[SlackTaskFactory] = Seq(new TestSlackTaskFactory("One"), new TestSlackTaskFactory("Two"), new TestSlackTaskFactory("Three"))
+    override def factories: Map[SlackChannel, SlackTaskFactory] = Map(
+      SlackChannel("c1") -> new TestSlackTaskFactory("One"),
+      SlackChannel("c2") ->new TestSlackTaskFactory("Two"),
+      SlackChannel("c3") ->new TestSlackTaskFactory("Three")
+    )
   }
 
   def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackTs, SlackTask](TestData.logger).ScheduledTask(

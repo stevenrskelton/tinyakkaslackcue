@@ -7,7 +7,7 @@ import org.slf4j.event.Level
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata)(implicit slackFactories: SlackFactories) extends SlackView {
+class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata)(implicit slackFactories: SlackFactories) extends SlackView {
 
   private val submitButtonText = if (zonedDateTimeOpt.isEmpty) {
     if (slackFactories.tinySlackQueue.isExecuting) "Run" else "Queue"
@@ -131,7 +131,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, 
       "type": "header",
       "text": {
         "type": "plain_text",
-        "text": "${slackTaskFactory.name.getText}",
+        "text": "${slackTaskMeta.factory.name.getText}",
         "emoji": true
       }
     },{
@@ -139,7 +139,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskFactory: SlackTaskFactory, 
 			"elements": [
 				{
 					"type": "mrkdwn",
-					"text": "${slackTaskFactory.description.getText}"
+					"text": "${slackTaskMeta.factory.description.getText}"
 				}
 			]
 		}

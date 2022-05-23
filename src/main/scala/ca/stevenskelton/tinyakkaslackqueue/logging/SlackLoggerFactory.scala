@@ -61,7 +61,7 @@ object SlackLoggerFactory {
           exceptionEvent match {
             case Some(_) =>
               slackClient.chatUpdate(SlackTaskThread.cancelled(slackTask, startTimeMs), slackTask.ts)
-              slackClient.pinsRemove(slackTask.ts)
+//              slackClient.pinsRemove(slackTask.ts)
             case None =>
               percentCompleteEvent.foreach {
                 event =>
@@ -76,7 +76,7 @@ object SlackLoggerFactory {
         slackClient.chatUpdate(SlackTaskThread.completed(slackTask, startTimeMs), slackTask.ts)
         slackClient.pinsRemove(slackTask.ts)
     }
-    new SlackLogger(getName = slackTask.ts.toString, sourceQueue, base)
+    new SlackLogger(getName = slackTask.meta.channel.value, sourceQueue, base)
   }
 
 }

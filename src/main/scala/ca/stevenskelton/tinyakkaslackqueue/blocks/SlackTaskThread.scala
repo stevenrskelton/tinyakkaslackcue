@@ -25,84 +25,61 @@ object SlackTaskThread {
                      notifyOnComplete: Seq[String]
                    )
 
-  def parse(messageItem: MessageItem, slackTaskFactories: SlackFactories): Option[(SlackTask, Fields)] = Try {
-    val created = messageItem.getCreated
-    val message = messageItem.getMessage
-    val blocks = message.getBlocks.asScala.toList
-    val header = blocks(0).asInstanceOf[HeaderBlock]
-    val taskName = header.getText.getText.drop(HeaderPreamble.length)
-    slackTaskFactories.factories.find(_.name.getText == taskName).map {
-      slackFactory =>
-        val slackTask = slackFactory.create(SlackTs(message),
-          SlackUserId.Empty, notifyOnError = Nil, notifyOnComplete = Nil
-        )
-
-        val section = blocks(1).asInstanceOf[SectionBlock]
-        val sectionFields = section.getText.getText.split("\n")
-        val createdByRaw = sectionFields(0)
-        val scheduledForRaw = sectionFields(1)
-
-        val createdBy = createdByRaw.drop(CreatedByPreamble.length)
-        val scheduledFor = scheduledForRaw.drop(ScheduledForPreamble.length)
-        (slackTask, Fields(taskName, ZonedDateTime.now(), "", Nil, Nil))
-    }
-  }.toOption.flatten
-
   def placeholderThread(slackTaskIdentifier: SlackTaskIdentifier): String = {
     s"Scheduling task *${slackTaskIdentifier.name.getText}*"
   }
 
-  def schedule(scheduledTask: ScheduledSlackTask): SlackBlocksAsString = {
+//  def schedule(scheduledTask: ScheduledSlackTask, slackTaskMeta: SlackTaskMeta): SlackBlocksAsString = {
+//
+//    val createdByUser = "@Steven Skelton"
+//    val scheduledTime = scheduledTask.executionStart.format(DateTimeFormatter.ofPattern("YYYY-mm-dd hh:MM"))
+//
+//    SlackBlocksAsString(
+//      s"""{
+//    "type": "header",
+//    "text": {
+//      "type": "plain_text",
+//      "text": "$HeaderPreamble${slackTaskMeta.factory.name.getText}",
+//      "emoji": true
+//    }
+//	},{
+//    "type": "section",
+//    "text": {
+//      "type": "mrkdwn",
+//      "text": "$CreatedByPreamble$createdByUser\\n$ScheduledForPreamble$scheduledTime"
+//    },
+//    "accessory": {
+//      "type": "button",
+//      "text": {
+//        "type": "plain_text",
+//        "text": "Cancel",
+//        "emoji": true
+//      },
+//      "style": "danger",
+//      "value": "public-relations"
+//    }
+//  }""")
+//  }
 
-    val createdByUser = "@Steven Skelton"
-    val scheduledTime = scheduledTask.executionStart.format(DateTimeFormatter.ofPattern("YYYY-mm-dd hh:MM"))
-
-    SlackBlocksAsString(
-      s"""{
-    "type": "header",
-    "text": {
-      "type": "plain_text",
-      "text": "$HeaderPreamble${scheduledTask.task.name.getText}",
-      "emoji": true
-    }
-	},{
-    "type": "section",
-    "text": {
-      "type": "mrkdwn",
-      "text": "$CreatedByPreamble$createdByUser\\n$ScheduledForPreamble$scheduledTime"
-    },
-    "accessory": {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "text": "Cancel",
-        "emoji": true
-      },
-      "style": "danger",
-      "value": "public-relations"
-    }
-  }""")
-  }
-
-  def update(scheduledTask: ScheduledSlackTask): String = {
-    update(scheduledTask.task, scheduledTask.task.percentComplete, scheduledTask.executionStart.toEpochSecond, width = 40)
+  def update(slackTask: SlackTask, executionStart: ZonedDateTime): String = {
+    update(slackTask, slackTask.percentComplete, executionStart.toEpochSecond, width = 40)
   }
 
   def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long, width: Int = 14): String = {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
     val bar = s"|${TextProgressBar.SlackEmoji.bar(percentComplete, width)}| ${("  " + math.round(percentComplete * 100)).takeRight(3)}%"
     val elapsed = if (startTimeMs != 0) s"\nStarted ${DateUtils.humanReadable(duration)} ago" else ""
-    s"Running *${slackTask.name.getText}*\n$bar$elapsed"
+    s"Running *${slackTask.meta.factory.name.getText}*\n$bar$elapsed"
   }
 
   def cancelled(slackTask: SlackTask, startTimeMs: Long): String = {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
-    s":headstone: Cancelled *${slackTask.name.getText}* after ${DateUtils.humanReadable(duration)}"
+    s":headstone: Cancelled *${slackTask.meta.factory.name.getText}* after ${DateUtils.humanReadable(duration)}"
   }
 
   def completed(slackTask: SlackTask, startTimeMs: Long): String = {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
-    s":doughnut: Completed *${slackTask.name.getText}* in ${DateUtils.humanReadable(duration)}"
+    s":doughnut: Completed *${slackTask.meta.factory.name.getText}* in ${DateUtils.humanReadable(duration)}"
   }
 
 }
