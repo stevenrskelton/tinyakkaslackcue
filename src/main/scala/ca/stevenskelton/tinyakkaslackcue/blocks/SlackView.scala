@@ -1,10 +1,41 @@
 package ca.stevenskelton.tinyakkaslackcue.blocks
 
 import ca.stevenskelton.tinyakkaslackcue.SlackBlocksAsString
+import com.slack.api.model.ModelConfigurator
+import com.slack.api.model.block.ActionsBlock.ActionsBlockBuilder
+import com.slack.api.model.block.LayoutBlock
+import com.slack.api.model.block.element.BlockElements
+import com.slack.api.model.view.View
 
-case class SlackView(name: String, blocks: SlackBlocksAsString) {
+trait SlackView {
+  def name: String
+}
+
+case class HomeView(blocks: SlackBlocksAsString) extends SlackView {
+  override val name = "home"
   override def toString: String = s"""{"type":"$name","blocks":[${blocks.value}]}"""
 }
+
+//case class ModalView(blocksAsString: SlackBlocksAsString) extends SlackView {
+//  override def toString:String = s"""
+//    {
+//      "type": "modal",
+//      "close": {
+//        "type": "plain_text",
+//        "text": "Close",
+//        "emoji": true
+//      },
+//      "clear_on_close": true,
+//      "title": {
+//        "type": "plain_text",
+//        "text": "${scheduledTask.task.name}",
+//        "emoji": true
+//      },
+//      "blocks": [
+//        $blocks
+//      ]
+//    }"""
+//}
 
 object SlackView {
   def createHomeTab(taskHistories: Seq[TaskHistory]): SlackView = {
@@ -27,7 +58,7 @@ object SlackView {
           }
         ]
       }"""
-      SlackView("home", SlackBlocksAsString(header))
+      HomeView(SlackBlocksAsString(header))
     } else {
       val header =
         s"""
@@ -47,7 +78,7 @@ object SlackView {
         ]
       },{"type": "divider"},"""
       val blocks = taskHistories.map(_.toBlocks.value).mkString(""",{"type": "divider"},""")
-      SlackView("home", SlackBlocksAsString(header + blocks))
+      HomeView(SlackBlocksAsString(header + blocks))
     }
   }
 }

@@ -50,8 +50,9 @@ object ScheduleActionModal {
 		$blocks
 	]
 }""")
-    new SlackView("modal", body) {
+    new SlackView {
       override def toString: String = body.value
+      override def name: String = "modal"
     }
   }
 
