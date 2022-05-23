@@ -1,7 +1,7 @@
-name := "tinyakkaslackcue"
+name := "tinyakkaslackqueue"
 
 version := "0.1.0-SNAPSHOT"
-organization := "ca.stevenskelton.tinyakkaslackcue"
+organization := "ca.stevenskelton.tinyakkaslackqueue"
 
 scalaVersion := "2.13.8"
 
