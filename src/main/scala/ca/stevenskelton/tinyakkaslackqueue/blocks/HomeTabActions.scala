@@ -108,7 +108,7 @@ object HomeTabActions {
             val list = slackTaskFactories.tinySlackQueue.listScheduledTasks
             val index = list.indexWhere(_.id == ts)
             if (index == -1) {
-              val ex = new Exception(s"Task UUID $ts not found")
+              val ex = new Exception(s"Task ts $ts not found")
               logger.error("handleAction", ex)
               throw ex
             } else {

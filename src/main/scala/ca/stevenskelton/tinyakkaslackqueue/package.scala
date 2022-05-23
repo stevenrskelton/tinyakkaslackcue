@@ -13,7 +13,9 @@ package object tinyakkaslackqueue {
 
   type ScheduledSlackTask = InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask
 
-  case class SlackTs(value: String) extends AnyVal
+  case class SlackTs(value: String) extends AnyVal {
+    override def toString: String = value
+  }
 
   object SlackTs {
     val Empty = SlackTs("")
