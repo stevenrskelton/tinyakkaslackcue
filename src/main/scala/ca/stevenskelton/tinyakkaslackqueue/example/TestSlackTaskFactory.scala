@@ -1,8 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue.example
 
-import akka.stream.{KillSwitches, Materializer, UniqueKillSwitch}
 import akka.stream.scaladsl.{Flow, Keep, Source}
-import ca.stevenskelton.tinyakkaslackqueue.{SlackClient, SlackLoggedStreamTask, SlackTask, SlackTaskFactory, SlackTaskMeta, SlackTs, SlackUserId}
+import akka.stream.{KillSwitches, Materializer, UniqueKillSwitch}
+import ca.stevenskelton.tinyakkaslackqueue._
 import com.slack.api.model.block.composition.MarkdownTextObject
 import org.slf4j.Logger
 
@@ -14,7 +14,7 @@ class TestSlackTaskFactory(implicit slackClient: SlackClient, materializer: Mate
 
   override val description = MarkdownTextObject.builder().text("2 minutes @ 1 second").build()
 
-  override def create(slackTaskMeta: SlackTaskMeta,ts: SlackTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId]): SlackTask = {
+  override def create(slackTaskMeta: SlackTaskMeta, ts: SlackTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId]): SlackTask = {
     val innerTs = ts
     val innerCreatedBy = createdBy
     val innerNotifyOnError = notifyOnError
@@ -27,12 +27,16 @@ class TestSlackTaskFactory(implicit slackClient: SlackClient, materializer: Mate
       override def sourceAndCount: Logger => (Source[Int, UniqueKillSwitch], Future[Int]) = {
         implicit logger =>
           val totalCount = Future.successful(100)
+          val start = System.currentTimeMillis
           val source = Source(1 to 120)
+            .via(Flow.fromFunction { i => Thread.sleep(1000); i })
             .viaMat(KillSwitches.single)(Keep.right)
             .via(Flow.fromFunction {
               i =>
-                logger.info(i.toString)
-                Thread.sleep(1000)
+                if(i % 10 == 0){
+                  val skew = System.currentTimeMillis - start - (i * 1000)
+                  logger.info(s"Skew of ${skew}ms at $i second")
+                }
                 i
             })
           (source, totalCount)
