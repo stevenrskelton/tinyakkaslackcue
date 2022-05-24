@@ -122,7 +122,8 @@ object HomeTabActions {
         logger.error(cancelledTask.task.cancel().toString)
         logger.error(cancelledTask.task.isCancelled.toString)
         val cast = cancelledTask.task.asInstanceOf[SlackLoggedStreamTask[Int, Int]]
-//        logger.warn(cast.killSwitchOption.get.)
+        logger.warn(cast.killSwitchOption.isDefined.toString)
+        cast.killSwitchOption.get.shutdown()
         logger.warn(cast.cancel().toString)
         val view = new CancelTaskModal(cancelledTask)
         val update = slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
