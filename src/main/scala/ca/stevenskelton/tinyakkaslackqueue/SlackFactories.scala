@@ -80,7 +80,7 @@ abstract class SlackFactories(
     val channels = conversationsResult.getChannels.asScala
     factories.map {
       factory =>
-        val name = factory.name.getText.filter(_.isLetterOrDigit)
+        val name = factory.name.getText.filter(_.isLetterOrDigit).toLowerCase
         val channel = channels.find(_.getName == name).getOrElse {
           val createdChannel = slackClient.client.conversationsCreate((r: ConversationsCreateRequest.ConversationsCreateRequestBuilder) => r.token(slackClient.botOAuthToken).name(name).isPrivate(false))
           if(!createdChannel.isOk) logger.error(createdChannel.getError)
