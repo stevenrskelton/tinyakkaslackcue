@@ -18,5 +18,4 @@ object ActionId {
   val LogLevel = ActionId("static-select-action")
 
   val TabRefresh = ActionId("tab-refresh")
-  val HomeTaskCancel = ActionId("home-task-cancel")
 }

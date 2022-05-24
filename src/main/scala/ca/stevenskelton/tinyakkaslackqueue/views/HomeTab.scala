@@ -101,7 +101,7 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
   "type": "actions",
   "elements": [
     ${viewLogsButton(scheduledTask)},
-    ${cancelTaskButton(scheduledTask, ActionId.HomeTaskCancel)}
+    ${cancelTaskButton(scheduledTask, ActionId.TaskCancel)}
   ]
 },{"type": "divider"}"""
     }.getOrElse("")

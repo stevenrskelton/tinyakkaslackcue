@@ -109,15 +109,11 @@ object HomeTabActions {
         Future.successful(Done)
   }
 
-  def cancelTask(ts: SlackTs, useTrigger: Boolean, slackPayload: SlackPayload)(implicit slackFactories: SlackFactories, logger:Logger): Future[Done] = {
+  def cancelTask(ts: SlackTs, slackPayload: SlackPayload)(implicit slackFactories: SlackFactories, logger:Logger): Future[Done] = {
     slackFactories.tinySlackQueue.cancelScheduledTask(ts).map {
       cancelledTask =>
         val view = new CancelTaskModal(cancelledTask)
-        val update = if(useTrigger) {
-          slackFactories.slackClient.viewsOpen(slackPayload.triggerId, view)
-        }else {
-          slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
-        }
+        val update = slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
         if (!update.isOk) {
           logger.error(view.toString)
           logger.error(update.getError)

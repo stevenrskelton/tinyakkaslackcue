@@ -63,21 +63,19 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
               case ActionId.TabRefresh =>
                 HomeTabActions.update(slackPayload)
               case ActionId.TaskCancel =>
-                HomeTabActions.cancelTask(SlackTs(action.value), useTrigger = false, slackPayload)
-              case ActionId.HomeTaskCancel =>
-                HomeTabActions.cancelTask(SlackTs(action.value), useTrigger = true, slackPayload)
+                HomeTabActions.cancelTask(SlackTs(action.value),  slackPayload)
               case _ =>
                 HomeTabActions.handleAction(slackPayload)
             }
           } else if (slackPayload.callbackId.contains(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
               val ts = SlackTs(state.asInstanceOf[ButtonState].value)
-              HomeTabActions.cancelTask(ts, useTrigger = false, slackPayload)
+              HomeTabActions.cancelTask(ts, slackPayload)
             }.getOrElse {
               val action = slackPayload.action
               if (action.actionId == ActionId.TaskCancel) {
                 val ts = SlackTs(slackPayload.actions.head.value)
-                HomeTabActions.cancelTask(ts, useTrigger = false, slackPayload)
+                HomeTabActions.cancelTask(ts,  slackPayload)
               } else {
                 val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
                 logger.error("handleSubmission", ex)
