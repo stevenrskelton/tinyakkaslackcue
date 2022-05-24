@@ -17,7 +17,7 @@ abstract class SlackLoggedStreamTask[T, B](implicit slackClient: SlackClient, va
 
   def sourceAndCount: Logger => (Source[T, UniqueKillSwitch], Future[Int])
 
-  private var killSwitchOption: Option[UniqueKillSwitch] = None
+  var killSwitchOption: Option[UniqueKillSwitch] = None
 
   override def run(logger: Logger): Unit = {
     val completeElements = new mutable.HashSet[B]()
@@ -41,7 +41,11 @@ abstract class SlackLoggedStreamTask[T, B](implicit slackClient: SlackClient, va
   }
 
   override def cancel(): Boolean = {
-    killSwitchOption.foreach(_.abort(SlackExceptionEvent.UserCancelledException))
+    killSwitchOption.foreach {
+      o =>
+        o.abort(SlackExceptionEvent.UserCancelledException)
+        o.shutdown()
+    }
     super.cancel
   }
 }
