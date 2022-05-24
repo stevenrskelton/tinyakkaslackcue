@@ -20,7 +20,7 @@ object HomeTab {
       "value": "${scheduledTask.task.id.value}"
     }"""
 
-  def cancelTaskButton(scheduledTask: ScheduledSlackTask) = s"""
+  def cancelTaskButton(scheduledTask: ScheduledSlackTask, actionId: ActionId) = s"""
     {
       "type": "button",
       "text": {
@@ -30,7 +30,7 @@ object HomeTab {
       },
       "style": "danger",
       "value": "${scheduledTask.task.id.value}",
-      "action_id": "${ActionId.TaskCancel}",
+      "action_id": "$actionId",
       "confirm": {
         "title": {
             "type": "plain_text",
@@ -101,7 +101,7 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
   "type": "actions",
   "elements": [
     ${viewLogsButton(scheduledTask)},
-    ${cancelTaskButton(scheduledTask)}
+    ${cancelTaskButton(scheduledTask, ActionId.HomeTaskCancel)}
   ]
 },{"type": "divider"}"""
     }.getOrElse("")

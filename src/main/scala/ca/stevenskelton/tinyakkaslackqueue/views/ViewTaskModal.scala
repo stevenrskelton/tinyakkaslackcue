@@ -58,7 +58,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
         },{
           "type": "actions",
           "elements": [
-            ${HomeTab.cancelTaskButton(scheduledTask)}
+            ${HomeTab.cancelTaskButton(scheduledTask, ActionId.TaskCancel)}
           ]
         }
         $bodyBlocks

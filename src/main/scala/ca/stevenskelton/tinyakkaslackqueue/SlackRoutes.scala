@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-import akka.Done
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.server.Directives.{as, complete, entity, extractExecutionContext, formField}
@@ -10,7 +9,6 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
-import ca.stevenskelton.tinyakkaslackqueue.views.CancelTaskModal
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
@@ -59,25 +57,27 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
       val handler = slackPayload.payloadType match {
         case SlackPayload.BlockActions =>
           val viewType = (jsObject \ "view" \ "type").asOpt[String]
-          if (viewType == Some("home")) {
+          if (viewType.contains("home")) {
             val action = slackPayload.action
             action.actionId match {
               case ActionId.TabRefresh =>
                 HomeTabActions.update(slackPayload)
               case ActionId.TaskCancel =>
-                HomeTabActions.cancelTask(SlackTs(action.value), slackPayload)
+                HomeTabActions.cancelTask(SlackTs(action.value), useTrigger = false, slackPayload)
+              case ActionId.HomeTaskCancel =>
+                HomeTabActions.cancelTask(SlackTs(action.value), useTrigger = true, slackPayload)
               case _ =>
                 HomeTabActions.handleAction(slackPayload)
             }
-          } else if (slackPayload.callbackId == Some(CallbackId.View)) {
+          } else if (slackPayload.callbackId.contains(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
               val ts = SlackTs(state.asInstanceOf[ButtonState].value)
-              HomeTabActions.cancelTask(ts, slackPayload)
+              HomeTabActions.cancelTask(ts, useTrigger = false, slackPayload)
             }.getOrElse {
               val action = slackPayload.action
               if (action.actionId == ActionId.TaskCancel) {
                 val ts = SlackTs(slackPayload.actions.head.value)
-                HomeTabActions.cancelTask(ts, slackPayload)
+                HomeTabActions.cancelTask(ts, useTrigger = false, slackPayload)
               } else {
                 val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
                 logger.error("handleSubmission", ex)
