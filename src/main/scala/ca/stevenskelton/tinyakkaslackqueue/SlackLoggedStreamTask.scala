@@ -33,7 +33,6 @@ abstract class SlackLoggedStreamTask[T, B](implicit slackClient: SlackClient, va
         }
     })(Keep.both).run()
     killSwitchOption = Some(killswitch)
-    cancel()
     result.onComplete {
       case Success(_) => slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(1))
       case Failure(ex) => slackTaskLogger.recordEvent(SlackExceptionEvent(ex))
