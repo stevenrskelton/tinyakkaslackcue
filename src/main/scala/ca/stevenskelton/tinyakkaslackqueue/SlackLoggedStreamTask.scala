@@ -44,7 +44,7 @@ abstract class SlackLoggedStreamTask[T, B](implicit slackClient: SlackClient, va
     killSwitchOption.foreach {
       o =>
         o.abort(SlackExceptionEvent.UserCancelledException)
-        o.shutdown()
+        //o.shutdown()
     }
     super.cancel
   }

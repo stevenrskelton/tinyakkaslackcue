@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import akka.Done
 import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.logging.SlackExceptionEvent
 import ca.stevenskelton.tinyakkaslackqueue.views.{CancelTaskModal, CreateTaskModal, HomeTab, SlackView, ViewTaskModal}
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
@@ -123,7 +124,7 @@ object HomeTabActions {
         logger.error(cancelledTask.task.isCancelled.toString)
         val cast = cancelledTask.task.asInstanceOf[SlackLoggedStreamTask[Int, Int]]
         logger.warn(cast.killSwitchOption.isDefined.toString)
-        cast.killSwitchOption.get.shutdown()
+        cast.killSwitchOption.get.abort(SlackExceptionEvent.UserCancelledException)
         logger.warn(cast.cancel().toString)
         val view = new CancelTaskModal(cancelledTask)
         val update = slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
