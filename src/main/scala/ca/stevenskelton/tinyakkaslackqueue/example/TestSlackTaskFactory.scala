@@ -29,10 +29,10 @@ class TestSlackTaskFactory(implicit slackClient: SlackClient, materializer: Mate
           val totalCount = Future.successful(100)
           val start = System.currentTimeMillis
           val source = Source(1 to 120)
-            .via(Flow.fromFunction { i => Thread.sleep(1000); i })
-            .viaMat(KillSwitches.single)(Keep.right)
+            .async.viaMat(KillSwitches.single)(Keep.right)
             .via(Flow.fromFunction {
               i =>
+                Thread.sleep(1000)
                 if(i % 10 == 0){
                   val skew = System.currentTimeMillis - start - (i * 1000)
                   logger.info(s"Skew of ${skew}ms at $i second")
