@@ -21,10 +21,9 @@ import scala.util.{Failure, Success, Try}
 
 abstract class SlackFactories(
                                val slackClient: SlackClient,
-                               val logger: Logger,
                                val actorSystem: ActorSystem,
                                val config: Config
-                             ) {
+                             )(implicit logger:Logger) {
 
   implicit val materializer: Materializer = SystemMaterializer.get(actorSystem).materializer
 
@@ -133,7 +132,7 @@ abstract class SlackFactories(
           if (!pinsAddedResult.isOk) logger.error(pinsAddedResult.getError)
           SlackTs(pinnedMessageResult.getMessage)
         }
-        tinyakkaslackqueue.SlackTaskMeta(SlackChannel(channel), historyThread, factory)
+        SlackTaskMeta.initialize(slackClient, SlackChannel(channel), historyThread, factory)
     }
   }
 

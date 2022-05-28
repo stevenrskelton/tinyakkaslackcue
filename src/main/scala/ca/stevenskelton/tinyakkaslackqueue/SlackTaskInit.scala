@@ -3,9 +3,11 @@ package ca.stevenskelton.tinyakkaslackqueue
 import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem, TaskHistoryItem}
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackUpdatePercentCompleteEvent}
 import org.slf4j.Logger
 
+import java.time.ZonedDateTime
 import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -18,7 +20,7 @@ trait SlackTaskInit[T, B] {
   def create(slackTaskMeta: SlackTaskMeta, ts: SlackTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
             (implicit slackClient: SlackClient, materializer: Materializer): SlackTask = {
 
-    import scala.concurrent.ExecutionContext.Implicits.global
+    import materializer.executionContext
 
     val lts = ts
     val lcreatedBy = createdBy
@@ -30,26 +32,30 @@ trait SlackTaskInit[T, B] {
       var killSwitchOption: Option[UniqueKillSwitch] = None
 
       override def run(logger: Logger): Unit = {
+        implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this, logger) //, 2.seconds)
+        val start = ZonedDateTime.now()
 
         val completeElements = new mutable.HashSet[B]()
-        implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this, logger) //, 2.seconds)
         val (source, itemCount) = sourceAndCount(slackTaskLogger)
         itemCount.foreach(i => estimatedCount = i)
-        val (killswitch, result) = source.toMat(Sink.foreach {
-          t =>
+        val (killswitch, result) = source.toMat(Sink.fold(0){
+          (_, t) =>
             val key = distinctBy(t)
             if (completeElements.add(key)) {
               completedCount = completeElements.size
               itemCount.foreach(_ => slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(percentComplete)))
             }
+            completeElements.size
         })(Keep.both).run()
         killSwitchOption = Some(killswitch)
         result.onComplete {
-          case Success(_) =>
+          case Success(totalItemCount) =>
             slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(1))
             isComplete = true
+            slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, start), ts)
           case Failure(ex) =>
             slackTaskLogger.recordEvent(SlackExceptionEvent(ex))
+            slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, start), ts)
         }
         Await.result(result, 24.hours)
       }

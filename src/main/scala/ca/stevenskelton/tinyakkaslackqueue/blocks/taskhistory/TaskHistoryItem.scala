@@ -11,11 +11,6 @@ object TaskHistoryItem {
   }
 
   def reads(ts: SlackTs, threadTs: SlackTs, slackChannel: SlackChannel, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
-    //    val ts = SlackTs.Empty
-    //    val threadTs = SlackTs.Empty
-    //    val slackChannel = SlackChannel("")
-    //    val time = ZonedDateTime.now()
-
     (json: JsValue) => {
       (json \ "action").as[String] match {
         case CancelHistoryItem.Action =>
@@ -52,7 +47,7 @@ object TaskHistoryItem {
   }
 }
 
-case class TaskHistoryItem[T <: TaskHistoryActionItem](
+case class TaskHistoryItem[+T <: TaskHistoryActionItem](
                                                         action: T,
                                                         ts: SlackTs,
                                                         threadTs: SlackTs,

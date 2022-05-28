@@ -102,13 +102,14 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
 
 
     val runningBlocks = taskHistory.running.map {
-      scheduledTask =>
+      case (scheduledTask, cancellingOpt) =>
+        val cancellingText = cancellingOpt.fold("")(historyTaskItem => "\nCancelling.")
         s""",
 {
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": "${TextProgressBar.SlackEmoji.bar(scheduledTask.task.percentComplete, 40)}"
+    "text": "${TextProgressBar.SlackEmoji.bar(scheduledTask.task.percentComplete, 40)}\n$cancellingText"
   }
 },{
   "type": "section",

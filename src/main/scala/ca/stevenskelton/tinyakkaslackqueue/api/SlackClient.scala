@@ -78,6 +78,8 @@ trait SlackClient {
 
   def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse
 
+  def threadReplies(slackTs: SlackTs): ConversationsRepliesResponse
+
   def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse
 }
 
@@ -127,8 +129,10 @@ case class SlackClientImpl(val botOAuthToken: String, val botUserId: SlackUserId
     client.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(botOAuthToken).triggerId(slackTriggerId.value).viewAsString(slackView.toString))
   }
 
-  override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = {
-    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(messageItem.getMessage.getTs))
+  override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = threadReplies(SlackTs(messageItem.getMessage.getTs))
+
+  override def threadReplies(ts: SlackTs): ConversationsRepliesResponse = {
+    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(ts.value))
   }
 
 }
