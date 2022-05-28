@@ -1,20 +1,23 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.actor.ActorSystem
+import akka.stream.scaladsl.{Keep, Source}
+import akka.stream.{KillSwitches, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
 import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskFactory
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
+import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateResponse}
+import com.slack.api.methods.response.conversations.ConversationsRepliesResponse
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsListResponse, PinsRemoveResponse}
-import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse}
+import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse, ViewsUpdateResponse}
 import com.slack.api.model.block.composition.MarkdownTextObject
 import com.typesafe.config.ConfigFactory
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{ZoneId, ZonedDateTime}
-import scala.util.Random
+import scala.concurrent.Future
 
 object TestData {
 
@@ -36,7 +39,7 @@ object TestData {
 
     override def pinsList(): Iterable[PinsListResponse.MessageItem] = ???
 
-    override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, SlackTaskThread.Fields)] = ???
+    //    override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, SlackTaskThread.Fields)] = ???
 
     override def chatPostMessageInThread(text: String, thread: tinyakkaslackqueue.SlackTs): ChatPostMessageResponse = ???
 
@@ -44,51 +47,44 @@ object TestData {
 
     override def viewsPublish(userId: tinyakkaslackqueue.SlackUserId, view: SlackView): ViewsPublishResponse = ???
 
-    override def viewsOpen(slackTriggerId: tinyakkaslackqueue.SlackTriggerId, view: tinyakkaslackqueue.SlackBlocksAsString): ViewsOpenResponse = ???
+    //    override def viewsOpen(slackTriggerId: tinyakkaslackqueue.SlackTriggerId, view: tinyakkaslackqueue.SlackBlocksAsString): ViewsOpenResponse = ???
 
     override def botOAuthToken: String = ""
 
-    override def historyThread: SlackTs = SlackTs.Empty
+    //    override def historyThread: SlackTs = SlackTs.Empty
+
+    override def client: MethodsClient = ???
+
+    override def botUserId: SlackUserId = ???
+
+    override def botChannel: SlackChannel = ???
+
+    override def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse = ???
+
+    override def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse = ???
+
+    override def threadReplies(messageItem: PinsListResponse.MessageItem): ConversationsRepliesResponse = ???
   }
 
-  private class TestSlackTaskFactory(number: String) extends SlackTaskFactory() {
-    val self = this
-
-    override def create(ts: tinyakkaslackqueue.SlackTs, createdBy: tinyakkaslackqueue.SlackUserId, notifyOnError: Seq[tinyakkaslackqueue.SlackUserId], notifyOnComplete: Seq[tinyakkaslackqueue.SlackUserId]): SlackTask = {
-      new SlackTask {
-        override def name: MarkdownTextObject = self.name
-
-        override def description: MarkdownTextObject = self.description
-
-        override def ts: tinyakkaslackqueue.SlackTs = SlackTs(Random.alphanumeric.take(5).toString)
-
-        override def createdBy: tinyakkaslackqueue.SlackUserId = CreatedBy
-
-        override def notifyOnError: Seq[tinyakkaslackqueue.SlackUserId] = Seq(
-          new SlackUserId(Random.alphanumeric.take(5).toString),
-          new SlackUserId(Random.alphanumeric.take(5).toString)
-        )
-
-        override def notifyOnComplete: Seq[tinyakkaslackqueue.SlackUserId] = Seq(
-          new SlackUserId(Random.alphanumeric.take(5).toString),
-          new SlackUserId(Random.alphanumeric.take(5).toString),
-          new SlackUserId(Random.alphanumeric.take(5).toString)
-        )
-
-        override def run(logger: Logger): Unit = ()
-      }
-    }
+  private class TestSlackTaskFactory(number: String) extends SlackTaskFactory[Int, Int] {
 
     override def name: MarkdownTextObject = MarkdownTextObject.builder().text(s"Name$number").build()
 
     override def description: MarkdownTextObject = MarkdownTextObject.builder().text(s"Description$number").build()
+
+    override def distinctBy: Int => Int = identity
+
+    override def sourceAndCount: Logger => (Source[Int, UniqueKillSwitch], Future[Int]) = _ => {
+      val seq = Seq(1, 2, 3)
+      (Source(seq).viaMat(KillSwitches.single)(Keep.right), Future.successful(seq.length))
+    }
   }
 
   implicit val slackTaskFactories = new SlackFactories(slackClient, logger, actorSystem, config) {
-    override def factories: Map[SlackChannel, SlackTaskFactory] = Map(
-      SlackChannel("c1") -> new TestSlackTaskFactory("One"),
-      SlackChannel("c2") ->new TestSlackTaskFactory("Two"),
-      SlackChannel("c3") ->new TestSlackTaskFactory("Three")
+    override protected val factories: Seq[SlackTaskFactory[_, _]] = Seq(
+      new TestSlackTaskFactory("One"),
+      new TestSlackTaskFactory("Two"),
+      new TestSlackTaskFactory("Three")
     )
   }
 
