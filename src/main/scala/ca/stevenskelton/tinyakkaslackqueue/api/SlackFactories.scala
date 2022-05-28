@@ -53,6 +53,7 @@ abstract class SlackFactories(
       notifyOnComplete = Nil
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
+    slackTaskMeta.historyAddCreate(scheduledTask)
     //    slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
     scheduledTask
   }

@@ -37,7 +37,11 @@ trait SlackTaskInit[T, B] {
 
         val completeElements = new mutable.HashSet[B]()
         val (source, itemCount) = sourceAndCount(slackTaskLogger)
-        itemCount.foreach(i => estimatedCount = i)
+        itemCount.foreach {
+          i =>
+            estimatedCount = i
+            slackTaskMeta.historyAddRun(ts, estimatedCount)
+        }
         val (killswitch, result) = source.toMat(Sink.fold(0){
           (_, t) =>
             val key = distinctBy(t)

@@ -1,13 +1,40 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
 import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackTs}
+import com.slack.api.model.Message
+import org.slf4j.Logger
 import play.api.libs.json._
 
 import java.time.ZonedDateTime
+import scala.util.control.NonFatal
 
 object TaskHistoryItem {
   implicit val ordering = new Ordering[TaskHistoryItem[TaskHistoryOutcomeItem]] {
     override def compare(x: TaskHistoryItem[TaskHistoryOutcomeItem], y: TaskHistoryItem[TaskHistoryOutcomeItem]): Int = x.time.compareTo(y.time)
+  }
+
+  def fromMessage(message:Message, ts: SlackTs, threadTs: SlackTs, slackChannel: SlackChannel)(implicit logger:Logger): Option[TaskHistoryItem[_]] = {
+    try {
+      val createdText = message.getItem.getCreated
+      val createdBy = message.getItem.getUser
+      implicit val reads = TaskHistoryItem.reads(ts, threadTs, slackChannel, ZonedDateTime.now())
+      val text = message.getText
+      if (text.startsWith("```")) {
+        val json = Json.parse(text.drop(3).dropRight(3))
+        reads.reads(json) match {
+          case JsSuccess(taskHistoryItem, _) => Some(taskHistoryItem)
+          case JsError(ex) =>
+            logger.error("TaskHistoryItem.reads", ex)
+            None
+        }
+      }else{
+        None
+      }
+    } catch {
+      case NonFatal(ex) =>
+        logger.error(s"SlackTaskMeta.initialize: ${message.getText}", ex)
+        None
+    }
   }
 
   def reads(ts: SlackTs, threadTs: SlackTs, slackChannel: SlackChannel, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
@@ -55,4 +82,5 @@ case class TaskHistoryItem[+T <: TaskHistoryActionItem](
                                                         time: ZonedDateTime
                                                       )(implicit fmt: OFormat[T]) {
   def toJson: JsObject = fmt.writes(action)
+  def toSlackMessage: String = s"```${Json.prettyPrint(toJson)}```"
 }
