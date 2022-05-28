@@ -11,6 +11,7 @@ object SuccessHistoryItem {
 
 case class SuccessHistoryItem(count: Int, start: ZonedDateTime) extends TaskHistoryOutcomeItem {
   override def action: String = SuccessHistoryItem.Action
+
   override def sectionBlocks: Seq[String] = Seq(
     s"""{"type": "mrkdwn","text": "Item Count:\n${count.toString}"}"""
   )

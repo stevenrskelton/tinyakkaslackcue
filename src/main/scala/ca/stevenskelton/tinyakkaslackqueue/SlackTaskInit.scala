@@ -1,53 +1,19 @@
-package ca.stevenskelton.tinyakkaslackqueue.lib
+package ca.stevenskelton.tinyakkaslackqueue
 
+import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Materializer, UniqueKillSwitch}
-import akka.stream.scaladsl.{Keep, Sink, Source}
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackUpdatePercentCompleteEvent}
-import ca.stevenskelton.tinyakkaslackqueue.{SlackClient, SlackFactories, SlackTask, SlackTs, SlackUserId}
-import com.slack.api.model.block.composition.MarkdownTextObject
 import org.slf4j.Logger
 
 import scala.collection.mutable
+import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
-/**
- * Inherit to implement Akka Stream tasks, typed as a SlackTask
- *
- * @tparam T Source will create items of type T
- * @tparam B If T should be grouped together, for example by T.b, then set B != T
- */
-trait SlackTaskFactory[T, B] {
+trait SlackTaskInit[T, B] {
 
-  /**
-   * A brief name for this task.
-   * Will be used to create a Slack channel (modified to be a valid Slack channel name).
-   * Markdown is supported, see https://api.slack.com/reference/surfaces/formatting#basics
-   */
-  def name: MarkdownTextObject
-
-  /**
-   * A longer description for the task.
-   * Markdown is supported, see https://api.slack.com/reference/surfaces/formatting#basics
-   */
-  def description: MarkdownTextObject
-
-  /**
-   * Group T together by field B
-   */
-  def distinctBy: T => B
-
-  /**
-   * Create a source of T.
-   * Use `.async.viaMat(KillSwitches.single)(Keep.right)` to add an kill switch
-   */
-  def sourceAndCount: Logger => (Source[T, UniqueKillSwitch], Future[Int])
-
-  /**
-   *  Helper class to create `name` and `description`
-   */
-  protected def createMarkdownText(value: String): MarkdownTextObject = MarkdownTextObject.builder().text(value).build()
+  self: SlackTaskFactory[T, B] =>
 
   def create(slackTaskMeta: SlackTaskMeta, ts: SlackTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
             (implicit slackClient: SlackClient, materializer: Materializer): SlackTask = {
@@ -108,5 +74,3 @@ trait SlackTaskFactory[T, B] {
   }
 
 }
-
-

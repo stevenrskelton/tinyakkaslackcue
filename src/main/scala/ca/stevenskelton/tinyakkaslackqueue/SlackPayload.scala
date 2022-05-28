@@ -31,7 +31,7 @@ object SlackPayload {
 }
 
 case class SlackPayload(payloadType: SlackPayloadType, viewId: String, user: SlackUser, actions: Seq[SlackAction], triggerId: SlackTriggerId,
-                        privateMetadata: Option[PrivateMetadata], callbackId: Option[CallbackId], actionStates: Map[ActionId, State]){
+                        privateMetadata: Option[PrivateMetadata], callbackId: Option[CallbackId], actionStates: Map[ActionId, State]) {
 
   def action(implicit logger: Logger): SlackAction = actions.headOption.getOrElse {
     val ex = new Exception(s"No actions found")

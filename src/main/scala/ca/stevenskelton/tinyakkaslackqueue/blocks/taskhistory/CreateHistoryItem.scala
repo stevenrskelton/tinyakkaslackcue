@@ -10,4 +10,4 @@ object CreateHistoryItem {
 
 case class CreateHistoryItem(user: SlackUserId) extends TaskHistoryActionItem {
   override def action: String = CreateHistoryItem.Action
-  }
+}

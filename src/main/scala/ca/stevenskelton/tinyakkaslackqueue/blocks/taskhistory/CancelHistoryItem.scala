@@ -12,6 +12,7 @@ object CancelHistoryItem {
 
 case class CancelHistoryItem(user: SlackUserId, start: ZonedDateTime) extends TaskHistoryOutcomeItem {
   override def action: String = CancelHistoryItem.Action
+
   override def sectionBlocks: Seq[String] = Seq(s"""{"type": "mrkdwn","text": "Cancelled by:\n${user.value}"}""")
 }
 

@@ -1,4 +1,4 @@
-package ca.stevenskelton.tinyakkaslackqueue
+package ca.stevenskelton.tinyakkaslackqueue.api
 
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
@@ -9,6 +9,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
+import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTs, SlackUserId}
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
@@ -63,7 +64,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
               case ActionId.TabRefresh =>
                 HomeTabActions.update(slackPayload)
               case ActionId.TaskCancel =>
-                HomeTabActions.cancelTask(SlackTs(action.value),  slackPayload)
+                HomeTabActions.cancelTask(SlackTs(action.value), slackPayload)
               case _ =>
                 HomeTabActions.handleAction(slackPayload)
             }
@@ -75,7 +76,7 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
               val action = slackPayload.action
               if (action.actionId == ActionId.TaskCancel) {
                 val ts = SlackTs(slackPayload.actions.head.value)
-                HomeTabActions.cancelTask(ts,  slackPayload)
+                HomeTabActions.cancelTask(ts, slackPayload)
               } else {
                 val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
                 logger.error("handleSubmission", ex)

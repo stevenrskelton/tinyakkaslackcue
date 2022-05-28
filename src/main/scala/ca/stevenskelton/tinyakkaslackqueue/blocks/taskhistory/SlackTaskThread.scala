@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
 import ca.stevenskelton.tinyakkaslackqueue.SlackTask
-import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskFactory
+import ca.stevenskelton.tinyakkaslackqueue.api.SlackTaskFactory
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 

@@ -10,7 +10,8 @@ import java.time.Duration
 
 object HomeTab {
 
-  def viewLogsButton(scheduledTask: ScheduledSlackTask) = s"""
+  def viewLogsButton(scheduledTask: ScheduledSlackTask) =
+    s"""
     {
       "type": "button",
       "text": {
@@ -22,7 +23,8 @@ object HomeTab {
       "value": "${scheduledTask.task.id.value}"
     }"""
 
-  def cancelTaskButton(scheduledTask: ScheduledSlackTask, actionId: ActionId) = s"""
+  def cancelTaskButton(scheduledTask: ScheduledSlackTask, actionId: ActionId) =
+    s"""
     {
       "type": "button",
       "text": {

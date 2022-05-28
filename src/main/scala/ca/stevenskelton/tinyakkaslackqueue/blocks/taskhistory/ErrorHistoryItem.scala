@@ -11,6 +11,7 @@ object ErrorHistoryItem {
 
 case class ErrorHistoryItem(ex: String, message: String, start: ZonedDateTime) extends TaskHistoryOutcomeItem {
   override def action: String = ErrorHistoryItem.Action
+
   override def sectionBlocks: Seq[String] = Seq(
     s"""{"type": "mrkdwn","text": "Error:\n$ex"}""",
     s"""{"type": "mrkdwn","text": "Message:\n$message"}"""

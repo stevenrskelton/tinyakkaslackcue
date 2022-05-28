@@ -3,6 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.logging
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{Materializer, OverflowStrategy}
 import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.api.SlackClient
 import ca.stevenskelton.tinyakkaslackqueue.blocks.logLevelEmoji
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
 import org.slf4j.Logger
@@ -62,7 +63,7 @@ object SlackLoggerFactory {
           exceptionEvent match {
             case Some(_) =>
               slackClient.chatUpdate(SlackTaskThread.cancelled(slackTask, startTimeMs), slackTask.ts)
-//              slackClient.pinsRemove(slackTask.ts)
+            //              slackClient.pinsRemove(slackTask.ts)
             case None =>
               percentCompleteEvent.foreach {
                 event =>

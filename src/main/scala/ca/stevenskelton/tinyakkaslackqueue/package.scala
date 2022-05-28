@@ -34,6 +34,7 @@ package object tinyakkaslackqueue {
 
   object SlackChannel {
     def apply(conversation: Conversation): SlackChannel = SlackChannel(conversation.getId)
+
     implicit val reads = implicitly[Reads[String]].map(SlackChannel(_))
     implicit val writes = new Writes[SlackChannel] {
       override def writes(o: SlackChannel): JsValue = JsString(o.value)

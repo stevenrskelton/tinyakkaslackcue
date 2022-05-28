@@ -1,8 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
-import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskMeta
 import org.slf4j.event.Level
 
 import java.time.ZonedDateTime
@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata)(implicit slackFactories: SlackFactories) extends SlackView {
 
   private val submitButtonText = if (zonedDateTimeOpt.isEmpty) {
-    if (slackFactories.tinySlackQueue.isExecuting) "Run" else "Queue"
+    if (slackFactories.isExecuting) "Run" else "Queue"
   } else {
     "Schedule"
   }

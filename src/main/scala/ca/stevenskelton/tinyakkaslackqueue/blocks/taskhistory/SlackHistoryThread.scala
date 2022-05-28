@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
-import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackClient, SlackFactories, SlackTs}
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackFactories}
+import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackTs}
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.model.Message

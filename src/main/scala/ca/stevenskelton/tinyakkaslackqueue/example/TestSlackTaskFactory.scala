@@ -2,8 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.example
 
 import akka.stream.scaladsl.{Flow, Keep, Source}
 import akka.stream.{KillSwitches, Materializer, UniqueKillSwitch}
-import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskFactory
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import org.slf4j.Logger
 
 import scala.concurrent.Future
@@ -25,7 +24,7 @@ class TestSlackTaskFactory(implicit slackClient: SlackClient, materializer: Mate
         .via(Flow.fromFunction {
           i =>
             Thread.sleep(1000)
-            if(i % 10 == 0){
+            if (i % 10 == 0) {
               val skew = System.currentTimeMillis - start - (i * 1000)
               logger.info(s"Skew of ${skew}ms at $i second")
             }

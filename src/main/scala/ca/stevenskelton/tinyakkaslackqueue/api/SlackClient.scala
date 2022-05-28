@@ -1,12 +1,11 @@
-package ca.stevenskelton.tinyakkaslackqueue
+package ca.stevenskelton.tinyakkaslackqueue.api
 
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread.Fields
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
+import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.Slack
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateRequest}
-import com.slack.api.methods.request.conversations.{ConversationsHistoryRequest, ConversationsListRequest, ConversationsRepliesRequest}
+import com.slack.api.methods.request.conversations.{ConversationsListRequest, ConversationsRepliesRequest}
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest, PinsRemoveRequest}
 import com.slack.api.methods.request.users.UsersListRequest
 import com.slack.api.methods.request.views.{ViewsOpenRequest, ViewsPublishRequest, ViewsUpdateRequest}
@@ -67,7 +66,7 @@ trait SlackClient {
 
   def pinsList(): Iterable[MessageItem]
 
-//  def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)]
+  //  def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)]
 
   def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse
 
@@ -82,7 +81,7 @@ trait SlackClient {
   def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse
 }
 
-class SlackClientImpl(val botOAuthToken: String, val botUserId: SlackUserId, val botChannel: SlackChannel, val client: MethodsClient) extends SlackClient {
+case class SlackClientImpl(val botOAuthToken: String, val botUserId: SlackUserId, val botChannel: SlackChannel, val client: MethodsClient) extends SlackClient {
 
   override def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse = {
     client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).ts(ts.value).text(text))
@@ -104,9 +103,9 @@ class SlackClientImpl(val botOAuthToken: String, val botUserId: SlackUserId, val
     client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value)).getItems.asScala
   }
 
-//  override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)] = {
-//    pinsList().flatMap(SlackTaskThread.parse(_, slackTaskFactories))
-//  }
+  //  override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)] = {
+  //    pinsList().flatMap(SlackTaskThread.parse(_, slackTaskFactories))
+  //  }
 
   override def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse = {
     client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).text(text).threadTs(thread.value))
