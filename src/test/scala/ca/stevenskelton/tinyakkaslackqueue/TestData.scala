@@ -2,7 +2,8 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.actor.ActorSystem
 import ca.stevenskelton.tinyakkaslackqueue
-import ca.stevenskelton.tinyakkaslackqueue.blocks.SlackTaskThread
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
+import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskFactory
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateResponse}

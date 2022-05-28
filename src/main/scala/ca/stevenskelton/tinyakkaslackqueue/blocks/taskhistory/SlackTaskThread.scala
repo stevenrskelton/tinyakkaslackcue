@@ -1,15 +1,11 @@
-package ca.stevenskelton.tinyakkaslackqueue.blocks
+package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
-import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.SlackTask
+import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskFactory
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
-import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
-import com.slack.api.model.block.{HeaderBlock, SectionBlock}
 
-import java.time.format.DateTimeFormatter
 import java.time.{Duration, ZonedDateTime}
-import scala.jdk.CollectionConverters.CollectionHasAsScala
-import scala.util.Try
 
 object SlackTaskThread {
 
@@ -25,41 +21,41 @@ object SlackTaskThread {
                      notifyOnComplete: Seq[String]
                    )
 
-  def placeholderThread(slackTaskIdentifier: SlackTaskIdentifier): String = {
+  def placeholderThread(slackTaskIdentifier: SlackTaskFactory): String = {
     s"Scheduling task *${slackTaskIdentifier.name.getText}*"
   }
 
-//  def schedule(scheduledTask: ScheduledSlackTask, slackTaskMeta: SlackTaskMeta): SlackBlocksAsString = {
-//
-//    val createdByUser = "@Steven Skelton"
-//    val scheduledTime = scheduledTask.executionStart.format(DateTimeFormatter.ofPattern("YYYY-mm-dd hh:MM"))
-//
-//    SlackBlocksAsString(
-//      s"""{
-//    "type": "header",
-//    "text": {
-//      "type": "plain_text",
-//      "text": "$HeaderPreamble${slackTaskMeta.factory.name.getText}",
-//      "emoji": true
-//    }
-//	},{
-//    "type": "section",
-//    "text": {
-//      "type": "mrkdwn",
-//      "text": "$CreatedByPreamble$createdByUser\\n$ScheduledForPreamble$scheduledTime"
-//    },
-//    "accessory": {
-//      "type": "button",
-//      "text": {
-//        "type": "plain_text",
-//        "text": "Cancel",
-//        "emoji": true
-//      },
-//      "style": "danger",
-//      "value": "public-relations"
-//    }
-//  }""")
-//  }
+  //  def schedule(scheduledTask: ScheduledSlackTask, slackTaskMeta: SlackTaskMeta): SlackBlocksAsString = {
+  //
+  //    val createdByUser = "@Steven Skelton"
+  //    val scheduledTime = scheduledTask.executionStart.format(DateTimeFormatter.ofPattern("YYYY-mm-dd hh:MM"))
+  //
+  //    SlackBlocksAsString(
+  //      s"""{
+  //    "type": "header",
+  //    "text": {
+  //      "type": "plain_text",
+  //      "text": "$HeaderPreamble${slackTaskMeta.factory.name.getText}",
+  //      "emoji": true
+  //    }
+  //	},{
+  //    "type": "section",
+  //    "text": {
+  //      "type": "mrkdwn",
+  //      "text": "$CreatedByPreamble$createdByUser\\n$ScheduledForPreamble$scheduledTime"
+  //    },
+  //    "accessory": {
+  //      "type": "button",
+  //      "text": {
+  //        "type": "plain_text",
+  //        "text": "Cancel",
+  //        "emoji": true
+  //      },
+  //      "style": "danger",
+  //      "value": "public-relations"
+  //    }
+  //  }""")
+  //  }
 
   def update(slackTask: SlackTask, executionStart: ZonedDateTime): String = {
     update(slackTask, slackTask.percentComplete, executionStart.toEpochSecond, width = 40)

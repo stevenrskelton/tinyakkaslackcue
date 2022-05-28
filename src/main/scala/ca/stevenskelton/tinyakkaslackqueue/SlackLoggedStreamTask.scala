@@ -42,9 +42,7 @@ abstract class SlackLoggedStreamTask[T, B](implicit slackClient: SlackClient, va
 
   override def cancel(): Boolean = {
     killSwitchOption.foreach {
-      o =>
-        o.abort(SlackExceptionEvent.UserCancelledException)
-        //o.shutdown()
+      _.abort(SlackExceptionEvent.UserCancelledException)
     }
     super.cancel
   }

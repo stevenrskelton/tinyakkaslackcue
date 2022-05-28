@@ -3,16 +3,16 @@ package ca.stevenskelton.tinyakkaslackqueue.example
 import akka.stream.scaladsl.{Flow, Keep, Source}
 import akka.stream.{KillSwitches, Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue._
-import com.slack.api.model.block.composition.MarkdownTextObject
+import ca.stevenskelton.tinyakkaslackqueue.lib.{SlackTaskFactory, SlackTaskMeta}
 import org.slf4j.Logger
 
 import scala.concurrent.Future
 
 class TestSlackTaskFactory(implicit slackClient: SlackClient, materializer: Materializer) extends SlackTaskFactory {
 
-  override val name = MarkdownTextObject.builder().text("test").build()
+  override val name = createMarkdownText("test")
 
-  override val description = MarkdownTextObject.builder().text("2 minutes @ 1 second").build()
+  override val description = createMarkdownText("2 minutes @ 1 second")
 
   override def create(slackTaskMeta: SlackTaskMeta, ts: SlackTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId]): SlackTask = {
     val innerTs = ts

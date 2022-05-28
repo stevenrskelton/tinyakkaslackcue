@@ -1,8 +1,9 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
+import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskMeta
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
-import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask, SlackTaskMeta}
+import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
 
 class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackView {
   override def toString: String = {

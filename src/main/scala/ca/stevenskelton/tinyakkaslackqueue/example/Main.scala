@@ -7,8 +7,9 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.SystemMaterializer
+import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskFactory
 import ca.stevenskelton.tinyakkaslackqueue.logging.SlackLoggerFactory
-import ca.stevenskelton.tinyakkaslackqueue.{SlackClient, SlackFactories, SlackRoutes, SlackTaskFactory}
+import ca.stevenskelton.tinyakkaslackqueue.{SlackClient, SlackFactories, SlackRoutes}
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 

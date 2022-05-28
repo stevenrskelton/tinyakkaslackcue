@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
+import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskMeta
 import org.slf4j.event.Level
 
 import java.time.ZonedDateTime

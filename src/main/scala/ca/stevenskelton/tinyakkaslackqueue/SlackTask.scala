@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
+import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskMeta
 import ca.stevenskelton.tinyakkaslackqueue.timer.IdTask
 
 abstract class SlackTask extends IdTask[SlackTs] {

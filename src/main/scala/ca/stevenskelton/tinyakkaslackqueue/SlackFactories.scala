@@ -3,6 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 import akka.Done
 import akka.actor.ActorSystem
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{PrivateMetadata, TaskHistory}
+import ca.stevenskelton.tinyakkaslackqueue.lib.{SlackTaskFactory, SlackTaskMeta}
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.methods.request.conversations.{ConversationsCreateRequest, ConversationsListRequest, ConversationsRepliesRequest}
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest}
@@ -97,7 +98,7 @@ abstract class SlackFactories(
           if(!pinsAddedResult.isOk) logger.error(pinsAddedResult.getError)
           SlackTs(pinnedMessageResult.getMessage)
         }
-        SlackTaskMeta(SlackChannel(channel),historyThread,factory )
+        lib.SlackTaskMeta(SlackChannel(channel),historyThread,factory )
     }
   }
 
