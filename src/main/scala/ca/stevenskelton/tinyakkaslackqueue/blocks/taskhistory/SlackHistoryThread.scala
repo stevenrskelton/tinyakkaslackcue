@@ -26,7 +26,7 @@ object SlackHistoryThread {
   }
 
   def history(taskHistoryItem: TaskHistoryItem[_])(implicit slackFactories: SlackFactories): ChatPostMessageResponse = {
-    val json = Json.toJson(taskHistoryItem)
+    val json = taskHistoryItem.toJson
     val slackTaskMeta = slackFactories.slackTaskMetaFactories.find(_.channel == taskHistoryItem.channel).get
     slackFactories.slackClient.chatPostMessageInThread(toMessage(json), slackTaskMeta.historyThread)
   }

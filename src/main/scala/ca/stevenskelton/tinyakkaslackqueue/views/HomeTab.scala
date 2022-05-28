@@ -6,6 +6,8 @@ import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab.{cancelTaskButton, viewLogsButton}
 
+import java.time.Duration
+
 object HomeTab {
 
   def viewLogsButton(scheduledTask: ScheduledSlackTask) = s"""
@@ -56,7 +58,24 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
 
   private def taskHistoryBlocks(taskHistory: TaskHistory): String = {
 
-    val executedBlocks = if (taskHistory.executed.isEmpty) "" else taskHistory.executed.toSeq.reverse.map(_.toBlocks.value).mkString(",", """,{"type": "divider"},""", "")
+    val executedBlocks = if (taskHistory.executed.isEmpty) "" else taskHistory.executed.toSeq.reverse.map {
+      taskHistoryItem =>
+        val duration = Duration.between(taskHistoryItem.time, taskHistoryItem.action.start)
+        s""",{
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Type:*\n${taskHistoryItem.action.action}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Duration:*\n${DateUtils.humanReadable(duration)}"
+          },
+          ${taskHistoryItem.action.sectionBlocks.mkString(",")}
+        ]
+      },{"type": "divider"}"""
+    }
 
     val pendingBlocks = if (taskHistory.pending.isEmpty) "" else taskHistory.pending.map {
       scheduledTask =>

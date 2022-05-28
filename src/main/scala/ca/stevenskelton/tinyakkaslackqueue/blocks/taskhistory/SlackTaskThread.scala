@@ -9,10 +9,6 @@ import java.time.{Duration, ZonedDateTime}
 
 object SlackTaskThread {
 
-  private val HeaderPreamble = "Scheduled Task "
-  private val CreatedByPreamble = "*Created by* "
-  private val ScheduledForPreamble = "*Scheduled for* "
-
   case class Fields(
                      name: String,
                      scheduledTime: ZonedDateTime,
@@ -24,38 +20,6 @@ object SlackTaskThread {
   def placeholderThread(slackTaskIdentifier: SlackTaskFactory): String = {
     s"Scheduling task *${slackTaskIdentifier.name.getText}*"
   }
-
-  //  def schedule(scheduledTask: ScheduledSlackTask, slackTaskMeta: SlackTaskMeta): SlackBlocksAsString = {
-  //
-  //    val createdByUser = "@Steven Skelton"
-  //    val scheduledTime = scheduledTask.executionStart.format(DateTimeFormatter.ofPattern("YYYY-mm-dd hh:MM"))
-  //
-  //    SlackBlocksAsString(
-  //      s"""{
-  //    "type": "header",
-  //    "text": {
-  //      "type": "plain_text",
-  //      "text": "$HeaderPreamble${slackTaskMeta.factory.name.getText}",
-  //      "emoji": true
-  //    }
-  //	},{
-  //    "type": "section",
-  //    "text": {
-  //      "type": "mrkdwn",
-  //      "text": "$CreatedByPreamble$createdByUser\\n$ScheduledForPreamble$scheduledTime"
-  //    },
-  //    "accessory": {
-  //      "type": "button",
-  //      "text": {
-  //        "type": "plain_text",
-  //        "text": "Cancel",
-  //        "emoji": true
-  //      },
-  //      "style": "danger",
-  //      "value": "public-relations"
-  //    }
-  //  }""")
-  //  }
 
   def update(slackTask: SlackTask, executionStart: ZonedDateTime): String = {
     update(slackTask, slackTask.percentComplete, executionStart.toEpochSecond, width = 40)

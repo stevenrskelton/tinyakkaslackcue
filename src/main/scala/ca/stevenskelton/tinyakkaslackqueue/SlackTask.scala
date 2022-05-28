@@ -19,7 +19,7 @@ abstract class SlackTask extends IdTask[SlackTs] {
 
   def percentComplete: Float =
     if (completedCount == 0) 0f
-    else if (estimatedCount > 0) math.min(1f, completedCount.toFloat / estimatedCount.toFloat)
+    else if (estimatedCount > 0) math.min(0.99f, completedCount.toFloat / estimatedCount.toFloat)
     else 0f
 
   def notifyOnError: Seq[SlackUserId]
