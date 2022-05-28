@@ -17,7 +17,7 @@ object SlackTaskThread {
                      notifyOnComplete: Seq[String]
                    )
 
-  def placeholderThread(slackTaskIdentifier: SlackTaskFactory): String = {
+  def placeholderThread(slackTaskIdentifier: SlackTaskFactory[_, _]): String = {
     s"Scheduling task *${slackTaskIdentifier.name.getText}*"
   }
 

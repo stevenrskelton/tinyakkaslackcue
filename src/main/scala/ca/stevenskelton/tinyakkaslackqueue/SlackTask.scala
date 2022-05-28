@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 import ca.stevenskelton.tinyakkaslackqueue.lib.SlackTaskMeta
 import ca.stevenskelton.tinyakkaslackqueue.timer.IdTask
 
-abstract class SlackTask extends IdTask[SlackTs] {
+trait SlackTask extends IdTask[SlackTs] {
 
   def ts: SlackTs
 
@@ -17,10 +17,13 @@ abstract class SlackTask extends IdTask[SlackTs] {
 
   var completedCount: Int = 0
 
-  def percentComplete: Float =
-    if (completedCount == 0) 0f
-    else if (estimatedCount > 0) math.min(0.99f, completedCount.toFloat / estimatedCount.toFloat)
+  var isComplete: Boolean = false
+
+  def percentComplete: Float = {
+    if(isComplete) 1f
+    else if (completedCount > 0 && estimatedCount > 0) math.min(0.99f, completedCount.toFloat / estimatedCount.toFloat)
     else 0f
+  }
 
   def notifyOnError: Seq[SlackUserId]
 

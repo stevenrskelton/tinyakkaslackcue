@@ -31,7 +31,7 @@ object Main extends App {
   val port = config.getInt("env.http.port")
 
   implicit val slackTaskFactories = new SlackFactories(slackClient, httpLogger, httpActorSystem, config) {
-    override protected val factories: Seq[SlackTaskFactory] = Seq(
+    override protected val factories: Seq[SlackTaskFactory[_,_]] = Seq(
       new TestSlackTaskFactory()(slackClient, materializer)
     )
   }

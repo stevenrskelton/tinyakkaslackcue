@@ -2,6 +2,8 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.Done
 import akka.actor.ActorSystem
+import akka.stream.{Materializer, SystemMaterializer}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{TaskHistoryItem, TaskHistoryOutcomeItem}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{PrivateMetadata, TaskHistory}
 import ca.stevenskelton.tinyakkaslackqueue.lib.{SlackTaskFactory, SlackTaskMeta}
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
@@ -22,6 +24,8 @@ abstract class SlackFactories(
                                val config: Config
                              ) {
 
+  implicit val materializer: Materializer = SystemMaterializer.get(actorSystem).materializer
+
   def onComplete(slackTask: SlackTask, result: Try[Done]): Unit = {
     result match {
       case Failure(ex) =>
@@ -32,7 +36,7 @@ abstract class SlackFactories(
   val tinySlackQueue = new TinySlackQueue(slackClient, logger, onComplete)(actorSystem, config)
 
   //  private implicit val materializer = SystemMaterializer.get(actorSystem)
-  protected val factories: Seq[SlackTaskFactory]
+  protected val factories: Seq[SlackTaskFactory[_, _]]
 
   private def parsePinnedMessage(message: Message): Seq[SlackTaskMeta] = {
 //    val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
@@ -60,6 +64,8 @@ abstract class SlackFactories(
 //    results.toSeq
     Nil
   }
+
+  def history: Seq[TaskHistory] = slackTaskMetaFactories.map(_.history(tinySlackQueue))
 
   lazy val slackTaskMetaFactories: Seq[SlackTaskMeta] = {
 
@@ -99,30 +105,6 @@ abstract class SlackFactories(
           SlackTs(pinnedMessageResult.getMessage)
         }
         lib.SlackTaskMeta(SlackChannel(channel),historyThread,factory )
-    }
-  }
-
-  implicit val ordering = new Ordering[ScheduledSlackTask] {
-    override def compare(x: ScheduledSlackTask, y: ScheduledSlackTask): Int = x.executionStart.compareTo(y.executionStart)
-  }
-
-  def history: Iterable[TaskHistory] = {
-    val allQueuedTasks = tinySlackQueue.listScheduledTasks
-    slackTaskMetaFactories.map {
-      slackTaskMeta =>
-        //TODO: read Slack thread
-
-        var runningTask: Option[ScheduledSlackTask] = None
-        val cueTasks = allQueuedTasks.withFilter(_.task.meta.channel == slackTaskMeta.channel).flatMap {
-          scheduleTask =>
-            if (scheduleTask.isRunning) {
-              runningTask = Some(scheduleTask)
-              None
-            } else {
-              Some(scheduleTask)
-            }
-        }
-        TaskHistory(slackTaskMeta, runningTask, executed = SortedSet.empty, pending = SortedSet.from(cueTasks))
     }
   }
 

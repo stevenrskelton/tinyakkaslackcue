@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.timer
 import akka.actor.Cancellable
 import org.slf4j.Logger
 
-abstract class IdTask[T] extends Cancellable {
+trait IdTask[T] extends Cancellable {
   def id: T
 
   private var shouldCancel: Boolean = false

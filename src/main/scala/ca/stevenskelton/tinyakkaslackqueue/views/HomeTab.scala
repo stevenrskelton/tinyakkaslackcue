@@ -202,7 +202,7 @@ $executedBlocks
             "type": "button",
             "text": {
               "type": "plain_text",
-              "text": "Refresh :card_index: Statuses",
+              "text": ":card_index: Refresh Statuses",
               "emoji": true
             },
             "style": "primary",
