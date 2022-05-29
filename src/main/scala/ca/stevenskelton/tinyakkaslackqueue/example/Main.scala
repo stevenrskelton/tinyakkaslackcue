@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.SystemMaterializer
-import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackFactories, SlackRoutes, SlackTaskFactory}
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackClientImpl, SlackFactories, SlackRoutes, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.logging.SlackLoggerFactory
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
@@ -21,9 +21,16 @@ object Main extends App {
 
   private implicit val httpActorSystem = ActorSystem("HTTPServer", config)
 
-  implicit val slackClient = SlackClient.initialize(config)
+  val slackConfig = SlackClient.initialize(config)
 
-  private implicit val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"))(slackClient, SystemMaterializer(httpActorSystem).materializer)
+  private implicit val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"), slackConfig)(SystemMaterializer(httpActorSystem).materializer)
+
+  implicit val slackClient: SlackClient = SlackClientImpl(
+    botOAuthToken = slackConfig.botOAuthToken,
+    botUserId = slackConfig.botUserId,
+    botChannel = slackConfig.botChannel,
+    client = slackConfig.client
+  )
 
   implicit val materializer = SystemMaterializer(httpActorSystem).materializer
   val host = config.getString("env.host")

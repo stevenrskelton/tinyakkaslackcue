@@ -6,6 +6,8 @@ import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackClient
 import ca.stevenskelton.tinyakkaslackqueue.blocks.logLevelEmoji
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
+import com.slack.api.methods.MethodsClient
+import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import org.slf4j.Logger
 import org.slf4j.event.LoggingEvent
 
@@ -23,13 +25,16 @@ object SlackLoggerFactory {
     s"$emoji $text$exception"
   }
 
-  def logToSlack(base: Logger)(implicit slackClient: SlackClient, materializer: Materializer): SlackLogger = {
-    val slackTs = SlackTs(slackClient.chatPostMessage(s"Log for ${base.getName}"))
+  def logToSlack(base: Logger, slackConfig: SlackClient.SlackConfig)(implicit materializer: Materializer): SlackLogger = {
+    val text = s"Log for ${base.getName}"
+    val slackThread = slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.value).text(text))
     val sink = Sink.foreach[Seq[LoggingEvent]] {
       loggingEvents =>
         if (loggingEvents.nonEmpty) {
           val message = loggingEvents.map(logEvent).mkString("\n")
-          slackClient.chatPostMessageInThread(message, slackTs)
+          slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) =>
+            r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.value).text(message).threadTs(slackThread.getTs)
+          )
         }
     }
     val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()

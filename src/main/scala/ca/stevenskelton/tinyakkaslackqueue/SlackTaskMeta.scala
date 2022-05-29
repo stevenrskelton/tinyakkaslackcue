@@ -34,7 +34,7 @@ class SlackTaskMeta private(
                              val historyThread: SlackTs,
                              val factory: SlackTaskFactory[_, _],
                              executedTasks: scala.collection.mutable.SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]
-                           ) {
+                           )(implicit logger:Logger) {
 
   implicit val ordering = new Ordering[ScheduledSlackTask] {
     override def compare(x: ScheduledSlackTask, y: ScheduledSlackTask): Int = x.executionStart.compareTo(y.executionStart)
@@ -48,7 +48,11 @@ class SlackTaskMeta private(
       channel,
       ZonedDateTime.now()
     )
-    slackClient.chatPostMessageInThread(taskHistoryOutcome.toSlackMessage, historyThread)
+    val result = slackClient.chatPostMessageInThread(taskHistoryOutcome.toSlackMessage, historyThread)
+    if(!result.isOk){
+      logger.warn(s"historyAddCreate: ${result.getError}")
+    }
+    result
   }
 
   def historyAddRun( ts: SlackTs, estimatedCount: Int) = {
