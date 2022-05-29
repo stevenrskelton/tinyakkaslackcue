@@ -172,6 +172,15 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
       "style": "primary",
       "action_id": "${ActionId.TaskSchedule.value}",
       "value": "${taskHistory.slackTaskMeta.channel.value}"
+    },{
+      "type": "button",
+      "text": {
+        "type": "plain_text",
+        "emoji": true,
+        "text": "View Full History"
+      },
+      "action_id": "${ActionId.TaskHistory.value}",
+      "value": "${taskHistory.slackTaskMeta.channel.value}"
     }
   ]
 }

@@ -10,6 +10,7 @@ object ActionId {
   val TaskCancel = ActionId("task-cancel")
   val TaskView = ActionId("view-task")
   val TaskThread = ActionId("view-thread")
+  val TaskHistory = ActionId("view-history")
 
   val ScheduleDate = ActionId("datepicker-action")
   val ScheduleTime = ActionId("timepicker-action")
