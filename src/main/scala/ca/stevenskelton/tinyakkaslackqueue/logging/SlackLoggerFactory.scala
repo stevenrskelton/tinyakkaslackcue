@@ -6,7 +6,6 @@ import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackClient
 import ca.stevenskelton.tinyakkaslackqueue.blocks.logLevelEmoji
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
-import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import org.slf4j.Logger
 import org.slf4j.event.LoggingEvent

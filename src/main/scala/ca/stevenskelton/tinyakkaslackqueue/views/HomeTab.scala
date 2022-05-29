@@ -1,12 +1,13 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.ScheduledSlackTask
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{CancelHistoryItem, TaskHistoryItem, TaskHistoryOutcomeItem}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, TaskHistory}
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
-import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab.{cancelTaskButton, viewLogsButton}
 
 import java.time.Duration
+import scala.collection.SortedSet
 
 object HomeTab {
 
@@ -54,54 +55,9 @@ object HomeTab {
         }
       }
     }"""
-}
 
-class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
-
-  private def taskHistoryBlocks(taskHistory: TaskHistory): String = {
-
-    val executedBlocks = if (taskHistory.executed.isEmpty) "" else taskHistory.executed.toSeq.reverse.map {
-      taskHistoryItem =>
-        val duration = Duration.between(taskHistoryItem.time, taskHistoryItem.action.start)
-        s""",{
-        "type": "section",
-        "fields": [
-          {
-            "type": "mrkdwn",
-            "text": "*Type:*\n${taskHistoryItem.action.action}"
-          },
-          {
-            "type": "mrkdwn",
-            "text": "*Duration:*\n${DateUtils.humanReadable(duration)}"
-          },
-          ${taskHistoryItem.action.sectionBlocks.mkString(",")}
-        ]
-      },{"type": "divider"}"""
-    }
-
-    val pendingBlocks = if (taskHistory.pending.isEmpty) "" else taskHistory.pending.map {
-      scheduledTask =>
-        s"""{
-  "type": "section",
-  "text": {
-    "type": "mrkdwn",
-    "text": ":watch: *Scheduled:* ${DateUtils.humanReadable(scheduledTask.executionStart)}"
-  },
-  "accessory": {
-    "type": "button",
-    "text": {
-      "type": "plain_text",
-      "text": "View Details",
-      "emoji": true
-    },
-    "value": "${scheduledTask.task.id.value}",
-    "action_id": "${ActionId.TaskView}"
-  }
-}"""
-    }.mkString(",", """,{"type": "divider"},""", "")
-
-
-    val runningBlocks = taskHistory.running.map {
+  def runningBlocks(running: Option[(ScheduledSlackTask, Option[TaskHistoryItem[CancelHistoryItem]])]): String = {
+    running.map {
       case (scheduledTask, cancellingOpt) =>
         val cancellingText = cancellingOpt.fold("")(historyTaskItem => "\nCancelling.")
         s""",
@@ -127,10 +83,58 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
   ]
 },{"type": "divider"}"""
     }.getOrElse("")
+  }
 
-    val queueText = if (taskHistory.running.isEmpty) "Run Immediately" else "Queue Immediately"
+  def executedBlocks(executed: SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]): String = {
+    if (executed.isEmpty) ""
+    else executed.toSeq.reverse.map {
+      taskHistoryItem =>
+        val duration = Duration.between(taskHistoryItem.time, taskHistoryItem.action.start)
+        s"""{
+        "type": "section",
+        "fields": [
+          {
+            "type": "mrkdwn",
+            "text": "*Type:*\n${taskHistoryItem.action.action}"
+          },
+          {
+            "type": "mrkdwn",
+            "text": "*Duration:*\n${DateUtils.humanReadable(duration)}"
+          },
+          ${taskHistoryItem.action.sectionBlocks.mkString(",")}
+        ]
+      }"""
+    }.mkString(",", """,{"type": "divider"},""", "")
+  }
 
-    s"""
+  def pendingBlocks(pending: SortedSet[ScheduledSlackTask]): String = {
+    if (pending.isEmpty) ""
+    else pending.map {
+      scheduledTask =>
+        s"""{
+  "type": "section",
+  "text": {
+    "type": "mrkdwn",
+    "text": ":watch: *Scheduled:* ${DateUtils.humanReadable(scheduledTask.executionStart)}"
+  },
+  "accessory": {
+    "type": "button",
+    "text": {
+      "type": "plain_text",
+      "text": "View Details",
+      "emoji": true
+    },
+    "value": "${scheduledTask.task.id.value}",
+    "action_id": "${ActionId.TaskView}"
+  }
+}"""
+    }.mkString(",", """,{"type": "divider"},""", "")
+  }
+}
+
+class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
+
+  private def taskHistoryBlocks(taskHistory: TaskHistory): String = s"""
 {
   "type": "header",
   "text": {
@@ -152,7 +156,7 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
       "text": {
         "type": "plain_text",
         "emoji": true,
-        "text": "$queueText"
+        "text": "${if (taskHistory.running.isEmpty) "Run Immediately" else "Queue Immediately"}"
       },
       "style": "primary",
       "action_id": "${ActionId.TaskQueue.value}",
@@ -171,11 +175,10 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
     }
   ]
 }
-$runningBlocks
-$pendingBlocks
-$executedBlocks
+${HomeTab.runningBlocks(taskHistory.running)}
+${HomeTab.pendingBlocks(taskHistory.pending)}
+${HomeTab.executedBlocks(taskHistory.executed)}
 """
-  }
 
   private val blocks = if (taskHistories.isEmpty) {
     s"""
