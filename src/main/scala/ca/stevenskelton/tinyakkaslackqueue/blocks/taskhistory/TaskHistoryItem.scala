@@ -13,7 +13,7 @@ object TaskHistoryItem {
     override def compare(x: TaskHistoryItem[TaskHistoryOutcomeItem], y: TaskHistoryItem[TaskHistoryOutcomeItem]): Int = x.time.compareTo(y.time)
   }
 
-  def fromMessage(message:Message, ts: SlackTs, threadTs: SlackTs, slackChannel: SlackChannel)(implicit logger:Logger): Option[TaskHistoryItem[_]] = {
+  def fromMessage(message: Message, ts: SlackTs, threadTs: SlackTs, slackChannel: SlackChannel)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
     try {
       val createdText = message.getItem.getCreated
       val createdBy = message.getItem.getUser
@@ -27,7 +27,7 @@ object TaskHistoryItem {
             logger.error("TaskHistoryItem.reads", ex)
             None
         }
-      }else{
+      } else {
         None
       }
     } catch {
@@ -75,12 +75,13 @@ object TaskHistoryItem {
 }
 
 case class TaskHistoryItem[+T <: TaskHistoryActionItem](
-                                                        action: T,
-                                                        ts: SlackTs,
-                                                        threadTs: SlackTs,
-                                                        channel: SlackChannel,
-                                                        time: ZonedDateTime
-                                                      )(implicit fmt: OFormat[T]) {
+                                                         action: T,
+                                                         ts: SlackTs,
+                                                         threadTs: SlackTs,
+                                                         channel: SlackChannel,
+                                                         time: ZonedDateTime
+                                                       )(implicit fmt: OFormat[T]) {
   def toJson: JsObject = fmt.writes(action)
+
   def toSlackMessage: String = s"```${Json.prettyPrint(toJson)}```"
 }

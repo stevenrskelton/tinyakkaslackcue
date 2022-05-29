@@ -3,7 +3,6 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.Slack
-import com.slack.api.methods.{MethodsClient, SlackApiTextResponse}
 import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateRequest}
 import com.slack.api.methods.request.conversations.{ConversationsListRequest, ConversationsRepliesRequest}
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest, PinsRemoveRequest}
@@ -14,6 +13,7 @@ import com.slack.api.methods.response.conversations.ConversationsRepliesResponse
 import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse, ViewsUpdateResponse}
+import com.slack.api.methods.{MethodsClient, SlackApiTextResponse}
 import com.slack.api.model.ConversationType
 import com.typesafe.config.Config
 import org.slf4j.Logger
@@ -26,7 +26,7 @@ object SlackClient {
   val ChannelThreadText = "Task Channels"
 
   case class SlackConfig(
-                          botOAuthToken:String,
+                          botOAuthToken: String,
                           botUserId: SlackUserId,
                           botChannel: SlackChannel,
                           client: MethodsClient
@@ -77,7 +77,7 @@ trait SlackClient {
 
   //  def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)]
 
-  def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse
+  def chatPostMessageInThread(text: String, thread: SlackThreadTs): ChatPostMessageResponse
 
   def chatPostMessage(text: String): ChatPostMessageResponse
 
@@ -87,7 +87,7 @@ trait SlackClient {
 
   def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse
 
-  def threadReplies(slackTs: SlackTs): ConversationsRepliesResponse
+  def threadReplies(slackTs: SlackThreadTs): ConversationsRepliesResponse
 
   def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse
 }
@@ -95,7 +95,7 @@ trait SlackClient {
 case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botChannel: SlackChannel, client: MethodsClient)(implicit logger: Logger) extends SlackClient {
 
   def logError[T <: SlackApiTextResponse](call: String, result: T): T = {
-    if(!result.isOk){
+    if (!result.isOk) {
       logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}")
     }
     result
@@ -103,8 +103,8 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
 
   override def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse = logError(
     "chatUpdate",
-      client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).ts(ts.value).text(text))
-    )
+    client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).ts(ts.value).text(text))
+  )
 
   override def chatUpdateBlocks(blocks: SlackBlocksAsString, ts: SlackTs): ChatUpdateResponse = logError(
     "chatUpdateBlocks",
@@ -127,7 +127,7 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
   //    pinsList().flatMap(SlackTaskThread.parse(_, slackTaskFactories))
   //  }
 
-  override def chatPostMessageInThread(text: String, thread: SlackTs): ChatPostMessageResponse = logError("chatPostMessageInThread",
+  override def chatPostMessageInThread(text: String, thread: SlackThreadTs): ChatPostMessageResponse = logError("chatPostMessageInThread",
     client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).text(text).threadTs(thread.value))
   )
 
@@ -147,9 +147,11 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
     client.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(botOAuthToken).triggerId(slackTriggerId.value).viewAsString(slackView.toString))
   )
 
-  override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = threadReplies(SlackTs(messageItem.getMessage.getTs))
+  override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = logError("threadReplies",
+    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(messageItem.getMessage.getTs))
+  )
 
-  override def threadReplies(ts: SlackTs): ConversationsRepliesResponse = logError("threadReplies",
+  override def threadReplies(ts: SlackThreadTs): ConversationsRepliesResponse = logError("threadReplies",
     client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(ts.value))
   )
 

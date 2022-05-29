@@ -3,7 +3,6 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, SystemMaterializer}
-import ca.stevenskelton.tinyakkaslackqueue
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{PrivateMetadata, TaskHistory}
@@ -23,11 +22,11 @@ abstract class SlackFactories(
                                val slackClient: SlackClient,
                                val actorSystem: ActorSystem,
                                val config: Config
-                             )(implicit logger:Logger) {
+                             )(implicit logger: Logger) {
 
   implicit val materializer: Materializer = SystemMaterializer.get(actorSystem).materializer
 
-  private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTs, SlackTask](logger)
+  private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTaskThreadTs, SlackTask](logger)
 
   def onComplete(slackTask: SlackTask, result: Try[Done]): Unit = {
     result match {
@@ -40,14 +39,14 @@ abstract class SlackFactories(
 
   def isExecuting: Boolean = interactiveTimer.isExecuting
 
-  def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
+  def cancelScheduledTask(slackTs: SlackTaskThreadTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
   def scheduleSlackTask(slackTaskMeta: SlackTaskMeta, time: Option[ZonedDateTime]): ScheduledSlackTask = {
     val slackPlaceholder = slackClient.chatPostMessage(SlackTaskThread.placeholderThread(slackTaskMeta.factory))
     implicit val sc = slackClient
     val slackTask = slackTaskMeta.factory.create(
       slackTaskMeta,
-      ts = SlackTs(slackPlaceholder),
+      ts = SlackTaskThreadTs(slackPlaceholder),
       createdBy = SlackUserId.Empty,
       notifyOnError = Nil,
       notifyOnComplete = Nil
@@ -57,9 +56,6 @@ abstract class SlackFactories(
     //    slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
     scheduledTask
   }
-
-
-
 
 
   protected val factories: Seq[SlackTaskFactory[_, _]]
@@ -126,12 +122,12 @@ abstract class SlackFactories(
         val pinnedResult = pinnedMessages.filter {
           o => o.getCreatedBy == slackClient.botUserId.value
         }
-        val historyThread = pinnedResult.headOption.map(o => SlackTs(o.getMessage)).getOrElse {
+        val historyThread = pinnedResult.headOption.map(o => SlackHistoryThreadTs(o.getMessage)).getOrElse {
           val pinnedMessageResult = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).text("History"))
           if (!pinnedMessageResult.isOk) logger.error(pinnedMessageResult.getError)
           val pinsAddedResult = slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).timestamp(pinnedMessageResult.getTs))
           if (!pinsAddedResult.isOk) logger.error(pinsAddedResult.getError)
-          SlackTs(pinnedMessageResult.getMessage)
+          SlackHistoryThreadTs(pinnedMessageResult.getMessage)
         }
         SlackTaskMeta.initialize(slackClient, SlackChannel(channel), historyThread, factory)
     }

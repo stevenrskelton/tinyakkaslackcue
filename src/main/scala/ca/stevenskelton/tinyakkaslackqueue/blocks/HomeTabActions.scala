@@ -34,7 +34,7 @@ object HomeTabActions {
   def handleSubmission(slackPayload: SlackPayload)(implicit slackTaskFactories: SlackFactories, logger: Logger): Future[Done] = {
     slackPayload.callbackId.getOrElse("") match {
       case CallbackId.View =>
-        if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => SlackTs(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.cancelScheduledTask(_).isDefined)) {
+        if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => SlackTaskThreadTs(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackTaskFactories.cancelScheduledTask(_).isDefined)) {
           HomeTabActions.update(slackPayload)
         } else {
           val ex = new Exception(s"Could not find task ts ${slackPayload.privateMetadata.fold("")(_.value)}")
@@ -98,7 +98,7 @@ object HomeTabActions {
           throw ex
         }
       case ActionId.TaskView =>
-        val ts = SlackTs(action.value)
+        val ts = SlackTaskThreadTs(action.value)
         val list = slackTaskFactories.listScheduledTasks
         val index = list.indexWhere(_.id == ts)
         if (index == -1) {
@@ -117,7 +117,7 @@ object HomeTabActions {
     Future.successful(Done)
   }
 
-  def cancelTask(ts: SlackTs, slackPayload: SlackPayload)(implicit slackFactories: SlackFactories, logger: Logger): Future[Done] = {
+  def cancelTask(ts: SlackTaskThreadTs, slackPayload: SlackPayload)(implicit slackFactories: SlackFactories, logger: Logger): Future[Done] = {
     slackFactories.cancelScheduledTask(ts).map {
       cancelledTask =>
         logger.error("Cancelled Task")

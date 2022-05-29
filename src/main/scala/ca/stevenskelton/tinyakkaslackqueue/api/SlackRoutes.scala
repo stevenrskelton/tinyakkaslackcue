@@ -9,7 +9,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
-import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTs, SlackUserId}
+import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTaskThreadTs, SlackUserId}
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
@@ -64,18 +64,18 @@ class SlackRoutes(implicit slackClient: SlackClient, slackTaskFactories: SlackFa
               case ActionId.TabRefresh =>
                 HomeTabActions.update(slackPayload)
               case ActionId.TaskCancel =>
-                HomeTabActions.cancelTask(SlackTs(action.value), slackPayload)
+                HomeTabActions.cancelTask(SlackTaskThreadTs(action.value), slackPayload)
               case _ =>
                 HomeTabActions.handleAction(slackPayload)
             }
           } else if (slackPayload.callbackId.contains(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map { state =>
-              val ts = SlackTs(state.asInstanceOf[ButtonState].value)
+              val ts = SlackTaskThreadTs(state.asInstanceOf[ButtonState].value)
               HomeTabActions.cancelTask(ts, slackPayload)
             }.getOrElse {
               val action = slackPayload.action
               if (action.actionId == ActionId.TaskCancel) {
-                val ts = SlackTs(slackPayload.actions.head.value)
+                val ts = SlackTaskThreadTs(slackPayload.actions.head.value)
                 HomeTabActions.cancelTask(ts, slackPayload)
               } else {
                 val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")

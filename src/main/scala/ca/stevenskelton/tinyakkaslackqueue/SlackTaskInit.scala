@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem, TaskHistoryItem}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem}
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackUpdatePercentCompleteEvent}
 import org.slf4j.Logger
 
@@ -17,7 +17,7 @@ trait SlackTaskInit[T, B] {
 
   self: SlackTaskFactory[T, B] =>
 
-  def create(slackTaskMeta: SlackTaskMeta, ts: SlackTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
+  def create(slackTaskMeta: SlackTaskMeta, ts: SlackTaskThreadTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
             (implicit slackClient: SlackClient, materializer: Materializer): SlackTask = {
 
     import materializer.executionContext
@@ -42,7 +42,7 @@ trait SlackTaskInit[T, B] {
             estimatedCount = i
             slackTaskMeta.historyAddRun(ts, estimatedCount)
         }
-        val (killswitch, result) = source.toMat(Sink.fold(0){
+        val (killswitch, result) = source.toMat(Sink.fold(0) {
           (_, t) =>
             val key = distinctBy(t)
             if (completeElements.add(key)) {
@@ -71,7 +71,7 @@ trait SlackTaskInit[T, B] {
         super.cancel
       }
 
-      override def ts: SlackTs = lts
+      override def ts: SlackTaskThreadTs = lts
 
       override def meta: SlackTaskMeta = slackTaskMeta
 

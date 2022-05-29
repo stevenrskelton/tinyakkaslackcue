@@ -1,7 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
-import play.api.libs.json.Json
-
 import java.time.ZonedDateTime
 
 trait TaskHistoryOutcomeItem extends TaskHistoryActionItem {

@@ -17,7 +17,7 @@ object SlackHistoryThread {
     //TODO: can we quote the task thread
     val json = Json.obj(
       "name" -> slackTask.task.meta.factory.name.getText,
-      "ts" -> slackTask.task.id,
+      "ts" -> SlackTs.writes.writes(slackTask.task.id),
       "executionStart" -> slackTask.executionStart,
       "createdBy" -> slackTask.task.createdBy,
       "notifyOnError" -> slackTask.task.notifyOnError,

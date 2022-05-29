@@ -2,11 +2,11 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.timer.IdTask
 
-trait SlackTask extends IdTask[SlackTs] {
+trait SlackTask extends IdTask[SlackTaskThreadTs] {
 
-  def ts: SlackTs
+  def ts: SlackTaskThreadTs
 
-  override def id: SlackTs = ts
+  override def id: SlackTaskThreadTs = ts
 
   def meta: SlackTaskMeta
 

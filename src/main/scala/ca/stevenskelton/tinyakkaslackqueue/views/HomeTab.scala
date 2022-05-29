@@ -134,7 +134,8 @@ object HomeTab {
 
 class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
 
-  private def taskHistoryBlocks(taskHistory: TaskHistory): String = s"""
+  private def taskHistoryBlocks(taskHistory: TaskHistory): String =
+    s"""
 {
   "type": "header",
   "text": {
