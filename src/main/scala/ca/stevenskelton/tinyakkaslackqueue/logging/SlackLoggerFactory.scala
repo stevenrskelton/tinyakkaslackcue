@@ -5,11 +5,13 @@ import akka.stream.{Materializer, OverflowStrategy}
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackClient
 import ca.stevenskelton.tinyakkaslackqueue.blocks.logLevelEmoji
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
+import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
+import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import org.slf4j.Logger
 import org.slf4j.event.LoggingEvent
 
+import java.time.Duration
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.duration.DurationInt
 
@@ -66,12 +68,12 @@ object SlackLoggerFactory {
           }
           exceptionEvent match {
             case Some(_) =>
-              slackClient.chatUpdate(SlackTaskThread.cancelled(slackTask, startTimeMs), slackTask.ts)
+              slackClient.chatUpdate(cancelled(slackTask, startTimeMs), slackTask.ts)
             //              slackClient.pinsRemove(slackTask.ts)
             case None =>
               percentCompleteEvent.foreach {
                 event =>
-                  slackClient.chatUpdate(SlackTaskThread.update(slackTask, event.percent, startTimeMs), slackTask.ts)
+                  slackClient.chatUpdate(update(slackTask, event.percent, startTimeMs), slackTask.ts)
               }
           }
         }
@@ -79,11 +81,27 @@ object SlackLoggerFactory {
     val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()
     sourceQueue.watchCompletion.map {
       _ =>
-        slackClient.chatUpdate(SlackTaskThread.completed(slackTask, startTimeMs), slackTask.ts)
+        slackClient.chatUpdate(completed(slackTask, startTimeMs), slackTask.ts)
         slackClient.pinsRemove(slackTask.ts)
     }
-    new SlackLogger(getName = slackTask.meta.channel.value, sourceQueue, base)
+    new SlackLogger(getName = slackTask.meta.taskChannel.value, sourceQueue, base)
   }
 
+  private   def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long, width: Int = 14): String = {
+    val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
+    val bar = s"|${TextProgressBar.SlackEmoji.bar(percentComplete, width)}| ${("  " + math.round(percentComplete * 100)).takeRight(3)}%"
+    val elapsed = if (startTimeMs != 0) s"\nStarted ${DateUtils.humanReadable(duration)} ago" else ""
+    s"Running *${slackTask.meta.factory.name.getText}*\n$bar$elapsed"
+  }
+
+  private def cancelled(slackTask: SlackTask, startTimeMs: Long): String = {
+    val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
+    s":headstone: Cancelled *${slackTask.meta.factory.name.getText}* after ${DateUtils.humanReadable(duration)}"
+  }
+
+  private def completed(slackTask: SlackTask, startTimeMs: Long): String = {
+    val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
+    s":doughnut: Completed *${slackTask.meta.factory.name.getText}* in ${DateUtils.humanReadable(duration)}"
+  }
 }
 

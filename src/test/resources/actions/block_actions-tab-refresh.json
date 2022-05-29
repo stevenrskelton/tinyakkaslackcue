@@ -76,7 +76,7 @@
             "action_id": "task-queue-action",
             "text": {
               "type": "plain_text",
-              "text": "Queue Immediately",
+              "text": "Queue",
               "emoji": true
             },
             "style": "primary",
@@ -125,7 +125,7 @@
             "action_id": "task-queue-action",
             "text": {
               "type": "plain_text",
-              "text": "Queue Immediately",
+              "text": "Queue",
               "emoji": true
             },
             "style": "primary",
@@ -174,7 +174,7 @@
             "action_id": "task-queue-action",
             "text": {
               "type": "plain_text",
-              "text": "Queue Immediately",
+              "text": "Queue",
               "emoji": true
             },
             "style": "primary",

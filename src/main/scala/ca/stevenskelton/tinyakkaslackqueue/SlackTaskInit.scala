@@ -17,12 +17,11 @@ trait SlackTaskInit[T, B] {
 
   self: SlackTaskFactory[T, B] =>
 
-  def create(slackTaskMeta: SlackTaskMeta, ts: SlackTaskThreadTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
+  def create(slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThreadTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
             (implicit slackClient: SlackClient, materializer: Materializer): SlackTask = {
 
     import materializer.executionContext
 
-    val lts = ts
     val lcreatedBy = createdBy
     val lnotifyOnError = notifyOnError
     val lnotifiyOnComplete = notifyOnComplete
@@ -71,7 +70,7 @@ trait SlackTaskInit[T, B] {
         super.cancel
       }
 
-      override def ts: SlackTaskThreadTs = lts
+      override def ts: SlackTaskThreadTs = taskThread
 
       override def meta: SlackTaskMeta = slackTaskMeta
 

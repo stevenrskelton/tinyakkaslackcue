@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata)(implicit slackFactories: SlackFactories) extends SlackView {
 
   private val submitButtonText = if (zonedDateTimeOpt.isEmpty) {
-    if (slackFactories.isExecuting) "Run" else "Queue"
+    if (slackFactories.isExecuting) "Queue" else "Run"
   } else {
     "Schedule"
   }

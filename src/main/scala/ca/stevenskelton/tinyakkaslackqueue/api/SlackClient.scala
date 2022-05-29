@@ -79,7 +79,7 @@ trait SlackClient {
 
   def chatPostMessageInThread(text: String, thread: SlackThreadTs): ChatPostMessageResponse
 
-  def chatPostMessage(text: String): ChatPostMessageResponse
+  def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse
 
   def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse
 
@@ -131,8 +131,8 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
     client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).text(text).threadTs(thread.value))
   )
 
-  override def chatPostMessage(text: String): ChatPostMessageResponse = logError("chatPostMessage",
-    client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).text(text))
+  override def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse = logError("chatPostMessage",
+    client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(channel.value).text(text))
   )
 
   override def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse = logError("viewUpdate",

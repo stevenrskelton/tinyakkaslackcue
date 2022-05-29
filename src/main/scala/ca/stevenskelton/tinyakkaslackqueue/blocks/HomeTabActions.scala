@@ -3,7 +3,6 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 import akka.Done
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackHistoryThread
 import ca.stevenskelton.tinyakkaslackqueue.views._
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
@@ -56,13 +55,7 @@ object HomeTabActions {
             //TODO zone should be from Slack
 
             val scheduledSlackTask = slackTaskFactories.scheduleSlackTask(slackTaskMeta, zonedDateTimeOpt)
-            SlackHistoryThread.schedule(scheduledSlackTask)
-
             HomeTabActions.update(slackPayload)
-          //        actionStates(ActionIdNotifyOnComplete).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"))
-          //        actionStates(ActionIdNotifyOnFailure).asInstanceOf[MultiUsersState].users shouldBe Seq(SlackUserId("U039T9DUHGT"), SlackUserId("U039TCGLX5G"))
-          //        actionStates(ActionIdLogLevel)
-
         }.getOrElse {
           val ex = new Exception(s"Could not find task ${slackPayload.privateMetadata.fold("")(_.value)}")
           logger.error("handleSubmission", ex)

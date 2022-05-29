@@ -4,13 +4,14 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.{Materializer, SystemMaterializer}
 import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.SlackTaskThread
-import ca.stevenskelton.tinyakkaslackqueue.blocks.{PrivateMetadata, TaskHistory}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.PrivateMetadata
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
+import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.methods.request.conversations.{ConversationsCreateRequest, ConversationsListRequest}
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest}
-import com.slack.api.model.{ConversationType, Message}
+import com.slack.api.model.ConversationType
 import com.typesafe.config.Config
 import org.slf4j.Logger
 
@@ -23,6 +24,8 @@ abstract class SlackFactories(
                                val actorSystem: ActorSystem,
                                val config: Config
                              )(implicit logger: Logger) {
+
+  protected val factories: Seq[SlackTaskFactory[_, _]]
 
   implicit val materializer: Materializer = SystemMaterializer.get(actorSystem).materializer
 
@@ -42,49 +45,24 @@ abstract class SlackFactories(
   def cancelScheduledTask(slackTs: SlackTaskThreadTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
   def scheduleSlackTask(slackTaskMeta: SlackTaskMeta, time: Option[ZonedDateTime]): ScheduledSlackTask = {
-    val slackPlaceholder = slackClient.chatPostMessage(SlackTaskThread.placeholderThread(slackTaskMeta.factory))
+    val message = time.map {
+      zonedDateTime =>
+        s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime)}"
+    }.getOrElse {
+      s"Queued task *${slackTaskMeta.factory.name.getText}*"
+    }
+    val slackPlaceholder = slackClient.chatPostMessage(message, slackTaskMeta.taskChannel)
     implicit val sc = slackClient
     val slackTask = slackTaskMeta.factory.create(
       slackTaskMeta,
-      ts = SlackTaskThreadTs(slackPlaceholder),
+      taskThread = SlackTaskThreadTs(slackPlaceholder),
       createdBy = SlackUserId.Empty,
       notifyOnError = Nil,
       notifyOnComplete = Nil
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
     slackTaskMeta.historyAddCreate(scheduledTask)
-    //    slackClient.chatUpdateBlocks(SlackTaskThread.schedule(scheduledTask), slackTask.ts)
     scheduledTask
-  }
-
-
-  protected val factories: Seq[SlackTaskFactory[_, _]]
-
-  private def parsePinnedMessage(message: Message): Seq[SlackTaskMeta] = {
-    //    val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
-    //    val channels = conversationsResult.getChannels.asScala
-    //    val results = message.getText.lines.toList.asScala.flatMap {
-    //      line =>
-    //        val channelName = line.takeWhile(_ != ' ')
-    //        val name = line.drop(channelName.length)
-    //        for {
-    //          channel <- channels.find(_.getName == channelName)
-    //          factory <- factories.find(_.name.getText == name)
-    //        }yield {
-    //          val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId)).getItems).map(_.asScala).getOrElse(Nil)
-    //          val pinnedResult = pinnedMessages.filter {
-    //            o => o.getCreatedBy == slackClient.botUserId.value
-    //          }
-    //          val historyThread = pinnedResult.headOption.map(o => SlackTs(o.getMessage)).getOrElse {
-    //            val pinnedMessageResult = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).text("History"))
-    //            slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).timestamp(pinnedMessageResult.getTs))
-    //            SlackTs(pinnedMessageResult.getMessage)
-    //          }
-    //          SlackTaskMeta(SlackChannel(channel),historyThread,factory )
-    //        }
-    //    }
-    //    results.toSeq
-    Nil
   }
 
   def history: Seq[TaskHistory] = {
@@ -93,20 +71,6 @@ abstract class SlackFactories(
   }
 
   lazy val slackTaskMetaFactories: Seq[SlackTaskMeta] = {
-
-    //    val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.botOAuthToken).channel(slackClient.botChannel.value)).getItems).map(_.asScala).getOrElse(Nil)
-    //    val pinnedResult = pinnedMessages.filter {
-    //      o => o.getCreatedBy == slackClient.botUserId.value && o.getMessage.getText != "Task History"
-    //    }
-    //    pinnedResult.headOption.map { o =>
-    //      //TODO: parse history
-    //      parsePinnedMessage(o.getMessage)
-    //    }.getOrElse {
-    //      val body = ""
-    //      val pinnedMessageResult = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.botOAuthToken).channel(slackClient.botChannel.value).text(body))
-    //      slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.botOAuthToken).channel(slackClient.botChannel.value).timestamp(pinnedMessageResult.getTs))
-    //      parsePinnedMessage(pinnedMessageResult.getMessage)
-    //    }
 
     val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
     val channels = conversationsResult.getChannels.asScala
@@ -134,7 +98,7 @@ abstract class SlackFactories(
   }
 
   def findByPrivateMetadata(privateMetadata: PrivateMetadata): Option[SlackTaskMeta] = {
-    slackTaskMetaFactories.find(_.channel.value == privateMetadata.value)
+    slackTaskMetaFactories.find(_.taskChannel.value == privateMetadata.value)
   }
 
 }

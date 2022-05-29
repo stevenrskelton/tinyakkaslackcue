@@ -1,8 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.ScheduledSlackTask
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{CancelHistoryItem, TaskHistoryItem, TaskHistoryOutcomeItem}
-import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, TaskHistory}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{CancelHistoryItem, TaskHistory, TaskHistoryItem, TaskHistoryOutcomeItem}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 
@@ -157,11 +157,11 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
       "text": {
         "type": "plain_text",
         "emoji": true,
-        "text": "${if (taskHistory.running.isEmpty) "Run Immediately" else "Queue Immediately"}"
+        "text": "${if (taskHistory.running.isEmpty) "Run Immediately" else "Queue"}"
       },
       "style": "primary",
       "action_id": "${ActionId.TaskQueue.value}",
-      "value": "${taskHistory.slackTaskMeta.channel.value}"
+      "value": "${taskHistory.slackTaskMeta.taskChannel.value}"
     },
     {
       "type": "button",
@@ -172,7 +172,7 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
       },
       "style": "primary",
       "action_id": "${ActionId.TaskSchedule.value}",
-      "value": "${taskHistory.slackTaskMeta.channel.value}"
+      "value": "${taskHistory.slackTaskMeta.taskChannel.value}"
     },{
       "type": "button",
       "text": {
@@ -181,7 +181,7 @@ class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
         "text": "View Full History"
       },
       "action_id": "${ActionId.TaskHistory.value}",
-      "value": "${taskHistory.slackTaskMeta.channel.value}"
+      "value": "${taskHistory.slackTaskMeta.taskChannel.value}"
     }
   ]
 }

@@ -1,7 +1,6 @@
-package ca.stevenskelton.tinyakkaslackqueue.blocks
+package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
-import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{CancelHistoryItem, TaskHistoryItem, TaskHistoryOutcomeItem}
+import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackTaskMeta}
 
 import scala.collection.SortedSet
 

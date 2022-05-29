@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
-import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackTs}
+import ca.stevenskelton.tinyakkaslackqueue.{SlackHistoryThreadTs, SlackTaskThreadTs}
 import com.slack.api.model.Message
 import org.slf4j.Logger
 import play.api.libs.json._
@@ -13,11 +13,11 @@ object TaskHistoryItem {
     override def compare(x: TaskHistoryItem[TaskHistoryOutcomeItem], y: TaskHistoryItem[TaskHistoryOutcomeItem]): Int = x.time.compareTo(y.time)
   }
 
-  def fromMessage(message: Message, ts: SlackTs, threadTs: SlackTs, slackChannel: SlackChannel)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
+  def fromHistoryThreadMessage(message: Message)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
     try {
       val createdText = message.getItem.getCreated
       val createdBy = message.getItem.getUser
-      implicit val reads = TaskHistoryItem.reads(ts, threadTs, slackChannel, ZonedDateTime.now())
+      implicit val reads = TaskHistoryItem.reads(SlackHistoryThreadTs(message), ZonedDateTime.now())
       val text = message.getText
       if (text.startsWith("```")) {
         val json = Json.parse(text.drop(3).dropRight(3))
@@ -37,51 +37,46 @@ object TaskHistoryItem {
     }
   }
 
-  def reads(ts: SlackTs, threadTs: SlackTs, slackChannel: SlackChannel, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
+  def reads(historyThreadTs: SlackHistoryThreadTs, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
     (json: JsValue) => {
+      val slackTaskThreadTs = SlackTaskThreadTs((json \ "ts").as[String])
       (json \ "action").as[String] match {
         case CancelHistoryItem.Action =>
           val format = CancelHistoryItem.fmt
           format.reads(json).map {
-            action => TaskHistoryItem(action, ts, threadTs, slackChannel, time)
+            action => TaskHistoryItem(action, slackTaskThreadTs, historyThreadTs, time)
           }
         case CreateHistoryItem.Action =>
           val format = CreateHistoryItem.fmt
           format.reads(json).map {
-            action => TaskHistoryItem(action, ts, threadTs, slackChannel, time)
+            action => TaskHistoryItem(action, slackTaskThreadTs, historyThreadTs, time)
           }
         case RunHistoryItem.Action =>
           val format = RunHistoryItem.fmt
           format.reads(json).map {
-            action => TaskHistoryItem(action, ts, threadTs, slackChannel, time)
+            action => TaskHistoryItem(action, slackTaskThreadTs, historyThreadTs, time)
           }
         case ErrorHistoryItem.Action =>
           val format = ErrorHistoryItem.fmt
           format.reads(json).map {
-            action => TaskHistoryItem(action, ts, threadTs, slackChannel, time)
+            action => TaskHistoryItem(action, slackTaskThreadTs, historyThreadTs, time)
           }
         case SuccessHistoryItem.Action =>
           val format = SuccessHistoryItem.fmt
           format.reads(json).map {
-            action => TaskHistoryItem(action, ts, threadTs, slackChannel, time)
+            action => TaskHistoryItem(action, slackTaskThreadTs, historyThreadTs, time)
           }
       }
     }
-  }
-
-  implicit val write = new Writes[TaskHistoryItem[TaskHistoryActionItem]] {
-    override def writes(o: TaskHistoryItem[TaskHistoryActionItem]): JsObject = Json.obj("action" -> o.action.action) ++ o.toJson
   }
 }
 
 case class TaskHistoryItem[+T <: TaskHistoryActionItem](
                                                          action: T,
-                                                         ts: SlackTs,
-                                                         threadTs: SlackTs,
-                                                         channel: SlackChannel,
+                                                         taskId: SlackTaskThreadTs,
+                                                         historyThread: SlackHistoryThreadTs,
                                                          time: ZonedDateTime
                                                        )(implicit fmt: OFormat[T]) {
-  def toJson: JsObject = fmt.writes(action)
-
-  def toSlackMessage: String = s"```${Json.prettyPrint(toJson)}```"
+  def toHistoryThreadMessage: String = s"```${Json.prettyPrint(Json.obj("action" -> action.action) ++ fmt.writes(action))}```"
+  def toTaskThreadMessage: String = s"Task History ${action.action}"
 }
