@@ -17,7 +17,7 @@ trait SlackTaskInit[T, B] {
 
   self: SlackTaskFactory[T, B] =>
 
-  def create(slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThreadTs, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
+  def create(slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThread, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
             (implicit slackClient: SlackClient, materializer: Materializer): SlackTask = {
 
     import materializer.executionContext
@@ -39,7 +39,7 @@ trait SlackTaskInit[T, B] {
         itemCount.foreach {
           i =>
             estimatedCount = i
-            slackTaskMeta.historyAddRun(ts, estimatedCount)
+            slackTaskMeta.historyAddRun(slackTaskThread, estimatedCount)
         }
         val (killswitch, result) = source.toMat(Sink.fold(0) {
           (_, t) =>
@@ -55,10 +55,10 @@ trait SlackTaskInit[T, B] {
           case Success(totalItemCount) =>
             slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(1))
             isComplete = true
-            slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, start), ts)
+            slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, start), slackTaskThread)
           case Failure(ex) =>
             slackTaskLogger.recordEvent(SlackExceptionEvent(ex))
-            slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, start), ts)
+            slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, start), slackTaskThread)
         }
         Await.result(result, 24.hours)
       }
@@ -70,7 +70,7 @@ trait SlackTaskInit[T, B] {
         super.cancel
       }
 
-      override def ts: SlackTaskThreadTs = taskThread
+      override def slackTaskThread: SlackTaskThread = taskThread
 
       override def meta: SlackTaskMeta = slackTaskMeta
 

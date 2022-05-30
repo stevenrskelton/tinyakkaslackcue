@@ -29,19 +29,19 @@ object TestData {
   private val actorSystem = ActorSystem.create()
   private val config = ConfigFactory.defaultApplication()
   implicit val slackClient = new SlackClient {
-    override def chatUpdate(text: String, ts: tinyakkaslackqueue.SlackTs): ChatUpdateResponse = ???
+    override def chatUpdate(text: String, slackMessage: tinyakkaslackqueue.SlackMessage): ChatUpdateResponse = ???
 
-    override def chatUpdateBlocks(blocks: tinyakkaslackqueue.SlackBlocksAsString, ts: tinyakkaslackqueue.SlackTs): ChatUpdateResponse = ???
+    override def chatUpdateBlocks(blocks: tinyakkaslackqueue.SlackBlocksAsString, slackPost: tinyakkaslackqueue.SlackMessage): ChatUpdateResponse = ???
 
-    override def pinsAdd(ts: tinyakkaslackqueue.SlackTs): PinsAddResponse = ???
+    override def pinsAdd(slackMessage: tinyakkaslackqueue.SlackMessage): PinsAddResponse = ???
 
-    override def pinsRemove(ts: tinyakkaslackqueue.SlackTs): PinsRemoveResponse = ???
+    override def pinsRemove(slackMessage: tinyakkaslackqueue.SlackMessage): PinsRemoveResponse = ???
 
     override def pinsList(): Iterable[PinsListResponse.MessageItem] = ???
 
     //    override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, SlackTaskThread.Fields)] = ???
 
-    override def chatPostMessageInThread(text: String, thread: tinyakkaslackqueue.SlackTs): ChatPostMessageResponse = ???
+    override def chatPostMessageInThread(text: String, thread: tinyakkaslackqueue.SlackMessage): ChatPostMessageResponse = ???
 
     override def chatPostMessage(text: String): ChatPostMessageResponse = ???
 
@@ -88,7 +88,7 @@ object TestData {
     )
   }
 
-  def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackTs, SlackTask](TestData.logger).ScheduledTask(
+  def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackMessage, SlackTask](TestData.logger).ScheduledTask(
     slackTask,
     ZonedDateTime.of(2100, 1, 1, 12, 30, 0, 0, ZoneId.systemDefault()),
     isRunning = false

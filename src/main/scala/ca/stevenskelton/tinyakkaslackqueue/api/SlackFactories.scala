@@ -29,7 +29,7 @@ abstract class SlackFactories(
 
   implicit val materializer: Materializer = SystemMaterializer.get(actorSystem).materializer
 
-  private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTaskThreadTs, SlackTask](logger)
+  private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTs, SlackTask](logger)
 
   def onComplete(slackTask: SlackTask, result: Try[Done]): Unit = {
     result match {
@@ -42,7 +42,7 @@ abstract class SlackFactories(
 
   def isExecuting: Boolean = interactiveTimer.isExecuting
 
-  def cancelScheduledTask(slackTs: SlackTaskThreadTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
+  def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
   def scheduleSlackTask(slackTaskMeta: SlackTaskMeta, time: Option[ZonedDateTime]): ScheduledSlackTask = {
     val message = time.map {
@@ -55,7 +55,7 @@ abstract class SlackFactories(
     implicit val sc = slackClient
     val slackTask = slackTaskMeta.factory.create(
       slackTaskMeta,
-      taskThread = SlackTaskThreadTs(slackPlaceholder),
+      taskThread = SlackTaskThread(slackPlaceholder),
       createdBy = SlackUserId.Empty,
       notifyOnError = Nil,
       notifyOnComplete = Nil
@@ -86,12 +86,12 @@ abstract class SlackFactories(
         val pinnedResult = pinnedMessages.filter {
           o => o.getCreatedBy == slackClient.botUserId.value
         }
-        val historyThread = pinnedResult.headOption.map(o => SlackHistoryThreadTs(o.getMessage)).getOrElse {
+        val historyThread = pinnedResult.headOption.map(o => SlackHistoryThread(o.getMessage)).getOrElse {
           val pinnedMessageResult = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).text("History"))
           if (!pinnedMessageResult.isOk) logger.error(pinnedMessageResult.getError)
           val pinsAddedResult = slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).timestamp(pinnedMessageResult.getTs))
           if (!pinsAddedResult.isOk) logger.error(pinsAddedResult.getError)
-          SlackHistoryThreadTs(pinnedMessageResult.getMessage)
+          SlackHistoryThread(pinnedMessageResult.getMessage)
         }
         SlackTaskMeta.initialize(slackClient, SlackChannel(channel), historyThread, factory)
     }

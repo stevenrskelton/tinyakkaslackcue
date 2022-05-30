@@ -65,19 +65,19 @@ trait SlackClient {
 
   def botChannel: SlackChannel
 
-  def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse
+  def chatUpdate(text: String, slackMessage: SlackMessage): ChatUpdateResponse
 
-  def chatUpdateBlocks(blocks: SlackBlocksAsString, ts: SlackTs): ChatUpdateResponse
+  def chatUpdateBlocks(blocks: SlackBlocksAsString, slackPost: SlackMessage): ChatUpdateResponse
 
-  def pinsAdd(ts: SlackTs): PinsAddResponse
+  def pinsAdd(slackMessage: SlackMessage): PinsAddResponse
 
-  def pinsRemove(ts: SlackTs): PinsRemoveResponse
+  def pinsRemove(slackMessage: SlackMessage): PinsRemoveResponse
 
   def pinsList(): Iterable[MessageItem]
 
   //  def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)]
 
-  def chatPostMessageInThread(text: String, thread: SlackThreadTs): ChatPostMessageResponse
+  def chatPostMessageInThread(text: String, thread: SlackThread): ChatPostMessageResponse
 
   def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse
 
@@ -87,7 +87,7 @@ trait SlackClient {
 
   def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse
 
-  def threadReplies(slackTs: SlackThreadTs): ConversationsRepliesResponse
+  def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse
 
   def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse
 }
@@ -101,22 +101,22 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
     result
   }
 
-  override def chatUpdate(text: String, ts: SlackTs): ChatUpdateResponse = logError(
+  override def chatUpdate(text: String, slackMessage: SlackMessage): ChatUpdateResponse = logError(
     "chatUpdate",
-    client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).ts(ts.value).text(text))
+    client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(slackMessage.channel.value).ts(slackMessage.ts.value).text(text))
   )
 
-  override def chatUpdateBlocks(blocks: SlackBlocksAsString, ts: SlackTs): ChatUpdateResponse = logError(
+  override def chatUpdateBlocks(blocks: SlackBlocksAsString, slackMessage: SlackMessage): ChatUpdateResponse = logError(
     "chatUpdateBlocks",
-    client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).ts(ts.value).blocksAsString(blocks.value))
+    client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(slackMessage.channel.value).ts(slackMessage.ts.value).blocksAsString(blocks.value))
   )
 
-  override def pinsAdd(ts: SlackTs): PinsAddResponse = logError("pinsAdd",
-    client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).timestamp(ts.value))
+  override def pinsAdd(slackMessage: SlackMessage): PinsAddResponse = logError("pinsAdd",
+    client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).timestamp(slackMessage.ts.value))
   )
 
-  override def pinsRemove(ts: SlackTs): PinsRemoveResponse = logError("pinsRemove",
-    client.pinsRemove((r: PinsRemoveRequest.PinsRemoveRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).timestamp(ts.value))
+  override def pinsRemove(slackMessage: SlackMessage): PinsRemoveResponse = logError("pinsRemove",
+    client.pinsRemove((r: PinsRemoveRequest.PinsRemoveRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).timestamp(slackMessage.ts.value))
   )
 
   override def pinsList(): Iterable[MessageItem] = logError("pinsList",
@@ -127,8 +127,8 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
   //    pinsList().flatMap(SlackTaskThread.parse(_, slackTaskFactories))
   //  }
 
-  override def chatPostMessageInThread(text: String, thread: SlackThreadTs): ChatPostMessageResponse = logError("chatPostMessageInThread",
-    client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).text(text).threadTs(thread.value))
+  override def chatPostMessageInThread(text: String, thread: SlackThread): ChatPostMessageResponse = logError("chatPostMessageInThread",
+    client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).text(text).threadTs(thread.ts.value))
   )
 
   override def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse = logError("chatPostMessage",
@@ -151,8 +151,8 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
     client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(messageItem.getMessage.getTs))
   )
 
-  override def threadReplies(ts: SlackThreadTs): ConversationsRepliesResponse = logError("threadReplies",
-    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(ts.value))
+  override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = logError("threadReplies",
+    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(slackThread.ts.value))
   )
 
 }

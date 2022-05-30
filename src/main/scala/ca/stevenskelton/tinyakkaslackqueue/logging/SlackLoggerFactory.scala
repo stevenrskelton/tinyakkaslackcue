@@ -64,16 +64,16 @@ object SlackLoggerFactory {
           }
           if (messageEvents.nonEmpty) {
             val message = messageEvents.mkString("\n")
-            slackClient.chatPostMessageInThread(message, slackTask.ts)
+            slackClient.chatPostMessageInThread(message, slackTask.slackTaskThread)
           }
           exceptionEvent match {
             case Some(_) =>
-              slackClient.chatUpdate(cancelled(slackTask, startTimeMs), slackTask.ts)
+              slackClient.chatUpdate(cancelled(slackTask, startTimeMs), slackTask.slackTaskThread)
             //              slackClient.pinsRemove(slackTask.ts)
             case None =>
               percentCompleteEvent.foreach {
                 event =>
-                  slackClient.chatUpdate(update(slackTask, event.percent, startTimeMs), slackTask.ts)
+                  slackClient.chatUpdate(update(slackTask, event.percent, startTimeMs), slackTask.slackTaskThread)
               }
           }
         }
@@ -81,8 +81,8 @@ object SlackLoggerFactory {
     val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()
     sourceQueue.watchCompletion.map {
       _ =>
-        slackClient.chatUpdate(completed(slackTask, startTimeMs), slackTask.ts)
-        slackClient.pinsRemove(slackTask.ts)
+        slackClient.chatUpdate(completed(slackTask, startTimeMs), slackTask.slackTaskThread)
+        slackClient.pinsRemove(slackTask.slackTaskThread)
     }
     new SlackLogger(getName = slackTask.meta.taskChannel.value, sourceQueue, base)
   }

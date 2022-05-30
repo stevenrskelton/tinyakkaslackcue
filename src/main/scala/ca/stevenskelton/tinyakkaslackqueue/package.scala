@@ -10,7 +10,7 @@ package object tinyakkaslackqueue {
 
   val AppModalTitle = "Tiny Akka Slack Cue"
 
-  type ScheduledSlackTask = InteractiveJavaUtilTimer[SlackTaskThreadTs, SlackTask]#ScheduledTask
+  type ScheduledSlackTask = InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask
 
   case class SlackChannel(value: String) extends AnyVal
 
