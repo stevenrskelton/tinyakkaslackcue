@@ -148,11 +148,11 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
   )
 
   override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = logError("threadReplies",
-    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(messageItem.getMessage.getTs))
+    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).channel(messageItem.getChannel).ts(messageItem.getMessage.getTs))
   )
 
   override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = logError("threadReplies",
-    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).ts(slackThread.ts.value))
+    client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).channel(slackThread.channel.value).ts(slackThread.ts.value))
   )
 
 }
