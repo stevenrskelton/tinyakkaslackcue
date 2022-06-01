@@ -1,8 +1,11 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
+import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory._
-import org.slf4j.Logger
+import ca.stevenskelton.tinyakkaslackqueue.logging.SlackLoggerFactory
+import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
+import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.OFormat
 
 import java.time.ZonedDateTime
@@ -11,11 +14,10 @@ import scala.jdk.CollectionConverters.ListHasAsScala
 
 object SlackTaskMeta {
   def initialize(slackClient: SlackClient, taskChannel: SlackChannel, historyThread: SlackHistoryThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
-    logger.info(s"history thread: ${historyThread.channel} ${historyThread.ts}")
     val response = slackClient.threadReplies(historyThread)
     val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
     if (response.isOk) {
-      response.getMessages.asScala.withFilter(_.getParentUserId == slackClient.botUserId.value).foreach {
+      response.getMessages.asScala.withFilter(_.getParentUserId == slackClient.slackConfig.botUserId.value).foreach {
         message =>
           TaskHistoryItem.fromHistoryThreadMessage(message, historyThread.channel) match {
             case Some(taskHistoryItem) if taskHistoryItem.action.isInstanceOf[TaskHistoryOutcomeItem] =>
@@ -23,8 +25,18 @@ object SlackTaskMeta {
             case _ =>
           }
       }
+    } else {
+      if (response.getError == "missing_scope") {
+        logger.error(s"SlackTaskMeta.initialize missing permissions: ${response.getNeeded}")
+      } else {
+        logger.error(s"SlackTaskMeta.initialize failed: ${response.getError}")
+      }
     }
     new SlackTaskMeta(slackClient, taskChannel, historyThread, factory, executedTasks)
+  }
+
+  def createTimer(slackClient: SlackClient)(implicit materializer: Materializer): InteractiveJavaUtilTimer[SlackTs, SlackTask] = {
+    (id: SlackTs) => SlackLoggerFactory.logToSlack(LoggerFactory.getLogger(s"slacktask-${id.value}"), slackClient.slackConfig)
   }
 }
 
@@ -40,7 +52,7 @@ class SlackTaskMeta private(
     override def compare(x: ScheduledSlackTask, y: ScheduledSlackTask): Int = x.executionStart.compareTo(y.executionStart)
   }
 
-  private def post[T<: TaskHistoryActionItem](taskHistoryItem: TaskHistoryItem[T]): Unit = {
+  private def post[T <: TaskHistoryActionItem](taskHistoryItem: TaskHistoryItem[T]): Unit = {
     slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, historyThread)
     slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId)
   }

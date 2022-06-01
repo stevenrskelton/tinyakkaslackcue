@@ -10,17 +10,9 @@ import scala.jdk.CollectionConverters.IterableHasAsScala
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-class InteractiveJavaUtilTimer[S, T <: IdTask[S]](baseLogger: Logger) {
+abstract class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
 
-  protected def createLogger(id: S): Logger = baseLogger
-
-  protected def humanReadableFormat(duration: Duration): String = {
-    duration.toString.substring(2).replaceAll("(\\d[HMS])(?!$)", "$1 ").toLowerCase
-  }
-
-  private def humanReadableTimeFromStart(starttime: Long): String = {
-    humanReadableFormat(Duration.ofMillis(System.currentTimeMillis - starttime))
-  }
+  protected def createLogger(id: S): Logger
 
   private class InnerTimerTask(val task: T, onComplete: Try[Done] => Unit) extends TimerTask {
 
@@ -34,7 +26,6 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]](baseLogger: Logger) {
     override def run: Unit = if (!task.isCancelled) {
       isRunning = true
       val logger = createLogger(task.id)
-      val starttime = System.currentTimeMillis
       val result = try {
         task.run(logger)
         isComplete = true
@@ -42,7 +33,6 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]](baseLogger: Logger) {
       } catch {
         case NonFatal(ex) =>
           hasFailed = true
-          logger.error(s"Job failed after ${humanReadableTimeFromStart(starttime)}", ex)
           Failure(ex)
       } finally {
         isRunning = false

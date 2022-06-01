@@ -2,6 +2,8 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.timer.IdTask
 
+import java.time.ZonedDateTime
+
 trait SlackTask extends IdTask[SlackTs] {
 
   def slackTaskThread: SlackTaskThread
@@ -17,6 +19,8 @@ trait SlackTask extends IdTask[SlackTs] {
   var completedCount: Int = 0
 
   var isComplete: Boolean = false
+
+  var runStart: Option[ZonedDateTime] = None
 
   def percentComplete: Float = {
     if (isComplete) 1f

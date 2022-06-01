@@ -87,7 +87,7 @@ object SlackLoggerFactory {
     new SlackLogger(getName = slackTask.meta.taskChannel.value, sourceQueue, base)
   }
 
-  private   def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long, width: Int = 14): String = {
+  private def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long, width: Int = 14): String = {
     val duration = Duration.ofMillis(System.currentTimeMillis - startTimeMs)
     val bar = s"|${TextProgressBar.SlackEmoji.bar(percentComplete, width)}| ${("  " + math.round(percentComplete * 100)).takeRight(3)}%"
     val elapsed = if (startTimeMs != 0) s"\nStarted ${DateUtils.humanReadable(duration)} ago" else ""

@@ -25,20 +25,15 @@ object Main extends App {
 
   private implicit val httpLogger = SlackLoggerFactory.logToSlack(LoggerFactory.getLogger("HTTPServer"), slackConfig)(SystemMaterializer(httpActorSystem).materializer)
 
-  implicit val slackClient: SlackClient = SlackClientImpl(
-    botOAuthToken = slackConfig.botOAuthToken,
-    botUserId = slackConfig.botUserId,
-    botChannel = slackConfig.botChannel,
-    client = slackConfig.client
-  )
+  implicit val slackClient: SlackClient = SlackClientImpl(slackConfig, slackConfig.client)
 
   implicit val materializer = SystemMaterializer(httpActorSystem).materializer
   val host = config.getString("env.host")
   val port = config.getInt("env.http.port")
 
-  implicit val slackTaskFactories = new SlackFactories(slackClient, httpActorSystem, config) {
+  implicit val slackTaskFactories = new SlackFactories {
     override protected val factories: Seq[SlackTaskFactory[_, _]] = Seq(
-      new TestSlackTaskFactory()(slackClient, materializer)
+      new TestSlackTaskFactory()
     )
   }
   slackTaskFactories.slackTaskMetaFactories

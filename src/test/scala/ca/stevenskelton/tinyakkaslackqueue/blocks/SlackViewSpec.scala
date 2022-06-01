@@ -13,7 +13,8 @@ class SlackViewSpec extends AnyWordSpec
 
   "queue" should {
     "read fields" in {
-      val view = new HomeTab(TestData.slackTaskFactories.history)
+      implicit val slackFactories = TestData.slackTaskFactories
+      val view = new HomeTab()
       val json = Json.parse(view.toString).as[JsObject]
       json \ "type" shouldBe JsDefined(JsString("home"))
     }

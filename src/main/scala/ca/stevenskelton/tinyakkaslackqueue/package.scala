@@ -2,7 +2,8 @@ package ca.stevenskelton
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
-import com.slack.api.model.Conversation
+import com.slack.api.methods.response.chat.ChatPostMessageResponse
+import com.slack.api.model.{Conversation, Message}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -11,6 +12,29 @@ package object tinyakkaslackqueue {
   val AppModalTitle = "Tiny Akka Slack Cue"
 
   type ScheduledSlackTask = InteractiveJavaUtilTimer[SlackTs, SlackTask]#ScheduledTask
+
+  case class SlackTs(value: String) extends AnyVal
+
+  trait SlackMessage {
+    def ts: SlackTs
+
+    def channel: SlackChannel
+  }
+
+  trait SlackThread extends SlackMessage
+
+  case class SlackHistoryThread(ts: SlackTs, channel: SlackChannel) extends SlackThread
+
+  object SlackHistoryThread {
+    def apply(message: Message, channel: SlackChannel): SlackHistoryThread = SlackHistoryThread(SlackTs(message.getTs), channel)
+  }
+
+  case class SlackTaskThread(ts: SlackTs, channel: SlackChannel) extends SlackThread
+
+  object SlackTaskThread {
+    def apply(chatPostMessageResponse: ChatPostMessageResponse): SlackTaskThread = SlackTaskThread(SlackTs(chatPostMessageResponse.getTs), SlackChannel(chatPostMessageResponse.getChannel))
+  }
+
 
   case class SlackChannel(value: String) extends AnyVal
 
@@ -26,7 +50,6 @@ package object tinyakkaslackqueue {
   case class SlackUserId(value: String) extends AnyVal
 
   object SlackUserId {
-    val Empty = SlackUserId("")
     implicit val reads = implicitly[Reads[String]].map(SlackUserId(_))
     implicit val writes = new Writes[SlackUserId] {
       override def writes(o: SlackUserId): JsValue = JsString(o.value)

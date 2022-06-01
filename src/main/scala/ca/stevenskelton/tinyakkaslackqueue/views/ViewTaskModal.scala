@@ -4,7 +4,7 @@ import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
 
-class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackView {
+class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackModal {
   override def toString: String = {
     val scheduledTask = scheduledTasks(index)
     val bodyBlocks = if (scheduledTask.isRunning) {

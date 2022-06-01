@@ -8,7 +8,7 @@ import org.slf4j.event.Level
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime], privateMetadata: PrivateMetadata)(implicit slackFactories: SlackFactories) extends SlackView {
+class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime])(implicit slackFactories: SlackFactories) extends SlackModal {
 
   private val submitButtonText = if (zonedDateTimeOpt.isEmpty) {
     if (slackFactories.isExecuting) "Queue" else "Run"
@@ -109,7 +109,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
 
   override def toString: String =
     s"""{
-  ${privateMetadata.block},
+  ${PrivateMetadata(slackTaskMeta.taskChannel.value).block},
 	"title": {
 		"type": "plain_text",
 		"text": "$AppModalTitle",

@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
 
-class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackView {
+class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackModal {
 
   private val blocks = if (scheduledTask.isRunning) {
     s"""

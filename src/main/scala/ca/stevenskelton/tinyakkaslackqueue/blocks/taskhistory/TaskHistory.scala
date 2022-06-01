@@ -14,10 +14,10 @@ case class TaskHistory(
                         running: Option[(ScheduledSlackTask, Option[TaskHistoryItem[CancelHistoryItem]])],
                         executed: SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]],
                         pending: SortedSet[ScheduledSlackTask]
-                      ){
+                      ) {
 
   def homeTabBlocks: String = {
-      s"""
+    s"""
 {
   "type": "header",
   "text": {

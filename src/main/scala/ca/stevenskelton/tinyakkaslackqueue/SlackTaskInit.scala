@@ -31,8 +31,8 @@ trait SlackTaskInit[T, B] {
       var killSwitchOption: Option[UniqueKillSwitch] = None
 
       override def run(logger: Logger): Unit = {
-        implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this, logger) //, 2.seconds)
-        val start = ZonedDateTime.now()
+        implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this, logger)
+        runStart = Some(ZonedDateTime.now())
 
         val completeElements = new mutable.HashSet[B]()
         val (source, itemCount) = sourceAndCount(slackTaskLogger)
@@ -55,10 +55,10 @@ trait SlackTaskInit[T, B] {
           case Success(totalItemCount) =>
             slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(1))
             isComplete = true
-            slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, start), slackTaskThread)
+            slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, runStart.get), slackTaskThread)
           case Failure(ex) =>
             slackTaskLogger.recordEvent(SlackExceptionEvent(ex))
-            slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, start), slackTaskThread)
+            slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, runStart.get), slackTaskThread)
         }
         Await.result(result, 24.hours)
       }

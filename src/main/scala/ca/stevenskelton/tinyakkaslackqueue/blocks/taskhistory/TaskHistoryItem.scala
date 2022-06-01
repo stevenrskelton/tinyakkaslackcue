@@ -39,7 +39,7 @@ object TaskHistoryItem {
 
   def reads(historyThreadTs: SlackHistoryThread, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
     (json: JsValue) => {
-      val slackTaskThreadTs = SlackTaskThread(SlackTs((json \ "ts").as[String]),historyThreadTs.channel)
+      val slackTaskThreadTs = SlackTaskThread(SlackTs((json \ "ts").as[String]), historyThreadTs.channel)
       (json \ "action").as[String] match {
         case CancelHistoryItem.Action =>
           val format = CancelHistoryItem.fmt
@@ -81,5 +81,6 @@ case class TaskHistoryItem[+T <: TaskHistoryActionItem](
     val common = Json.obj("action" -> action.action, "ts" -> taskId.ts.value)
     s"```${Json.prettyPrint(common ++ fmt.writes(action))}```"
   }
+
   def toTaskThreadMessage: String = s"Task History ${action.action}"
 }

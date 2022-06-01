@@ -1,8 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.ScheduledSlackTask
+import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 
 object HomeTab {
 
@@ -53,7 +53,10 @@ object HomeTab {
 
 }
 
-class HomeTab(taskHistories: Iterable[TaskHistory]) extends SlackView {
+class HomeTab()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
+
+  //TODO: sort taskHistories
+  private val taskHistories = slackFactories.history
 
   override def toString: String = {
     if (taskHistories.isEmpty)
