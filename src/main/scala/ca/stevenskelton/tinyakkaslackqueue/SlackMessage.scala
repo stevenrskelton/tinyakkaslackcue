@@ -15,7 +15,7 @@ trait SlackThread extends SlackMessage
 case class SlackHistoryThread(ts: SlackTs, channel: SlackChannel) extends SlackThread
 
 object SlackHistoryThread {
-  def apply(message: Message): SlackHistoryThread = SlackHistoryThread(SlackTs(message.getTs), SlackChannel(message.getChannel))
+  def apply(message: Message, channel: SlackChannel): SlackHistoryThread = SlackHistoryThread(SlackTs(message.getTs), channel)
 }
 
 case class SlackTaskThread(ts: SlackTs, channel: SlackChannel) extends SlackThread

@@ -17,7 +17,7 @@ object SlackTaskMeta {
     if (response.isOk) {
       response.getMessages.asScala.withFilter(_.getParentUserId == slackClient.botUserId.value).foreach {
         message =>
-          TaskHistoryItem.fromHistoryThreadMessage(message) match {
+          TaskHistoryItem.fromHistoryThreadMessage(message, historyThread.channel) match {
             case Some(taskHistoryItem) if taskHistoryItem.action.isInstanceOf[TaskHistoryOutcomeItem] =>
               executedTasks.add(taskHistoryItem.asInstanceOf[TaskHistoryItem[TaskHistoryOutcomeItem]])
             case _ =>

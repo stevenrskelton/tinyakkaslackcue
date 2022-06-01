@@ -88,18 +88,19 @@ abstract class SlackFactories(
             createdChannel.getChannel
           }
         }
+        val slackChannel = SlackChannel(channel)
         val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId)).getItems).map(_.asScala).getOrElse(Nil)
         val pinnedResult = pinnedMessages.filter {
           o => o.getCreatedBy == slackClient.botUserId.value
         }
-        val historyThread = pinnedResult.headOption.map(o => SlackHistoryThread(o.getMessage)).getOrElse {
+        val historyThread = pinnedResult.headOption.map(o => SlackHistoryThread(o.getMessage, slackChannel)).getOrElse {
           val pinnedMessageResult = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).text("History"))
           if (!pinnedMessageResult.isOk) logger.error(pinnedMessageResult.getError)
           val pinsAddedResult = slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId).timestamp(pinnedMessageResult.getTs))
           if (!pinsAddedResult.isOk) logger.error(pinsAddedResult.getError)
-          SlackHistoryThread(pinnedMessageResult.getMessage)
+          SlackHistoryThread(pinnedMessageResult.getMessage, slackChannel)
         }
-        SlackTaskMeta.initialize(slackClient, SlackChannel(channel), historyThread, factory)
+        SlackTaskMeta.initialize(slackClient, slackChannel, historyThread, factory)
     }
   }
 

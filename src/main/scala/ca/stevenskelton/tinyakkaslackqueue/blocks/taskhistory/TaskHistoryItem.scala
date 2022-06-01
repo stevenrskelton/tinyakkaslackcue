@@ -13,11 +13,11 @@ object TaskHistoryItem {
     override def compare(x: TaskHistoryItem[TaskHistoryOutcomeItem], y: TaskHistoryItem[TaskHistoryOutcomeItem]): Int = x.time.compareTo(y.time)
   }
 
-  def fromHistoryThreadMessage(message: Message)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
+  def fromHistoryThreadMessage(message: Message, slackChannel: SlackChannel)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
     try {
       val createdText = message.getItem.getCreated
       val createdBy = message.getItem.getUser
-      implicit val reads = TaskHistoryItem.reads(SlackHistoryThread(message), ZonedDateTime.now())
+      implicit val reads = TaskHistoryItem.reads(SlackHistoryThread(message, slackChannel), ZonedDateTime.now())
       val text = message.getText
       if (text.startsWith("```")) {
         val json = Json.parse(text.drop(3).dropRight(3))
