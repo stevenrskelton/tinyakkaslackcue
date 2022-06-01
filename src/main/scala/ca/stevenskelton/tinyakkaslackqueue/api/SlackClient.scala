@@ -97,18 +97,26 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
   def logError[T <: SlackApiTextResponse](call: String, body: String, f: String => T): T = {
     val result = f(body)
     if (!result.isOk) {
-      logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}, body: $body")
-      val st = Thread.currentThread.getStackTrace.map(_.toString).mkString("\n")
-      logger.debug(st)
+      if (result.getError == "missing_scope") {
+        logger.error(s"Missing permission scope for $call: ${result.getNeeded}")
+      } else {
+        logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}, body: $body")
+        val st = Thread.currentThread.getStackTrace.map(_.toString).mkString("\n")
+        logger.debug(st)
+      }
     }
     result
   }
 
   def logError[T <: SlackApiTextResponse](call: String, result: T): T = {
     if (!result.isOk) {
-      logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}")
-      val st = Thread.currentThread.getStackTrace.map(_.toString).mkString("\n")
-      logger.debug(st)
+      if (result.getError == "missing_scope") {
+        logger.error(s"Missing permission scope for $call: ${result.getNeeded}")
+      } else {
+        logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}")
+        val st = Thread.currentThread.getStackTrace.map(_.toString).mkString("\n")
+        logger.debug(st)
+      }
     }
     result
   }
