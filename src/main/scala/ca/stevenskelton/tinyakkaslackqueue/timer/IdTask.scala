@@ -1,9 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue.timer
 
 import akka.actor.Cancellable
-import org.slf4j.Logger
 
-trait IdTask[T] extends Cancellable {
+trait IdTask[T] extends Runnable with Cancellable {
   def id: T
 
   private var shouldCancel: Boolean = false
@@ -18,5 +17,5 @@ trait IdTask[T] extends Cancellable {
     }
   }
 
-  def run(logger: Logger): Unit
+  override def run(): Unit
 }

@@ -35,18 +35,15 @@ object SlackTaskMeta {
     new SlackTaskMeta(slackClient, taskChannel, historyThread, factory, executedTasks)
   }
 
-  def createTimer(slackClient: SlackClient)(implicit materializer: Materializer): InteractiveJavaUtilTimer[SlackTs, SlackTask] = {
-    (id: SlackTs) => SlackLoggerFactory.logToSlack(LoggerFactory.getLogger(s"slacktask-${id.value}"), slackClient.slackConfig)
-  }
 }
 
 class SlackTaskMeta private(
-                             slackClient: SlackClient,
+                             val slackClient: SlackClient,
                              val taskChannel: SlackChannel,
                              val historyThread: SlackHistoryThread,
                              val factory: SlackTaskFactory[_, _],
                              executedTasks: scala.collection.mutable.SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]
-                           )(implicit logger: Logger) {
+                           ) {
 
   implicit val ordering = new Ordering[ScheduledSlackTask] {
     override def compare(x: ScheduledSlackTask, y: ScheduledSlackTask): Int = x.executionStart.compareTo(y.executionStart)

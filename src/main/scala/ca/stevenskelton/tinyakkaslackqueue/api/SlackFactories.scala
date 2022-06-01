@@ -6,6 +6,7 @@ import akka.stream.{Materializer, SystemMaterializer}
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks.PrivateMetadata
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
+import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.methods.request.conversations.{ConversationsCreateRequest, ConversationsListRequest}
@@ -22,7 +23,7 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
 
   protected val factories: Seq[SlackTaskFactory[_, _]]
 
-  private val interactiveTimer = SlackTaskMeta.createTimer(slackClient)
+  private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTs, SlackTask]()
 
   def onComplete(slackTask: SlackTask, result: Try[Done]): Unit = {
     result match {

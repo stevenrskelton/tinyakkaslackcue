@@ -1,7 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.timer
 
 import akka.Done
-import org.slf4j.Logger
 
 import java.time._
 import java.util
@@ -10,9 +9,7 @@ import scala.jdk.CollectionConverters.IterableHasAsScala
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-abstract class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
-
-  protected def createLogger(id: S): Logger
+class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
 
   private class InnerTimerTask(val task: T, onComplete: Try[Done] => Unit) extends TimerTask {
 
@@ -25,9 +22,8 @@ abstract class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
 
     override def run: Unit = if (!task.isCancelled) {
       isRunning = true
-      val logger = createLogger(task.id)
       val result = try {
-        task.run(logger)
+        task.run()
         isComplete = true
         Success(Done)
       } catch {
