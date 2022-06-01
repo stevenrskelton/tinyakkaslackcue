@@ -98,6 +98,8 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
     val result = f(body)
     if (!result.isOk) {
       logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}, body: $body")
+      val st = Thread.currentThread.getStackTrace.map(_.toString).mkString("\n")
+      logger.debug(st)
     }
     result
   }
@@ -105,17 +107,17 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
   def logError[T <: SlackApiTextResponse](call: String, result: T): T = {
     if (!result.isOk) {
       logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}")
+      val st = Thread.currentThread.getStackTrace.map(_.toString).mkString("\n")
+      logger.debug(st)
     }
     result
   }
 
-  override def chatUpdate(text: String, slackMessage: SlackMessage): ChatUpdateResponse = logError(
-    "chatUpdate", text,
+  override def chatUpdate(text: String, slackMessage: SlackMessage): ChatUpdateResponse = logError("chatUpdate", text,
     body => client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(slackMessage.channel.value).ts(slackMessage.ts.value).text(body))
   )
 
-  override def chatUpdateBlocks(blocks: SlackBlocksAsString, slackMessage: SlackMessage): ChatUpdateResponse = logError(
-    "chatUpdateBlocks", blocks.value,
+  override def chatUpdateBlocks(blocks: SlackBlocksAsString, slackMessage: SlackMessage): ChatUpdateResponse = logError("chatUpdateBlocks", blocks.value,
     body => client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(slackMessage.channel.value).ts(slackMessage.ts.value).blocksAsString(body))
   )
 
