@@ -78,9 +78,15 @@ abstract class SlackFactories(
       factory =>
         val name = factory.name.getText.filter(_.isLetterOrDigit).toLowerCase
         val channel = channels.find(_.getName == name).getOrElse {
+          logger.debug(s"Channel `$name` not found, creating.")
           val createdChannel = slackClient.client.conversationsCreate((r: ConversationsCreateRequest.ConversationsCreateRequestBuilder) => r.token(slackClient.botOAuthToken).name(name).isPrivate(false))
-          if (!createdChannel.isOk) logger.error(createdChannel.getError)
-          createdChannel.getChannel
+          if (!createdChannel.isOk){
+            val ex = new Exception(s"Could not create channel $name: ${createdChannel.getError}")
+            logger.error("slackTaskMetaFactories", ex)
+            throw ex
+          } else{
+            createdChannel.getChannel
+          }
         }
         val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.botOAuthToken).channel(channel.getId)).getItems).map(_.asScala).getOrElse(Nil)
         val pinnedResult = pinnedMessages.filter {

@@ -11,6 +11,7 @@ import scala.jdk.CollectionConverters.ListHasAsScala
 
 object SlackTaskMeta {
   def initialize(slackClient: SlackClient, taskChannel: SlackChannel, historyThread: SlackHistoryThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
+    logger.info(s"history thread: ${historyThread.channel} ${historyThread.ts}")
     val response = slackClient.threadReplies(historyThread)
     val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
     if (response.isOk) {

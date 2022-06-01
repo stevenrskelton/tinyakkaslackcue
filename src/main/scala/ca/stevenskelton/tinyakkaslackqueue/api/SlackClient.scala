@@ -73,7 +73,7 @@ trait SlackClient {
 
   def pinsRemove(slackMessage: SlackMessage): PinsRemoveResponse
 
-  def pinsList(): Iterable[MessageItem]
+  def pinsList(channel: SlackChannel): Iterable[MessageItem]
 
   //  def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)]
 
@@ -112,15 +112,15 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
   )
 
   override def pinsAdd(slackMessage: SlackMessage): PinsAddResponse = logError("pinsAdd",
-    client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).timestamp(slackMessage.ts.value))
+    client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(botOAuthToken).channel(slackMessage.channel.value).timestamp(slackMessage.ts.value))
   )
 
   override def pinsRemove(slackMessage: SlackMessage): PinsRemoveResponse = logError("pinsRemove",
-    client.pinsRemove((r: PinsRemoveRequest.PinsRemoveRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value).timestamp(slackMessage.ts.value))
+    client.pinsRemove((r: PinsRemoveRequest.PinsRemoveRequestBuilder) => r.token(botOAuthToken).channel(slackMessage.channel.value).timestamp(slackMessage.ts.value))
   )
 
-  override def pinsList(): Iterable[MessageItem] = logError("pinsList",
-    client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.value))
+  override def pinsList(channel: SlackChannel): Iterable[MessageItem] = logError("pinsList",
+    client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(channel.value))
   ).getItems.asScala
 
   //  override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, Fields)] = {
@@ -147,7 +147,7 @@ case class SlackClientImpl(botOAuthToken: String, botUserId: SlackUserId, botCha
     client.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(botOAuthToken).triggerId(slackTriggerId.value).viewAsString(slackView.toString))
   )
 
-  override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = logError("threadReplies",
+  override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = logError("threadRepliesMessage",
     client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(botOAuthToken).channel(messageItem.getChannel).ts(messageItem.getMessage.getTs))
   )
 
