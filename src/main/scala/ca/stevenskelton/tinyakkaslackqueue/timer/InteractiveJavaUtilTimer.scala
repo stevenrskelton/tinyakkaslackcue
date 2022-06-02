@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.timer
 
 import akka.Done
 
-import java.time._
+import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util
 import java.util.{Date, Timer, TimerTask}
 import scala.jdk.CollectionConverters.IterableHasAsScala

@@ -3,6 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
+import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab
 import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab.{cancelTaskButton, viewLogsButton}
 import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackTaskMeta}
 
@@ -102,7 +103,7 @@ object TaskHistory {
 },{
   "type": "actions",
   "elements": [
-    ${viewLogsButton(scheduledTask)},
+    ${viewLogsButton(scheduledTask.task.slackTaskThread)},
     ${cancelTaskButton(scheduledTask, ActionId.TaskCancel)}
   ]
 },{"type": "divider"}"""
@@ -118,15 +119,7 @@ object TaskHistory {
 				"type": "mrkdwn",
 				"text": "*#team-updates*\n<fakelink.toUrl.com|Q4 Team Projects> posts project updates to <fakelink.toChannel.com|#team-updates>"
 			},
-			"accessory": {
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"text": "View Logs",
-					"emoji": true
-				},
-				"value": "public-relations"
-			}
+			"accessory": ${HomeTab.viewLogsButton(taskHistoryItem.taskId)}
     },{
       "type": "section",
       "fields": [

@@ -17,8 +17,8 @@ package object tinyakkaslackqueue {
 
   trait SlackMessage {
     def ts: SlackTs
-
     def channel: SlackChannel
+    def url: String = s"https://www.slack.com/archives/${channel.value}/p${ts.value.replace(".","")}"
   }
 
   trait SlackThread extends SlackMessage

@@ -1,23 +1,24 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.ScheduledSlackTask
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
+import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackThread}
 
 object HomeTab {
 
-  def viewLogsButton(scheduledTask: ScheduledSlackTask) =
+  def viewLogsButton(slackThread: SlackThread):String = {
     s"""
-    {
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "View Logs"
-      },
-      "action_id": "${ActionId.TaskThread}",
-      "value": "${scheduledTask.task.id.value}"
-    }"""
+       {
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": "View Logs",
+					"emoji": true
+				},
+        "url": "${slackThread.url}"
+			}
+       """
+  }
 
   def cancelTaskButton(scheduledTask: ScheduledSlackTask, actionId: ActionId) =
     s"""
