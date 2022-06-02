@@ -18,15 +18,15 @@ case class TaskHistory(
                       ) {
 
   def homeTabBlocks: String = {
-    val viewHistoryBlocks = if(executed.isEmpty) "" else
-        s""",{
+    val viewHistoryBlocks = if (executed.isEmpty) "" else
+      s""",{
       "type": "button",
       "text": {
         "type": "plain_text",
         "emoji": true,
         "text": "View History (${executed.size})"
       },
-      "action_id": "${ActionId.TaskHistory.value}",
+      "action_id": "${ActionId.HomeTabTaskHistory.value}",
       "value": "${slackTaskMeta.taskChannel.value}"
     }"""
 
@@ -154,7 +154,7 @@ object TaskHistory {
       "emoji": true
     },
     "value": "${scheduledTask.task.id.value}",
-    "action_id": "${ActionId.TaskView}"
+    "action_id": "${ActionId.ModalQueuedTaskView}"
   }
 }"""
     }.mkString(",", """,{"type": "divider"},""", "")

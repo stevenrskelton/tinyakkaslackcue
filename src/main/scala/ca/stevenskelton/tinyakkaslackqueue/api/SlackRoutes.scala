@@ -98,9 +98,9 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
           if (viewType.contains("home")) {
             val action = slackPayload.action
             action.actionId match {
-              case ActionId.TabRefresh => Success(new HomeTab())
+              case ActionId.HomeTabRefresh => Success(new HomeTab())
               case ActionId.TaskCancel => cancelTask(SlackTs(action.value), slackPayload)
-              case ActionId.TaskHistory =>
+              case ActionId.HomeTabTaskHistory =>
                 slackFactories.findByChannel(SlackChannel(action.value)).map {
                   slackTaskMeta => new HomeTabTaskHistory(slackTaskMeta.history(Nil))
                 }
@@ -112,7 +112,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                 slackFactories.findByChannel(SlackChannel(action.value)).map {
                   slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, Some(ZonedDateTime.now()))
                 }
-              case ActionId.TaskView =>
+              case ActionId.ModalQueuedTaskView =>
                 val ts = SlackTs(action.value)
                 val list = slackFactories.listScheduledTasks
                 val index = list.indexWhere(_.id == ts)
@@ -123,8 +123,8 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                 } else {
                   Success(new ViewTaskModal(list, index))
                 }
-              case ActionId.AppConfigure => Success(new HomeTabConfigure())
-              case ActionId.TaskLogs => Success(SlackOkResponse)
+              case ActionId.HomeTabConfiguration => Success(new HomeTabConfigure())
+              case ActionId.RedirectToTaskThread => Success(SlackOkResponse)
             }
           } else if (slackPayload.callbackId.contains(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map {
@@ -157,8 +157,8 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
           slackFactories.findByPrivateMetadata(slackPayload.privateMetadata.getOrElse(PrivateMetadata.Empty)).map {
             slackTaskMeta =>
               val zonedDateTimeOpt = for {
-                scheduledDate <- slackPayload.actionStates.get(ActionId.ScheduleDate).map(_.asInstanceOf[DatePickerState].value)
-                scheduledTime <- slackPayload.actionStates.get(ActionId.ScheduleTime).map(_.asInstanceOf[TimePickerState].value)
+                scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
+                scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
               } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
               //TODO zone should be from Slack
 

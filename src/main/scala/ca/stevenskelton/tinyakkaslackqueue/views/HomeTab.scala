@@ -6,7 +6,7 @@ import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackThread}
 
 object HomeTab {
 
-  def viewLogsButton(slackThread: SlackThread):String = {
+  def viewLogsButton(slackThread: SlackThread): String = {
     s"""
        {
 				"type": "button",
@@ -16,7 +16,7 @@ object HomeTab {
 					"emoji": true
 				},
         "url": "${slackThread.url}",
-        "action_id": "${ActionId.TaskLogs}",
+        "action_id": "${ActionId.RedirectToTaskThread}",
 			}
        """
   }
@@ -77,7 +77,7 @@ class HomeTab()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
             "emoji": true
           },
           "style": "primary",
-          "action_id": "${ActionId.TabRefresh}"
+          "action_id": "${ActionId.HomeTabRefresh}"
         },{
           "type": "button",
           "text": {
@@ -85,7 +85,7 @@ class HomeTab()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
             "text": ":wrench: Configure",
             "emoji": true
           },
-          "action_id": "${ActionId.AppConfigure}"
+          "action_id": "${ActionId.HomeTabConfiguration}"
         }
       ]
     },{

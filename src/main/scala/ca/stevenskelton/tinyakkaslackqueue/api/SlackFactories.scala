@@ -1,8 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
 import akka.Done
-import akka.actor.ActorSystem
-import akka.stream.{Materializer, SystemMaterializer}
+import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks.PrivateMetadata
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
@@ -12,7 +11,6 @@ import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.methods.request.conversations.{ConversationsCreateRequest, ConversationsListRequest}
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest}
 import com.slack.api.model.ConversationType
-import com.typesafe.config.Config
 import org.slf4j.Logger
 
 import java.time.ZonedDateTime

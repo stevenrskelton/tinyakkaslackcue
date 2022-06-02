@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
 
 class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackModal {
@@ -13,35 +12,7 @@ class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackModal {
     "type": "mrkdwn",
     "text": "Task has already started, attempting to cancel."
   },
-  "accessory": {
-    "type": "button",
-    "text": {
-      "type": "plain_text",
-      "text": "View Logs",
-      "emoji": true
-    },
-    "value": "${scheduledTask.task.id.value}",
-    "action_id": "${ActionId.TaskThread}",
-    "style": "danger",
-    "confirm": {
-      "title": {
-          "type": "plain_text",
-          "text": "Cancel task ${scheduledTask.task.meta.factory.name.getText}"
-      },
-      "text": {
-          "type": "mrkdwn",
-          "text": "Task will be notified to abort execution as soon as possible."
-      },
-      "confirm": {
-          "type": "plain_text",
-          "text": "Cancel Task"
-      },
-      "deny": {
-          "type": "plain_text",
-          "text": "Do not Cancel"
-      }
-    }
-  }
+  "accessory": ${HomeTab.viewLogsButton(scheduledTask.task.slackTaskThread)}
 }"""
   } else {
     """

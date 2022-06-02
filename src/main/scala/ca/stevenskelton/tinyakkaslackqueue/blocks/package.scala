@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{CancelHistoryItem, ErrorHistoryItem, SuccessHistoryItem, TaskHistoryOutcomeItem}
 import org.slf4j.event.Level
 
 package object blocks {
@@ -15,14 +14,6 @@ package object blocks {
   val TaskSuccess = ":white_check_mark:"
   val TaskCancelled = ":no_entry_sign:"
   val TaskScheduled = ":hourglass_flowing_sand:"
-
-  def taskOutcomeicon(outcome: TaskHistoryOutcomeItem): String = {
-    outcome match {
-      case _:CancelHistoryItem => TaskCancelled
-      case _:ErrorHistoryItem => TaskFailure
-      case _:SuccessHistoryItem => TaskSuccess
-    }
-  }
 
   val logLevelEmoji: Level => String = {
     case Level.INFO => EmojiINFO

@@ -1,11 +1,8 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory._
-import ca.stevenskelton.tinyakkaslackqueue.logging.SlackLoggerFactory
-import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.Logger
 import play.api.libs.json.OFormat
 
 import java.time.ZonedDateTime

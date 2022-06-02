@@ -19,7 +19,7 @@ object HomeTabTaskHistory {
             "emoji": true
           },
           "style": "primary",
-          "action_id": "${ActionId.TabRefresh}"
+          "action_id": "${ActionId.HomeTabRefresh}"
         }
       ]
     }"""

@@ -5,20 +5,46 @@ case class ActionId(value: String) extends AnyVal {
 }
 
 object ActionId {
-  val TaskQueue = ActionId("task-queue-action")
-  val TaskSchedule = ActionId("schedule-task-action")
+  /**
+   * Create task to run as soon as available
+   */
+  val TaskQueue = ActionId("task-queue")
+  /**
+   * Create task to run at specified time
+   */
+  val TaskSchedule = ActionId("task-schedule")
+  /**
+   * Signal task to cancel
+   */
   val TaskCancel = ActionId("task-cancel")
-  val TaskView = ActionId("view-task")
-  val TaskLogs = ActionId("view-logs")
-  val TaskThread = ActionId("view-thread")
-  val TaskHistory = ActionId("view-history")
+  /**
+   * View scheduled task details in modal
+   */
+  val ModalQueuedTaskView = ActionId("modal-task-view")
+  /**
+   * Redirect to thread for running task's logs
+   */
+  val RedirectToTaskThread = ActionId("redirect-task-thread")
+  /**
+   * Show list of all previous task executions
+   */
+  val HomeTabTaskHistory = ActionId("home-history")
+  /**
+   * Refresh home tab
+   */
+  val HomeTabRefresh = ActionId("home-refresh")
+  /**
+   * Show configure page in home tab
+   */
+  val HomeTabConfiguration = ActionId("home-configure")
 
-  val ScheduleDate = ActionId("datepicker-action")
-  val ScheduleTime = ActionId("timepicker-action")
-  val NotifyOnComplete = ActionId("multi-users-notify-on-complete")
-  val NotifyOnFailure = ActionId("multi-users-notify-on-failure")
-  val LogLevel = ActionId("static-select-action")
+  /*
+   * Create Task Data Fields
+   */
+  val DataScheduleDate = ActionId("datepicker")
+  val DataScheduleTime = ActionId("timepicker")
+  val DataNotifyOnComplete = ActionId("multi-users-notify-on-complete")
+  val DataNotifyOnFailure = ActionId("multi-users-notify-on-failure")
+  val DataLogLevel = ActionId("static-select")
 
-  val TabRefresh = ActionId("tab-refresh")
-  val AppConfigure = ActionId("view-configure")
 }

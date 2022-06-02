@@ -28,7 +28,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
 					"text": "Select a date",
 					"emoji": true
 				},
-				"action_id": "${ActionId.ScheduleDate.value}"
+				"action_id": "${ActionId.DataScheduleDate.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -46,7 +46,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
 					"text": "Start Time",
 					"emoji": true
 				},
-				"action_id": "${ActionId.ScheduleTime.value}"
+				"action_id": "${ActionId.DataScheduleTime.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -70,7 +70,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
 					"emoji": true
 				},
         "initial_users": ["${slackUser.id.value}"],
-				"action_id": "${ActionId.NotifyOnComplete.value}"
+				"action_id": "${ActionId.DataNotifyOnComplete.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -88,7 +88,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
 					"emoji": true
 				},
         "initial_users": ["${slackUser.id.value}"],
-				"action_id": "${ActionId.NotifyOnFailure.value}"
+				"action_id": "${ActionId.DataNotifyOnFailure.value}"
 			},
 			"label": {
 				"type": "plain_text",
@@ -160,7 +160,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
 				},
 				"options": [${Seq(Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG).map(logLevelBlock).mkString(",")}],
         "initial_option": ${logLevelBlock(Level.WARN)},
-				"action_id": "${ActionId.LogLevel.value}"
+				"action_id": "${ActionId.DataLogLevel.value}"
 			},
 			"label": {
 				"type": "plain_text",
