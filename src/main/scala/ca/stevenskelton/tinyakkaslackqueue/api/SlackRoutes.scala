@@ -125,7 +125,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                   logger.error("handleAction", ex)
                   Failure(ex)
                 } else {
-                  Success(new ViewTaskModal(list, index))
+                  Success(new ViewTaskModal(zoneId, list, index))
                 }
               case ActionId.HomeTabConfiguration => Success(new HomeTabConfigure(zoneId))
               case ActionId.RedirectToTaskThread => Success(SlackOkResponse)

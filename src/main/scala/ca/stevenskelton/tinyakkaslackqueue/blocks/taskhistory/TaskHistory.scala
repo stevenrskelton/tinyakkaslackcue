@@ -116,16 +116,12 @@ object TaskHistory {
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "${taskHistoryItem.action.icon} ${DateUtils.humanReadable(taskHistoryItem.time.withZoneSameInstant(zoneId))}"
+				"text": "${taskHistoryItem.action.icon} *${taskHistoryItem.action.action.toUpperCase}* ${DateUtils.humanReadable(taskHistoryItem.time.withZoneSameInstant(zoneId))}"
 			},
 			"accessory": ${HomeTab.viewLogsButton(taskHistoryItem.taskId)}
     },{
       "type": "section",
       "fields": [
-        {
-          "type": "mrkdwn",
-          "text": "*Type:* ${taskHistoryItem.action.action}"
-        },
         {
           "type": "mrkdwn",
           "text": "*Duration:* ${DateUtils.humanReadable(duration)}"

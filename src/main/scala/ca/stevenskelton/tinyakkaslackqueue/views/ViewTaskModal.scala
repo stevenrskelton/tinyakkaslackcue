@@ -4,7 +4,9 @@ import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.{AppModalTitle, ScheduledSlackTask}
 
-class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackModal {
+import java.time.ZoneId
+
+class ViewTaskModal(zoneId: ZoneId, scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackModal {
   override def toString: String = {
     val scheduledTask = scheduledTasks(index)
     val bodyBlocks = if (scheduledTask.isRunning) {
@@ -12,7 +14,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
           "type": "section",
           "text": {
             "type": "plain_text",
-            "text": "*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart)}"
+            "text": "*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}"
           }
         }"""
     } else {
@@ -21,7 +23,7 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": "*Scheduled for:* ${scheduledTask.executionStart.toString}\n*Queue Position*: ${if (index == 0 || (isQueueExecuting && index == 1)) "Next" else (index + 1).toString}"
+            "text": "*Scheduled for:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}\n*Queue Position*: ${if (index == 0 || (isQueueExecuting && index == 1)) "Next" else (index + 1).toString}"
           }
         }"""
     }
