@@ -123,6 +123,9 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                 } else {
                   Success(new ViewTaskModal(list, index))
                 }
+              case ActionId.AppConfigure => Success(new HomeTabConfigure())
+
+
             }
           } else if (slackPayload.callbackId.contains(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map {

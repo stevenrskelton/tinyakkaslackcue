@@ -59,30 +59,7 @@ class HomeTab()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
   private val taskHistories = slackFactories.history
 
   override def toString: String = {
-    if (taskHistories.isEmpty)
-      s"""
-{
-  "type":"home",
-  "blocks":[
-    {
-      "type": "header",
-      "text": {
-        "type": "plain_text",
-        "text": ":card_index: Tiny Akka Slack Cue",
-        "emoji": true
-      }
-    },{
-      "type": "section",
-      "fields": [
-        {
-          "type": "mrkdwn",
-          "text": "*Configure Tasks*\nTasks are cancellable and can be queued"
-        }
-      ]
-    }
-  ]
-}
-""" else
+    if (taskHistories.isEmpty) new HomeTabConfigure().toString else
       s"""
 {
   "type":"home",
@@ -94,11 +71,19 @@ class HomeTab()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
           "type": "button",
           "text": {
             "type": "plain_text",
-            "text": ":card_index: Refresh Statuses",
+            "text": ":arrows_counterclockwise: Refresh Statuses",
             "emoji": true
           },
           "style": "primary",
           "action_id": "${ActionId.TabRefresh}"
+        },{
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": ":wrench: Configure",
+            "emoji": true
+          },
+          "action_id": "${ActionId.AppConfigure}"
         }
       ]
     },{

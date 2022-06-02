@@ -17,6 +17,18 @@ case class TaskHistory(
                       ) {
 
   def homeTabBlocks: String = {
+    val viewHistoryBlocks = if(executed.isEmpty) "" else
+        s""",{
+      "type": "button",
+      "text": {
+        "type": "plain_text",
+        "emoji": true,
+        "text": "View History (${executed.size})"
+      },
+      "action_id": "${ActionId.TaskHistory.value}",
+      "value": "${slackTaskMeta.taskChannel.value}"
+    }"""
+
     s"""
 {
   "type": "header",
@@ -55,16 +67,8 @@ case class TaskHistory(
       "style": "primary",
       "action_id": "${ActionId.TaskSchedule.value}",
       "value": "${slackTaskMeta.taskChannel.value}"
-    },{
-      "type": "button",
-      "text": {
-        "type": "plain_text",
-        "emoji": true,
-        "text": "View Full History"
-      },
-      "action_id": "${ActionId.TaskHistory.value}",
-      "value": "${slackTaskMeta.taskChannel.value}"
     }
+    $viewHistoryBlocks
   ]
 }
 ${TaskHistory.homeTabRunningBlocks(running)}

@@ -6,13 +6,13 @@ import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import org.slf4j.Logger
 
 import scala.concurrent.Future
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class TestSlackTaskFactory(duration: FiniteDuration)(implicit slackClient: SlackClient, materializer: Materializer) extends SlackTaskFactory[Int, Int] {
+class TestSlackTaskFactory(duration: FiniteDuration, updateInterval: FiniteDuration = 1.second)(implicit slackClient: SlackClient, materializer: Materializer) extends SlackTaskFactory[Int, Int] {
 
-  override val name = createMarkdownText("test")
+  override val name = createMarkdownText(s"test-${duration.toMillis}-${updateInterval.toMillis}")
 
-  override val description = createMarkdownText(s"${duration.toSeconds.toString} seconds @ 1 second")
+  override val description = createMarkdownText(s"${duration.toSeconds.toString} seconds @ ${updateInterval.toMillis}ms")
 
   override def distinctBy: Int => Int = identity
 
@@ -25,7 +25,7 @@ class TestSlackTaskFactory(duration: FiniteDuration)(implicit slackClient: Slack
         .async.viaMat(KillSwitches.single)(Keep.right)
         .via(Flow.fromFunction {
           i =>
-            Thread.sleep(1000)
+            Thread.sleep(updateInterval.toMillis)
             if (i % 10 == 0) {
               val skew = System.currentTimeMillis - start - (i * 1000)
               logger.info(s"Skew of ${skew}ms at $i second")

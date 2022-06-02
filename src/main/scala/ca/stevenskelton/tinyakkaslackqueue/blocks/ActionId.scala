@@ -19,4 +19,5 @@ object ActionId {
   val LogLevel = ActionId("static-select-action")
 
   val TabRefresh = ActionId("tab-refresh")
+  val AppConfigure = ActionId("view-configure")
 }
