@@ -7,7 +7,7 @@ import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab
 import ca.stevenskelton.tinyakkaslackqueue.views.HomeTab.{cancelTaskButton, viewLogsButton}
 import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackTaskMeta}
 
-import java.time.Duration
+import java.time.{Duration, ZoneId}
 import scala.collection.SortedSet
 
 case class TaskHistory(
@@ -17,7 +17,7 @@ case class TaskHistory(
                         pending: SortedSet[ScheduledSlackTask]
                       ) {
 
-  def homeTabBlocks: String = {
+  def homeTabBlocks(zoneId: ZoneId): String = {
     val viewHistoryBlocks = if (executed.isEmpty) "" else
       s""",{
       "type": "button",
@@ -55,7 +55,7 @@ case class TaskHistory(
         "text": "${if (running.isEmpty) "Run Immediately" else "Queue"}"
       },
       "style": "primary",
-      "action_id": "${ActionId.TaskQueue.value}",
+      "action_id": "${ActionId.ModalTaskQueue.value}",
       "value": "${slackTaskMeta.taskChannel.value}"
     },
     {
@@ -66,22 +66,21 @@ case class TaskHistory(
         "text": "Schedule"
       },
       "style": "primary",
-      "action_id": "${ActionId.TaskSchedule.value}",
+      "action_id": "${ActionId.ModalTaskSchedule.value}",
       "value": "${slackTaskMeta.taskChannel.value}"
     }
     $viewHistoryBlocks
   ]
 }
-${TaskHistory.homeTabRunningBlocks(running)}
-${TaskHistory.homeTabPendingBlocks(pending)}
+${TaskHistory.homeTabRunningBlocks(running, zoneId)}
+${TaskHistory.homeTabPendingBlocks(pending, zoneId)}
 """
   }
 
-  def executionHistoryBlocks: Seq[String] = executed.toSeq.reverse.map(TaskHistory.taskHistoryOutcomeBlocks)
 }
 
 object TaskHistory {
-  def homeTabRunningBlocks(running: Option[(ScheduledSlackTask, Option[TaskHistoryItem[CancelHistoryItem]])]): String = {
+  def homeTabRunningBlocks(running: Option[(ScheduledSlackTask, Option[TaskHistoryItem[CancelHistoryItem]])], zoneId: ZoneId): String = {
     running.map {
       case (scheduledTask, cancellingOpt) =>
         val cancellingText = cancellingOpt.fold("")(historyTaskItem => "\nCancelling.")
@@ -97,7 +96,7 @@ object TaskHistory {
   "fields": [
     {
       "type": "mrkdwn",
-      "text": "*When:*Submitted Aut 10"
+      "text": "*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}"
     }
   ]
 },{
@@ -110,14 +109,14 @@ object TaskHistory {
     }.getOrElse("")
   }
 
-  def taskHistoryOutcomeBlocks(taskHistoryItem: TaskHistoryItem[TaskHistoryOutcomeItem]): String = {
-    val duration = Duration.between(taskHistoryItem.time, taskHistoryItem.action.start)
+  def taskHistoryOutcomeBlocks(taskHistoryItem: TaskHistoryItem[TaskHistoryOutcomeItem], zoneId: ZoneId): String = {
+    val duration = Duration.between(taskHistoryItem.action.start, taskHistoryItem.time)
     s"""
    {
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "*#team-updates*\n<fakelink.toUrl.com|Q4 Team Projects> posts project updates to <fakelink.toChannel.com|#team-updates>"
+				"text": "${taskHistoryItem.action.icon} ${DateUtils.humanReadable(taskHistoryItem.time.withZoneSameInstant(zoneId))}"
 			},
 			"accessory": ${HomeTab.viewLogsButton(taskHistoryItem.taskId)}
     },{
@@ -125,18 +124,18 @@ object TaskHistory {
       "fields": [
         {
           "type": "mrkdwn",
-          "text": "*Type:*\n${taskHistoryItem.action.action}"
+          "text": "*Type:* ${taskHistoryItem.action.action}"
         },
         {
           "type": "mrkdwn",
-          "text": "*Duration:*\n${DateUtils.humanReadable(duration)}"
+          "text": "*Duration:* ${DateUtils.humanReadable(duration)}"
         },
         ${taskHistoryItem.action.sectionBlocks.mkString(",")}
       ]
     }"""
   }
 
-  def homeTabPendingBlocks(pending: SortedSet[ScheduledSlackTask]): String = {
+  def homeTabPendingBlocks(pending: SortedSet[ScheduledSlackTask], zoneId: ZoneId): String = {
     if (pending.isEmpty) ""
     else pending.map {
       scheduledTask =>
@@ -144,7 +143,7 @@ object TaskHistory {
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": ":watch: *Scheduled:* ${DateUtils.humanReadable(scheduledTask.executionStart)}"
+    "text": ":watch: *Scheduled:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}"
   },
   "accessory": {
     "type": "button",

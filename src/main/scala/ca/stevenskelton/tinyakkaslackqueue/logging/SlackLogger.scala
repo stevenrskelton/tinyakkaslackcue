@@ -8,7 +8,9 @@ import org.slf4j.{Logger, Marker}
 
 import scala.util.{Failure, Success}
 
-trait Guarentee extends Marker
+object SlackLogger {
+  trait Guarantee extends Marker
+}
 
 class SlackLogger(
                    override val getName: String,
@@ -52,31 +54,31 @@ class SlackLogger(
   override def trace(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.TRACE, marker, msg, null)
     mirror.foreach(_.trace(marker, msg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, msg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.trace(marker, msg))
   }
 
   override def trace(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.TRACE, marker, format, arg)
     mirror.foreach(_.trace(marker, format, arg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, format, arg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.trace(marker, format, arg))
   }
 
   override def trace(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.TRACE, marker, format, arg1, arg2)
     mirror.foreach(_.trace(marker, format, arg1, arg2))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, format, arg1, arg2))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.trace(marker, format, arg1, arg2))
   }
 
   override def trace(marker: Marker, format: String, argArray: Object*): Unit = {
     recordEventArgArray(Level.TRACE, marker, format, argArray)
     mirror.foreach(_.trace(marker, format, argArray: _*))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, format, argArray: _*))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.trace(marker, format, argArray: _*))
   }
 
   override def trace(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.TRACE, marker, msg, t)
     mirror.foreach(_.trace(marker, msg, t))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, msg, t))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.trace(marker, msg, t))
   }
 
   override def debug(msg: String): Unit = {
@@ -109,31 +111,31 @@ class SlackLogger(
   override def debug(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.DEBUG, marker, msg, null)
     mirror.foreach(_.debug(marker, msg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, msg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.debug(marker, msg))
   }
 
   override def debug(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.DEBUG, marker, format, arg)
     mirror.foreach(_.debug(marker, format, arg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, format, arg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.debug(marker, format, arg))
   }
 
   override def debug(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.DEBUG, marker, format, arg1, arg2)
     mirror.foreach(_.debug(marker, format, arg1, arg2))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, format, arg1, arg2))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.debug(marker, format, arg1, arg2))
   }
 
   override def debug(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.DEBUG, marker, format, arguments)
     mirror.foreach(_.debug(marker, format, arguments: _*))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, format, arguments))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.debug(marker, format, arguments))
   }
 
   override def debug(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.DEBUG, marker, msg, t)
     mirror.foreach(_.debug(marker, msg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, msg, t))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.debug(marker, msg, t))
   }
 
   override def info(msg: String): Unit = {
@@ -166,31 +168,31 @@ class SlackLogger(
   override def info(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.INFO, marker, msg, null)
     mirror.foreach(_.info(marker, msg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, msg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.info(marker, msg))
   }
 
   override def info(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.INFO, marker, format, arg)
     mirror.foreach(_.info(marker, format, arg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, format, arg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.info(marker, format, arg))
   }
 
   override def info(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.INFO, marker, format, arg1, arg2)
     mirror.foreach(_.info(marker, format, arg1, arg2))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, format, arg1, arg2))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.info(marker, format, arg1, arg2))
   }
 
   override def info(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.INFO, marker, format, arguments)
     mirror.foreach(_.info(marker, format, arguments: _*))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, format, arguments: _*))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.info(marker, format, arguments: _*))
   }
 
   override def info(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.INFO, marker, msg, t)
     mirror.foreach(_.info(marker, msg, t))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, msg, t))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.info(marker, msg, t))
   }
 
   override def warn(msg: String): Unit = {
@@ -223,31 +225,31 @@ class SlackLogger(
   override def warn(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.WARN, marker, msg, null)
     mirror.foreach(_.warn(marker, msg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, msg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.warn(marker, msg))
   }
 
   override def warn(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.WARN, marker, format, arg)
     mirror.foreach(_.warn(marker, format, arg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, format, arg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.warn(marker, format, arg))
   }
 
   override def warn(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.WARN, marker, format, arg1, arg2)
     mirror.foreach(_.warn(marker, format, arg1, arg2))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, format, arg1, arg2))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.warn(marker, format, arg1, arg2))
   }
 
   override def warn(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.WARN, marker, format, arguments)
     mirror.foreach(_.warn(marker, format, arguments: _*))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, format, arguments))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.warn(marker, format, arguments))
   }
 
   override def warn(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.WARN, marker, msg, t)
     mirror.foreach(_.warn(marker, msg, t))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, msg, t))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.warn(marker, msg, t))
   }
 
   override def error(msg: String): Unit = {
@@ -280,31 +282,31 @@ class SlackLogger(
   override def error(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.ERROR, marker, msg, null)
     mirror.foreach(_.error(marker, msg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, msg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.error(marker, msg))
   }
 
   override def error(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.ERROR, marker, format, arg)
     mirror.foreach(_.error(marker, format, arg))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, format, arg))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.error(marker, format, arg))
   }
 
   override def error(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.ERROR, marker, format, arg1, arg2)
     mirror.foreach(_.error(marker, format, arg1, arg2))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, format, arg1, arg2))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.error(marker, format, arg1, arg2))
   }
 
   override def error(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.ERROR, marker, format, arguments)
     mirror.foreach(_.error(marker, format, arguments: _*))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, format, arguments: _*))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.error(marker, format, arguments: _*))
   }
 
   override def error(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.ERROR, marker, msg, t)
     mirror.foreach(_.error(marker, msg, t))
-    if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, msg, t))
+    if (marker.isInstanceOf[SlackLogger.Guarantee]) backup.foreach(_.error(marker, msg, t))
   }
 
   private def recordEvent_0Args(level: Level, marker: Marker, msg: String, t: Throwable): Unit = {

@@ -2,7 +2,9 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
 
-class HomeTabConfigure()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
+import java.time.ZoneId
+
+class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends SlackHomeTab {
 
   override def toString: String = {
     s"""

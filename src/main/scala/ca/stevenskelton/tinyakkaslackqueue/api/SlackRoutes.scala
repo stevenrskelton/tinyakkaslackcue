@@ -58,7 +58,8 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
           logger.error(view.toString)
           logger.error(update.getError)
         }
-        Success(new HomeTab())
+        val zoneId = slackFactories.slackClient.userZonedId(slackPayload.user.id)
+        Success(new HomeTab(zoneId))
     }.getOrElse {
       val ex = new Exception(s"Could not find task ts ${ts.value}")
       logger.error("handleSubmission", ex)
@@ -75,7 +76,8 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
         val flow = (eventObject \ "type").as[String] match {
           case "app_home_opened" =>
             val slackUserId = SlackUserId((eventObject \ "user").as[String])
-            publishHomeTab(slackUserId, new HomeTab())
+            val zoneId = slackFactories.slackClient.userZonedId(slackUserId)
+            publishHomeTab(slackUserId, new HomeTab(zoneId))
           case unknown => throw new NotImplementedError(s"Slack event $unknown not implemented: ${Json.stringify(jsObject)}")
         }
         extractExecutionContext {
@@ -92,25 +94,27 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
       val jsObject = Json.parse(payload).as[JsObject]
       val slackPayload = SlackPayload(jsObject)
 
+      lazy val zoneId = slackFactories.slackClient.userZonedId(slackPayload.user.id)
+
       val handler: Try[SlackView] = slackPayload.payloadType match {
         case SlackPayload.BlockActions =>
-          val viewType = (jsObject \ "view" \ "type").asOpt[String]
-          if (viewType.contains("home")) {
+//          val viewType = (jsObject \ "view" \ "type").asOpt[String]
+//          if (viewType.contains("home")) {
             val action = slackPayload.action
             action.actionId match {
-              case ActionId.HomeTabRefresh => Success(new HomeTab())
+              case ActionId.HomeTabRefresh => Success(new HomeTab(zoneId))
               case ActionId.TaskCancel => cancelTask(SlackTs(action.value), slackPayload)
               case ActionId.HomeTabTaskHistory =>
                 slackFactories.findByChannel(SlackChannel(action.value)).map {
-                  slackTaskMeta => new HomeTabTaskHistory(slackTaskMeta.history(Nil))
+                  slackTaskMeta => new HomeTabTaskHistory(zoneId, slackTaskMeta.history(Nil))
                 }
-              case ActionId.TaskQueue =>
+              case ActionId.ModalTaskQueue =>
                 slackFactories.findByChannel(SlackChannel(action.value)).map {
                   slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, None)
                 }
-              case ActionId.TaskSchedule =>
+              case ActionId.ModalTaskSchedule =>
                 slackFactories.findByChannel(SlackChannel(action.value)).map {
-                  slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, Some(ZonedDateTime.now()))
+                  slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, Some(ZonedDateTime.now(zoneId)))
                 }
               case ActionId.ModalQueuedTaskView =>
                 val ts = SlackTs(action.value)
@@ -123,33 +127,15 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                 } else {
                   Success(new ViewTaskModal(list, index))
                 }
-              case ActionId.HomeTabConfiguration => Success(new HomeTabConfigure())
+              case ActionId.HomeTabConfiguration => Success(new HomeTabConfigure(zoneId))
               case ActionId.RedirectToTaskThread => Success(SlackOkResponse)
             }
-          } else if (slackPayload.callbackId.contains(CallbackId.View)) {
-            slackPayload.actionStates.get(ActionId.TaskCancel).map {
-              state => Success(SlackTs(state.asInstanceOf[ButtonState].value))
-            }.getOrElse {
-              val action = slackPayload.action
-              if (action.actionId == ActionId.TaskCancel) {
-                Success(SlackTs(action.value))
-              } else {
-                val ex = new Exception(s"Could not find action ${ActionId.TaskCancel.value}")
-                logger.error("handleSubmission", ex)
-                Failure(ex)
-              }
-            }.flatMap {
-              cancelTask(_, slackPayload)
-            }
-          } else {
-            logger.debug(s"where does this come from")
-            Success(new HomeTab())
-          }
-        case SlackPayload.ViewSubmission if slackPayload.callbackId.contains(CallbackId.View) =>
-          if (slackPayload.actionStates.get(ActionId.TaskCancel).map(o => SlackTs(o.asInstanceOf[DatePickerState].value.toString)).fold(false)(slackFactories.cancelScheduledTask(_).isDefined)) {
-            Success(new HomeTab())
-          } else {
-            val ex = new Exception(s"Could not find task ts ${slackPayload.privateMetadata.fold("")(_.value)}")
+        case SlackPayload.ViewSubmission if slackPayload.actionStates.contains(ActionId.TaskCancel) =>
+          val slackTs = SlackTs(slackPayload.actionStates(ActionId.TaskCancel).asInstanceOf[ButtonState].value)
+          slackFactories.cancelScheduledTask(slackTs).map {
+            _ => Success(new HomeTab(zoneId))
+          }.getOrElse {
+            val ex = new Exception(s"Could not find task ts ${slackTs.value}")
             logger.error("handleSubmission", ex)
             Failure(ex)
           }
@@ -159,11 +145,9 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
               val zonedDateTimeOpt = for {
                 scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
                 scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
-              } yield scheduledDate.atTime(scheduledTime).atZone(ZoneId.systemDefault())
-              //TODO zone should be from Slack
-
+              } yield scheduledDate.atTime(scheduledTime).atZone(zoneId)
               val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload.user.id, slackTaskMeta, zonedDateTimeOpt)
-              Success(new HomeTab())
+              Success(new HomeTab(zoneId))
           }.getOrElse {
             val ex = new Exception(s"Could not find task ${slackPayload.privateMetadata.fold("")(_.value)}")
             logger.error("handleSubmission", ex)

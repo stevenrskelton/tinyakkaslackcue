@@ -4,6 +4,8 @@ import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackThread}
 
+import java.time.{ZoneId, ZoneOffset, ZonedDateTime}
+
 object HomeTab {
 
   def viewLogsButton(slackThread: SlackThread): String = {
@@ -55,13 +57,13 @@ object HomeTab {
 
 }
 
-class HomeTab()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
+class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends SlackHomeTab {
 
   //TODO: sort taskHistories
   private val taskHistories = slackFactories.history
 
   override def toString: String = {
-    if (taskHistories.isEmpty) new HomeTabConfigure().toString else
+    if (taskHistories.isEmpty) new HomeTabConfigure(zoneId).toString else
       s"""
 {
   "type":"home",
@@ -91,7 +93,7 @@ class HomeTab()(implicit slackFactories: SlackFactories) extends SlackHomeTab {
     },{
       "type": "divider"
     },
-    ${taskHistories.map(_.homeTabBlocks).mkString(""",{"type": "divider"},""")}
+    ${taskHistories.map(_.homeTabBlocks(zoneId)).mkString(""",{"type": "divider"},""")}
   ]
 }
 """

@@ -33,7 +33,6 @@ class ViewTaskModal(scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends
         "emoji": true
       },
       "type": "modal",
-      ${CallbackId.View.block},
       "close": {
         "type": "plain_text",
         "text": "Close",

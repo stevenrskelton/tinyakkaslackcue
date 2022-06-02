@@ -7,7 +7,7 @@ import com.slack.api.Slack
 import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateRequest}
 import com.slack.api.methods.request.conversations.{ConversationsListRequest, ConversationsRepliesRequest}
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest, PinsRemoveRequest}
-import com.slack.api.methods.request.users.UsersListRequest
+import com.slack.api.methods.request.users.{UsersInfoRequest, UsersListRequest}
 import com.slack.api.methods.request.views.{ViewsOpenRequest, ViewsPublishRequest, ViewsUpdateRequest}
 import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateResponse}
 import com.slack.api.methods.response.conversations.ConversationsRepliesResponse
@@ -19,6 +19,7 @@ import com.slack.api.model.ConversationType
 import com.typesafe.config.Config
 import org.slf4j.Logger
 
+import java.time.ZoneId
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 object SlackClient {
@@ -82,6 +83,8 @@ trait SlackClient {
   def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse
 
   def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse
+
+  def userZonedId(slackUserId: SlackUserId): ZoneId
 }
 
 case class SlackClientImpl(slackConfig: SlackConfig, client: MethodsClient)(implicit logger: Logger) extends SlackClient {
@@ -160,6 +163,12 @@ case class SlackClientImpl(slackConfig: SlackConfig, client: MethodsClient)(impl
   override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = logError("threadReplies",
     client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackThread.channel.value).ts(slackThread.ts.value))
   )
+
+  override def userZonedId(slackUserId: SlackUserId): ZoneId = ZoneId.of {
+    logError("usersInfo", {
+      client.usersInfo((r: UsersInfoRequest.UsersInfoRequestBuilder) => r.token(slackConfig.botOAuthToken).user(slackUserId.value))
+    }).getUser.getTz
+  }
 
 }
 

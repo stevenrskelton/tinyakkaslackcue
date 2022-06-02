@@ -7,6 +7,5 @@ case class CallbackId(value: String) extends AnyVal {
 }
 
 object CallbackId {
-  val View = CallbackId("task-view-modal")
   val Create = CallbackId("task-create")
 }

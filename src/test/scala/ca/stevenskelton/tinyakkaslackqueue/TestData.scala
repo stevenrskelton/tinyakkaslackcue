@@ -55,6 +55,8 @@ object TestData {
     override def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse = ???
 
     override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = ???
+
+    override def userZonedId(slackUserId: SlackUserId): ZoneId = ???
   }
 
   private class TestSlackTaskFactory(number: String) extends SlackTaskFactory[Int, Int] {

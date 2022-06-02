@@ -3,6 +3,8 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 
+import java.time.ZoneId
+
 object HomeTabTaskHistory {
   val BackToFooterBlocks =
     s"""
@@ -25,10 +27,10 @@ object HomeTabTaskHistory {
     }"""
 }
 
-class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
+class HomeTabTaskHistory(zoneId: ZoneId, taskHistory: TaskHistory) extends SlackHomeTab {
 
   override def toString: String = {
-    val blocks = taskHistory.executionHistoryBlocks
+    val blocks = taskHistory.executed.toSeq.reverse.map(TaskHistory.taskHistoryOutcomeBlocks(_, zoneId))
     val list = if (blocks.isEmpty) {
       """
     ,{

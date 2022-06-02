@@ -6,17 +6,17 @@ case class ActionId(value: String) extends AnyVal {
 
 object ActionId {
   /**
-   * Create task to run as soon as available
-   */
-  val TaskQueue = ActionId("task-queue")
-  /**
-   * Create task to run at specified time
-   */
-  val TaskSchedule = ActionId("task-schedule")
-  /**
    * Signal task to cancel
    */
   val TaskCancel = ActionId("task-cancel")
+  /**
+   * Show modal to create task to run as soon as available
+   */
+  val ModalTaskQueue = ActionId("task-queue")
+  /**
+   * Show modal to create task to run at specified time
+   */
+  val ModalTaskSchedule = ActionId("task-schedule")
   /**
    * View scheduled task details in modal
    */
