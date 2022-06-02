@@ -7,7 +7,7 @@ class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
 
   override def toString: String = {
     val blocks = taskHistory.executionHistoryBlocks
-    val list = if (blocks.isEmpty)
+    val list = if (blocks.isEmpty) {
       """
     ,{
 			"type": "header",
@@ -15,16 +15,11 @@ class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
 				"type": "plain_text",
 				"text": "No History",
 				"emoji": true
-			}
+		  }
 		}"""
-    else
-      s"""
-    ,{
-      "type": "actions",
-      "elements": [
-        ${blocks.mkString(",")}
-      ]
-    }"""
+    } else {
+      blocks.mkString(""",{"type":"divider"},""")
+    }
 
     s"""
 {
@@ -43,9 +38,13 @@ class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
         "type": "mrkdwn",
         "text": "${taskHistory.slackTaskMeta.factory.description.getText}"
       }
-    }
+    },{
+			"type": "divider"
+		}
     $list
     ,{
+		  "type": "divider"
+		},{
       "type": "actions",
       "elements": [
         {
