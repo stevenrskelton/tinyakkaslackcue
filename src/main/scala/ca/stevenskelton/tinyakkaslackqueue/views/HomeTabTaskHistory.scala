@@ -40,7 +40,7 @@ class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
       }
     },{
 			"type": "divider"
-		}
+		},
     $list
     ,{
 		  "type": "divider"

@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
+import ca.stevenskelton.tinyakkaslackqueue.blocks.TaskFailure
 import play.api.libs.json.Json
 
 import java.time.ZonedDateTime
@@ -16,4 +17,6 @@ case class ErrorHistoryItem(ex: String, message: String, start: ZonedDateTime) e
     s"""{"type": "mrkdwn","text": "Error:\n$ex"}""",
     s"""{"type": "mrkdwn","text": "Message:\n$message"}"""
   )
+
+  override def icon: String = TaskFailure
 }

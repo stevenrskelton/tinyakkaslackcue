@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
+import ca.stevenskelton.tinyakkaslackqueue.blocks.{TaskCancelled, TaskFailure, TaskSuccess}
 import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackHistoryThread, SlackTaskThread, SlackTs}
 import com.slack.api.model.Message
 import org.slf4j.Logger
@@ -58,6 +59,11 @@ object TaskHistoryItem {
           }
         case ErrorHistoryItem.Action =>
           val format = ErrorHistoryItem.fmt
+          format.reads(json).map {
+            action => TaskHistoryItem(action, slackTaskThreadTs, historyThreadTs, time)
+          }
+        case CancelledHistoryItem.Action =>
+          val format = CancelledHistoryItem.fmt
           format.reads(json).map {
             action => TaskHistoryItem(action, slackTaskThreadTs, historyThreadTs, time)
           }
