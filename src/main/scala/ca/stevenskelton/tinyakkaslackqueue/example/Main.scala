@@ -25,7 +25,7 @@ object Main extends App {
   val slackConfig = SlackClient.initialize(config)
 
   val backupLogger = LoggerFactory.getLogger("HTTPServer")
-  private implicit val httpLogger = SlackLoggerFactory.logToSlack(backupLogger.getName, slackConfig, Some(backupLogger))(SystemMaterializer(httpActorSystem).materializer)
+  private implicit val httpLogger = SlackLoggerFactory.logToSlack(backupLogger.getName, slackConfig, backup = Some(backupLogger), mirror = Some(backupLogger))(SystemMaterializer(httpActorSystem).materializer)
 
   implicit val slackClient: SlackClient = SlackClientImpl(slackConfig, slackConfig.client)
 

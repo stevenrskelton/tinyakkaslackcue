@@ -14,6 +14,7 @@ class SlackLogger(
                    override val getName: String,
                    source: SourceQueueWithComplete[LoggingEvent],
                    backup: Option[Logger] = None,
+                   mirror: Option[Logger] = None,
                    override val isTraceEnabled: Boolean = true,
                    override val isDebugEnabled: Boolean = true,
                    override val isInfoEnabled: Boolean = true,
@@ -21,228 +22,288 @@ class SlackLogger(
                    override val isErrorEnabled: Boolean = true
                  ) extends Logger {
 
-  override def trace(msg: String): Unit = recordEvent_0Args(Level.TRACE, null, msg, null)
+  override def trace(msg: String): Unit = {
+    recordEvent_0Args(Level.TRACE, null, msg, null)
+    mirror.foreach(_.trace(msg))
+  }
 
-  override def trace(format: String, arg: Any): Unit = recordEvent_1Args(Level.TRACE, null, format, arg)
+  override def trace(format: String, arg: Any): Unit = {
+    recordEvent_1Args(Level.TRACE, null, format, arg)
+    mirror.foreach(_.trace(format, arg))
+  }
 
-  override def trace(format: String, arg1: Any, arg2: Any): Unit = recordEvent2Args(Level.TRACE, null, format, arg1, arg2)
+  override def trace(format: String, arg1: Any, arg2: Any): Unit = {
+    recordEvent2Args(Level.TRACE, null, format, arg1, arg2)
+    mirror.foreach(_.trace(format, arg1, arg2))
+  }
 
-  override def trace(format: String, arguments: Object*): Unit = recordEventArgArray(Level.TRACE, null, format, arguments)
+  override def trace(format: String, arguments: Object*): Unit = {
+    recordEventArgArray(Level.TRACE, null, format, arguments)
+    mirror.foreach(_.trace(format, arguments: _*))
+  }
 
-  override def trace(msg: String, t: Throwable): Unit = recordEvent_0Args(Level.TRACE, null, msg, t)
+  override def trace(msg: String, t: Throwable): Unit = {
+    recordEvent_0Args(Level.TRACE, null, msg, t)
+    mirror.foreach(_.trace(msg, t))
+  }
 
   override def isTraceEnabled(marker: Marker): Boolean = backup.exists(_.isTraceEnabled(marker)) || isTraceEnabled
 
   override def trace(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.TRACE, marker, msg, null)
+    mirror.foreach(_.trace(marker, msg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, msg))
   }
 
   override def trace(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.TRACE, marker, format, arg)
+    mirror.foreach(_.trace(marker, format, arg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, format, arg))
   }
 
   override def trace(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.TRACE, marker, format, arg1, arg2)
+    mirror.foreach(_.trace(marker, format, arg1, arg2))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, format, arg1, arg2))
   }
 
   override def trace(marker: Marker, format: String, argArray: Object*): Unit = {
     recordEventArgArray(Level.TRACE, marker, format, argArray)
+    mirror.foreach(_.trace(marker, format, argArray: _*))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, format, argArray: _*))
   }
 
   override def trace(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.TRACE, marker, msg, t)
+    mirror.foreach(_.trace(marker, msg, t))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.trace(marker, msg, t))
   }
 
   override def debug(msg: String): Unit = {
     recordEvent_0Args(Level.DEBUG, null, msg, null)
+    mirror.foreach(_.debug(msg))
   }
 
   override def debug(format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.DEBUG, null, format, arg)
+    mirror.foreach(_.debug(format, arg))
   }
 
   override def debug(format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.DEBUG, null, format, arg1, arg2)
+    mirror.foreach(_.debug(format, arg1, arg2))
   }
 
   override def debug(format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.DEBUG, null, format, arguments)
+    mirror.foreach(_.debug(format, arguments: _*))
   }
 
   override def debug(msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.DEBUG, null, msg, t)
+    mirror.foreach(_.debug(msg, t))
   }
 
   override def isDebugEnabled(marker: Marker): Boolean = backup.exists(_.isDebugEnabled(marker)) || isDebugEnabled
 
   override def debug(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.DEBUG, marker, msg, null)
+    mirror.foreach(_.debug(marker, msg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, msg))
   }
 
   override def debug(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.DEBUG, marker, format, arg)
+    mirror.foreach(_.debug(marker, format, arg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, format, arg))
   }
 
   override def debug(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.DEBUG, marker, format, arg1, arg2)
+    mirror.foreach(_.debug(marker, format, arg1, arg2))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, format, arg1, arg2))
   }
 
   override def debug(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.DEBUG, marker, format, arguments)
+    mirror.foreach(_.debug(marker, format, arguments: _*))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, format, arguments))
   }
 
   override def debug(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.DEBUG, marker, msg, t)
+    mirror.foreach(_.debug(marker, msg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.debug(marker, msg, t))
   }
 
   override def info(msg: String): Unit = {
     recordEvent_0Args(Level.INFO, null, msg, null)
+    mirror.foreach(_.info(msg))
   }
 
   override def info(format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.INFO, null, format, arg)
+    mirror.foreach(_.info(format, arg))
   }
 
   override def info(format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.INFO, null, format, arg1, arg2)
+    mirror.foreach(_.info(format, arg1, arg2))
   }
 
   override def info(format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.INFO, null, format, arguments)
+    mirror.foreach(_.info(format, arguments: _*))
   }
 
   override def info(msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.INFO, null, msg, t)
+    mirror.foreach(_.info(msg, t))
   }
 
   override def isInfoEnabled(marker: Marker): Boolean = backup.exists(_.isInfoEnabled(marker)) || isInfoEnabled
 
   override def info(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.INFO, marker, msg, null)
+    mirror.foreach(_.info(marker, msg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, msg))
   }
 
   override def info(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.INFO, marker, format, arg)
+    mirror.foreach(_.info(marker, format, arg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, format, arg))
   }
 
   override def info(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.INFO, marker, format, arg1, arg2)
+    mirror.foreach(_.info(marker, format, arg1, arg2))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, format, arg1, arg2))
   }
 
   override def info(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.INFO, marker, format, arguments)
+    mirror.foreach(_.info(marker, format, arguments: _*))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, format, arguments: _*))
   }
 
   override def info(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.INFO, marker, msg, t)
+    mirror.foreach(_.info(marker, msg, t))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.info(marker, msg, t))
   }
 
   override def warn(msg: String): Unit = {
     recordEvent_0Args(Level.WARN, null, msg, null)
+    mirror.foreach(_.warn(msg))
   }
 
   override def warn(format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.WARN, null, format, arg)
+    mirror.foreach(_.warn(format, arg))
   }
 
   override def warn(format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.WARN, null, format, arg1, arg2)
+    mirror.foreach(_.warn(format, arg1, arg2))
   }
 
   override def warn(format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.WARN, null, format, arguments)
+    mirror.foreach(_.warn(format, arguments: _*))
   }
 
   override def warn(msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.WARN, null, msg, t)
+    mirror.foreach(_.warn(msg, t))
   }
 
   override def isWarnEnabled(marker: Marker): Boolean = backup.exists(_.isWarnEnabled(marker)) || isWarnEnabled
 
   override def warn(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.WARN, marker, msg, null)
+    mirror.foreach(_.warn(marker, msg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, msg))
   }
 
   override def warn(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.WARN, marker, format, arg)
+    mirror.foreach(_.warn(marker, format, arg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, format, arg))
   }
 
   override def warn(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.WARN, marker, format, arg1, arg2)
+    mirror.foreach(_.warn(marker, format, arg1, arg2))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, format, arg1, arg2))
   }
 
   override def warn(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.WARN, marker, format, arguments)
+    mirror.foreach(_.warn(marker, format, arguments: _*))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, format, arguments))
   }
 
   override def warn(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.WARN, marker, msg, t)
+    mirror.foreach(_.warn(marker, msg, t))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.warn(marker, msg, t))
   }
 
   override def error(msg: String): Unit = {
     recordEvent_0Args(Level.ERROR, null, msg, null)
+    mirror.foreach(_.error(msg))
   }
 
   override def error(format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.ERROR, null, format, arg)
+    mirror.foreach(_.error(format, arg))
   }
 
   override def error(format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.ERROR, null, format, arg1, arg2)
+    mirror.foreach(_.error(format, arg1, arg2))
   }
 
   override def error(format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.ERROR, null, format, arguments)
+    mirror.foreach(_.error(format, arguments))
   }
 
   override def error(msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.ERROR, null, msg, t)
+    mirror.foreach(_.error(msg, t))
   }
 
   override def isErrorEnabled(marker: Marker): Boolean = backup.exists(_.isErrorEnabled(marker)) || isErrorEnabled
 
   override def error(marker: Marker, msg: String): Unit = {
     recordEvent_0Args(Level.ERROR, marker, msg, null)
+    mirror.foreach(_.error(marker, msg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, msg))
   }
 
   override def error(marker: Marker, format: String, arg: Any): Unit = {
     recordEvent_1Args(Level.ERROR, marker, format, arg)
+    mirror.foreach(_.error(marker, format, arg))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, format, arg))
   }
 
   override def error(marker: Marker, format: String, arg1: Any, arg2: Any): Unit = {
     recordEvent2Args(Level.ERROR, marker, format, arg1, arg2)
+    mirror.foreach(_.error(marker, format, arg1, arg2))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, format, arg1, arg2))
   }
 
   override def error(marker: Marker, format: String, arguments: Object*): Unit = {
     recordEventArgArray(Level.ERROR, marker, format, arguments)
+    mirror.foreach(_.error(marker, format, arguments: _*))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, format, arguments: _*))
   }
 
   override def error(marker: Marker, msg: String, t: Throwable): Unit = {
     recordEvent_0Args(Level.ERROR, marker, msg, t)
+    mirror.foreach(_.error(marker, msg, t))
     if (marker.isInstanceOf[Guarentee]) backup.foreach(_.error(marker, msg, t))
   }
 

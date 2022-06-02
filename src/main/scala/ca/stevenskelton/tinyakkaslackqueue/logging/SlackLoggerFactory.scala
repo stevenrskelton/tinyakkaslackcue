@@ -26,7 +26,7 @@ object SlackLoggerFactory {
     s"$emoji $text$exception"
   }
 
-  def logToSlack(name: String, slackConfig: SlackClient.SlackConfig, backup: Option[Logger] = None)(implicit materializer: Materializer): SlackLogger = {
+  def logToSlack(name: String, slackConfig: SlackClient.SlackConfig, backup: Option[Logger] = None, mirror: Option[Logger] = None)(implicit materializer: Materializer): SlackLogger = {
     val text = s"Log for $name"
     val slackThread = slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.value).text(text))
     val sink = Sink.foreach[Seq[LoggingEvent]] {
@@ -39,7 +39,7 @@ object SlackLoggerFactory {
         }
     }
     val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()
-    new SlackLogger(getName = name, sourceQueue, backup)
+    new SlackLogger(getName = name, sourceQueue, backup, mirror)
   }
 
   def createNewSlackThread(slackTask: SlackTask)(implicit slackClient: SlackClient, materializer: Materializer): SlackLogger = {
