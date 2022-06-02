@@ -124,8 +124,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                   Success(new ViewTaskModal(list, index))
                 }
               case ActionId.AppConfigure => Success(new HomeTabConfigure())
-
-
+              case ActionId.TaskLogs => Success(SlackOkResponse)
             }
           } else if (slackPayload.callbackId.contains(CallbackId.View)) {
             slackPayload.actionStates.get(ActionId.TaskCancel).map {
@@ -176,6 +175,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
           Failure(ex)
       }
       val view = handler match {
+        case Success(SlackOkResponse) => Future.successful(Done)
         case Success(homeTab: SlackHomeTab) => publishHomeTab(slackPayload.user.id, homeTab)
         case Success(slackModal: SlackModal) =>
           val result: SlackApiTextResponse = slackFactories.slackClient.viewsOpen(slackPayload.triggerId, slackModal)

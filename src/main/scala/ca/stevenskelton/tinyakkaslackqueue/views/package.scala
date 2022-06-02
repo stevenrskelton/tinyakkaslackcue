@@ -6,4 +6,6 @@ package object views {
   trait SlackHomeTab extends SlackView
 
   trait SlackModal extends SlackView
+
+  object SlackOkResponse extends SlackView
 }

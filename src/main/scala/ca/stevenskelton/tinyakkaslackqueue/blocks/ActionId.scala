@@ -9,6 +9,7 @@ object ActionId {
   val TaskSchedule = ActionId("schedule-task-action")
   val TaskCancel = ActionId("task-cancel")
   val TaskView = ActionId("view-task")
+  val TaskLogs = ActionId("view-logs")
   val TaskThread = ActionId("view-thread")
   val TaskHistory = ActionId("view-history")
 

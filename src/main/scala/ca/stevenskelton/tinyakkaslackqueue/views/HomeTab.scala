@@ -15,7 +15,8 @@ object HomeTab {
 					"text": "View Logs",
 					"emoji": true
 				},
-        "url": "${slackThread.url}"
+        "url": "${slackThread.url}",
+        "action_id": "${ActionId.TaskLogs}",
 			}
        """
   }
