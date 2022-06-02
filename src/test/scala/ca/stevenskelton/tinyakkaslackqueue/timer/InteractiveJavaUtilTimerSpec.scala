@@ -21,11 +21,11 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
   }
 
   implicit val logger: Logger = LoggerFactory.getLogger("Specs")
-  val timer = new InteractiveJavaUtilTimer[UUID, NamedTask](logger)
+  val timer = new InteractiveJavaUtilTimer[UUID, NamedTask]
   val timeout2sec = timeout(Span(5, Seconds))
 
   def createTask1 = new NamedTask("name1") {
-    override def run(logger: Logger): Unit = {
+    override def run(): Unit = {
       Thread.sleep(200)
       if (isCancelled) i = -10
       else i += 1
@@ -33,14 +33,14 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
   }
 
   def createTask2 = new NamedTask("name2") {
-    override def run(logger: Logger): Unit = {
+    override def run(): Unit = {
       Thread.sleep(100)
       i += 3
     }
   }
 
   def createTask3 = new NamedTask("name3") {
-    override def run(logger: Logger): Unit = {
+    override def run(): Unit = {
       Thread.sleep(100)
       i += 5
     }

@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Keep, Source}
-import akka.stream.{KillSwitches, UniqueKillSwitch}
+import akka.stream.{KillSwitches, SystemMaterializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
@@ -13,7 +13,6 @@ import com.slack.api.methods.response.conversations.ConversationsRepliesResponse
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsListResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse, ViewsUpdateResponse}
 import com.slack.api.model.block.composition.MarkdownTextObject
-import com.typesafe.config.ConfigFactory
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{ZoneId, ZonedDateTime}
@@ -27,7 +26,7 @@ object TestData {
 
   implicit val logger = LoggerFactory.getLogger("Specs")
   private val actorSystem = ActorSystem.create()
-  private val config = ConfigFactory.defaultApplication()
+  private val materializer = SystemMaterializer(actorSystem).materializer
   implicit val slackClient = new SlackClient {
     override def chatUpdate(text: String, slackMessage: tinyakkaslackqueue.SlackMessage): ChatUpdateResponse = ???
 
@@ -37,33 +36,25 @@ object TestData {
 
     override def pinsRemove(slackMessage: tinyakkaslackqueue.SlackMessage): PinsRemoveResponse = ???
 
-    override def pinsList(): Iterable[PinsListResponse.MessageItem] = ???
-
-    //    override def pinnedTasks(slackTaskFactories: SlackFactories): Iterable[(SlackTask, SlackTaskThread.Fields)] = ???
-
-    override def chatPostMessageInThread(text: String, thread: tinyakkaslackqueue.SlackMessage): ChatPostMessageResponse = ???
-
-    override def chatPostMessage(text: String): ChatPostMessageResponse = ???
-
     override def viewsPublish(userId: tinyakkaslackqueue.SlackUserId, view: SlackView): ViewsPublishResponse = ???
 
-    //    override def viewsOpen(slackTriggerId: tinyakkaslackqueue.SlackTriggerId, view: tinyakkaslackqueue.SlackBlocksAsString): ViewsOpenResponse = ???
-
-    override def botOAuthToken: String = ""
-
-    //    override def historyThread: SlackTs = SlackTs.Empty
-
     override def client: MethodsClient = ???
-
-    override def botUserId: SlackUserId = ???
-
-    override def botChannel: SlackChannel = ???
 
     override def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse = ???
 
     override def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse = ???
 
     override def threadReplies(messageItem: PinsListResponse.MessageItem): ConversationsRepliesResponse = ???
+
+    override def slackConfig: SlackClient.SlackConfig = ???
+
+    override def pinsList(channel: SlackChannel): Iterable[PinsListResponse.MessageItem] = ???
+
+    override def chatPostMessageInThread(text: String, thread: SlackThread): ChatPostMessageResponse = ???
+
+    override def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse = ???
+
+    override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = ???
   }
 
   private class TestSlackTaskFactory(number: String) extends SlackTaskFactory[Int, Int] {
@@ -80,7 +71,7 @@ object TestData {
     }
   }
 
-  implicit val slackTaskFactories = new SlackFactories(slackClient, logger, actorSystem, config) {
+  implicit val slackTaskFactories = new SlackFactories()(logger, slackClient, materializer) {
     override protected val factories: Seq[SlackTaskFactory[_, _]] = Seq(
       new TestSlackTaskFactory("One"),
       new TestSlackTaskFactory("Two"),
@@ -88,7 +79,7 @@ object TestData {
     )
   }
 
-  def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackMessage, SlackTask](TestData.logger).ScheduledTask(
+  def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackTs, SlackTask].ScheduledTask(
     slackTask,
     ZonedDateTime.of(2100, 1, 1, 12, 30, 0, 0, ZoneId.systemDefault()),
     isRunning = false

@@ -1,6 +1,5 @@
-package ca.stevenskelton.tinyakkaslackqueue
+package ca.stevenskelton.tinyakkaslackqueue.timer
 
-import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
