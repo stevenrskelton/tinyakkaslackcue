@@ -1,10 +1,11 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
+import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 
 object HomeTabTaskHistory {
   val BackToFooterBlocks =
-    """
+    s"""
     ,{
 		  "type": "divider"
 		},{
