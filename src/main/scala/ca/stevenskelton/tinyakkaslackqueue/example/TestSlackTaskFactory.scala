@@ -6,20 +6,22 @@ import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import org.slf4j.Logger
 
 import scala.concurrent.Future
+import scala.concurrent.duration.FiniteDuration
 
-class TestSlackTaskFactory(implicit slackClient: SlackClient, materializer: Materializer) extends SlackTaskFactory[Int, Int] {
+class TestSlackTaskFactory(duration: FiniteDuration)(implicit slackClient: SlackClient, materializer: Materializer) extends SlackTaskFactory[Int, Int] {
 
   override val name = createMarkdownText("test")
 
-  override val description = createMarkdownText("2 minutes @ 1 second")
+  override val description = createMarkdownText(s"${duration.toSeconds.toString} seconds @ 1 second")
 
   override def distinctBy: Int => Int = identity
 
   override def sourceAndCount: Logger => (Source[Int, UniqueKillSwitch], Future[Int]) = {
     implicit logger =>
-      val totalCount = Future.successful(100)
+      val totalSeconds = duration.toSeconds.toInt
+      val totalCount = Future.successful(totalSeconds)
       val start = System.currentTimeMillis
-      val source = Source(1 to 120)
+      val source = Source(1 to totalSeconds)
         .async.viaMat(KillSwitches.single)(Keep.right)
         .via(Flow.fromFunction {
           i =>

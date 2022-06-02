@@ -31,23 +31,6 @@ class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
   "type":"home",
   "blocks":[
     {
-      "type": "actions",
-      "elements": [
-        {
-          "type": "button",
-          "text": {
-            "type": "plain_text",
-            "text": ":card_index: Refresh Statuses",
-            "emoji": true
-          },
-          "style": "primary",
-          "action_id": "${ActionId.TabRefresh}"
-        }
-      ]
-    },{
-      "type": "divider"
-    },
-    {
       "type": "header",
       "text": {
         "type": "plain_text",
@@ -62,6 +45,21 @@ class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
       }
     }
     $list
+    ,{
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": ":back: All Tasks",
+            "emoji": true
+          },
+          "style": "primary",
+          "action_id": "${ActionId.TabRefresh}"
+        }
+      ]
+    }
   ]
 }
 """

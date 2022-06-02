@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
 
 object Main extends App {
 
@@ -34,7 +35,7 @@ object Main extends App {
 
   implicit val slackTaskFactories = new SlackFactories {
     override protected val factories: Seq[SlackTaskFactory[_, _]] = Seq(
-      new TestSlackTaskFactory()
+      new TestSlackTaskFactory(30.seconds)
     )
   }
   slackTaskFactories.slackTaskMetaFactories
