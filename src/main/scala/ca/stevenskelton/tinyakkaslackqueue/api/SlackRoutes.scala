@@ -102,7 +102,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
               case ActionId.TaskCancel => cancelTask(SlackTs(action.value), slackPayload)
               case ActionId.TaskHistory =>
                 slackFactories.findByChannel(SlackChannel(action.value)).map {
-                  slackTaskMeta => new HomeTabTaskHistory(slackTaskMeta)
+                  slackTaskMeta => new HomeTabTaskHistory(slackTaskMeta.history(Nil))
                 }
               case ActionId.TaskQueue =>
                 slackFactories.findByChannel(SlackChannel(action.value)).map {

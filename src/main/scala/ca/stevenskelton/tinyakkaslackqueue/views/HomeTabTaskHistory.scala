@@ -1,11 +1,31 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.SlackTaskMeta
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 
-class HomeTabTaskHistory(slackTaskMeta: SlackTaskMeta) extends SlackHomeTab {
+class HomeTabTaskHistory(taskHistory: TaskHistory) extends SlackHomeTab {
 
   override def toString: String = {
+    val blocks = taskHistory.executionHistoryBlocks
+    val list = if (blocks.isEmpty)
+      """
+    ,{
+			"type": "header",
+			"text": {
+				"type": "plain_text",
+				"text": "No History",
+				"emoji": true
+			}
+		}"""
+    else
+      s"""
+    ,{
+      "type": "actions",
+      "elements": [
+        ${blocks.mkString(",")}
+      ]
+    }"""
+
     s"""
 {
   "type":"home",
@@ -31,20 +51,17 @@ class HomeTabTaskHistory(slackTaskMeta: SlackTaskMeta) extends SlackHomeTab {
       "type": "header",
       "text": {
         "type": "plain_text",
-        "text": "${slackTaskMeta.factory.name.getText}",
+        "text": "${taskHistory.slackTaskMeta.factory.name.getText}",
         "emoji": true
       }
     },{
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "${slackTaskMeta.factory.description.getText}"
+        "text": "${taskHistory.slackTaskMeta.factory.description.getText}"
       }
-    },{
-      "type": "actions",
-      "elements": [
-      ]
     }
+    $list
   ]
 }
 """

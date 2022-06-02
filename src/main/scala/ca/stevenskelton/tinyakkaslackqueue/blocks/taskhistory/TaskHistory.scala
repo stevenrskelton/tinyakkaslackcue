@@ -69,9 +69,10 @@ case class TaskHistory(
 }
 ${TaskHistory.homeTabRunningBlocks(running)}
 ${TaskHistory.homeTabPendingBlocks(pending)}
-${TaskHistory.homeTabExecutedBlocks(executed)}
 """
   }
+
+  def executionHistoryBlocks: Seq[String] = executed.toSeq.reverse.map(TaskHistory.taskHistoryOutcomeBlocks)
 }
 
 object TaskHistory {
@@ -104,26 +105,38 @@ object TaskHistory {
     }.getOrElse("")
   }
 
-  def homeTabExecutedBlocks(executed: SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]): String = {
-    if (executed.isEmpty) ""
-    else executed.toSeq.reverse.map {
-      taskHistoryItem =>
-        val duration = Duration.between(taskHistoryItem.time, taskHistoryItem.action.start)
-        s"""{
-        "type": "section",
-        "fields": [
-          {
-            "type": "mrkdwn",
-            "text": "*Type:*\n${taskHistoryItem.action.action}"
-          },
-          {
-            "type": "mrkdwn",
-            "text": "*Duration:*\n${DateUtils.humanReadable(duration)}"
-          },
-          ${taskHistoryItem.action.sectionBlocks.mkString(",")}
-        ]
-      }"""
-    }.mkString(",", """,{"type": "divider"},""", "")
+  def taskHistoryOutcomeBlocks(taskHistoryItem: TaskHistoryItem[TaskHistoryOutcomeItem]): String = {
+    val duration = Duration.between(taskHistoryItem.time, taskHistoryItem.action.start)
+    s"""
+   {
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "*#team-updates*\n<fakelink.toUrl.com|Q4 Team Projects> posts project updates to <fakelink.toChannel.com|#team-updates>"
+			},
+			"accessory": {
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": "View Logs",
+					"emoji": true
+				},
+				"value": "public-relations"
+			}
+    },{
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*Type:*\n${taskHistoryItem.action.action}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Duration:*\n${DateUtils.humanReadable(duration)}"
+        },
+        ${taskHistoryItem.action.sectionBlocks.mkString(",")}
+      ]
+    }"""
   }
 
   def homeTabPendingBlocks(pending: SortedSet[ScheduledSlackTask]): String = {
