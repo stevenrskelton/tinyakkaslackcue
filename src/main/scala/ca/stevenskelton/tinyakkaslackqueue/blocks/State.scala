@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackUserId}
-import play.api.libs.json.{JsLookupResult, JsObject}
+import play.api.libs.json.{JsLookupResult, JsObject, JsResult, JsSuccess, JsValue, Reads}
 
 import java.time.{LocalDate, LocalTime}
 
@@ -21,25 +21,29 @@ case class ChannelsState(value: SlackChannel) extends State
 
 object State {
 
+  implicit val rd = new Reads[State]{
+    override def reads(json: JsValue): JsResult[State] = {
+      val state = (json \ "type").as[String] match {
+        case "datepicker" => DatePickerState((json \ "selected_date").as[LocalDate])
+        case "timepicker" => TimePickerState((json \ "selected_time").as[LocalTime])
+        case "multi_users_select" => MultiUsersState((json \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
+        case "static_select" => SelectState((json \ "selected_option" \ "value").as[String])
+        case "button" => ButtonState((json \ "value").as[String])
+        case "channels_select" => ChannelsState(new SlackChannel {
+          override def id: String = (json \ "selected_channel").as[String]
+        })
+      }
+      JsSuccess(state)
+    }
+  }
+
   def parseActionStates(jsLookupResult: JsLookupResult): Map[ActionId, State] = {
     val actionStates = jsLookupResult.as[JsObject].values.flatMap {
       _.as[JsObject].value.map {
-        case (action, value) => (ActionId(action), State.parse(value.as[JsObject]))
+        case (action, value) => (ActionId(action), value.as[State])
       }
     }
     actionStates.toMap
   }
 
-  def parse(jsObject: JsObject): State = {
-    (jsObject \ "type").as[String] match {
-      case "datepicker" => DatePickerState((jsObject \ "selected_date").as[LocalDate])
-      case "timepicker" => TimePickerState((jsObject \ "selected_time").as[LocalTime])
-      case "multi_users_select" => MultiUsersState((jsObject \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
-      case "static_select" => SelectState((jsObject \ "selected_option" \ "value").as[String])
-      case "button" => ButtonState((jsObject \ "value").as[String])
-      case "channels_select" => ChannelsState(new SlackChannel {
-        override def id: String = (jsObject \ "selected_channel").as[String]
-      })
-    }
-  }
 }

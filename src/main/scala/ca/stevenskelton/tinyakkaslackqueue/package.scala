@@ -1,6 +1,6 @@
 package ca.stevenskelton
 
-import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
+import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, State}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.model.{Conversation, Message}
@@ -53,12 +53,6 @@ package object tinyakkaslackqueue {
     def taskId(value: String): SlackChannel = new SlackChannel {
       override def id: String = value
     }
-//    def apply(conversation: Conversation): SlackChannel = SlackChannel(conversation.getId)
-
-//    implicit val reads = implicitly[Reads[String]].map(SlackChannel(_))
-//    implicit val writes = new Writes[SlackChannel] {
-//      override def writes(o: SlackChannel): JsValue = JsString(o.value)
-//    }
   }
 
   case class SlackUserId(value: String) extends AnyVal
@@ -82,14 +76,17 @@ package object tinyakkaslackqueue {
 
   case class SlackBlocksAsString(value: String) extends AnyVal
 
-  case class SlackAction(actionId: ActionId, value: String)
+  case class SlackAction(actionId: ActionId, state: State)
 
   case class SlackTriggerId(value: String) extends AnyVal
 
   object SlackAction {
-    implicit val rd: Reads[SlackAction] = (
-      (__ \ "action_id").read[String].map(ActionId(_)) and
-        (__ \ "value").readNullable[String].map(_.getOrElse(""))) (SlackAction.apply _)
+    implicit val rd: Reads[SlackAction] = new Reads[SlackAction]{
+      override def reads(json: JsValue): JsResult[SlackAction] = {
+        val actionId = ActionId((json \ "action_id").as[String])
+        JsSuccess(SlackAction(actionId, json.as[State]))
+      }
+    }
   }
 
 }

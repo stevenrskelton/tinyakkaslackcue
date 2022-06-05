@@ -33,33 +33,30 @@ object SlackClient {
                           client: MethodsClient
                         ) {
 
-    def setFactoryLogChannel(settings: Seq[(SlackTaskFactory[_, _], String)])(implicit logger: Logger): Boolean = {
+    def setFactoryLogChannel(slackTaskFactory: SlackTaskFactory[_, _], slackChannel: SlackChannel)(implicit logger: Logger): Boolean = {
       val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
       val channels = Option(conversationsResult.getChannels.asScala).getOrElse(Nil)
       val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
-      settings.foreach {
-        case (taskFactory, taskLogChannelName) =>
-          channels.find(_.getName == taskLogChannelName).map {
-            channel =>
-              val taskLogChannel = TaskLogChannel(name = channel.getName, id = channel.getId)
-              val message = s"Task: ${taskFactory.name.getText}"
-              val slackHistoryThread = pinnedMessages.find(_.getMessage.getText.startsWith(message))
-                .map(messageItem => SlackHistoryThread(messageItem.getMessage, botChannel))
-                .getOrElse {
-                  val post = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).text(message))
-                  if (post.isOk) SlackHistoryThread(SlackTs(post.getTs), botChannel)
-                  else {
-                    logger.error(s"Could not create slack history thread for $taskFactory: ${post.getError}")
-                    return false
-                  }
-                }
-              taskChannels.update(taskFactory.name.getText, (taskLogChannel, slackHistoryThread))
-          }.getOrElse {
-            logger.error(s"Could not find channel `$taskLogChannelName`")
-            return false
-          }
+      channels.find(_.getName == slackChannel).map {
+        channel =>
+          val taskLogChannel = TaskLogChannel(name = channel.getName, id = channel.getId)
+          val message = s"Task: ${slackTaskFactory.name.getText}"
+          val slackHistoryThread = pinnedMessages.find(_.getMessage.getText.startsWith(message))
+            .map(messageItem => SlackHistoryThread(messageItem.getMessage, botChannel))
+            .getOrElse {
+              val post = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).text(message))
+              if (post.isOk) SlackHistoryThread(SlackTs(post.getTs), botChannel)
+              else {
+                logger.error(s"Could not create slack history thread for $slackTaskFactory: ${post.getError}")
+                return false
+              }
+            }
+          taskChannels.update(slackTaskFactory.name.getText, (taskLogChannel, slackHistoryThread))
+          persist
+      }.getOrElse {
+        logger.error(s"Could not find channel `$slackTaskFactory`")
+        return false
       }
-      persist
     }
 
     private def persist(implicit logger: Logger): Boolean = {
@@ -128,7 +125,7 @@ object SlackClient {
         }
         SlackConfig(botOAuthToken, botUserId, taskHistoryChannel, scala.collection.mutable.Map.from(taskChannels), client)
     }.getOrElse {
-      throw new Exception(s"Could not find channel $botChannelName")
+      throw new Exception(s"Could not find bot channel $botChannelName")
     }
   }
 

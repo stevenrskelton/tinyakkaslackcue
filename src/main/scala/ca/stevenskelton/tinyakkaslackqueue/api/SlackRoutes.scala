@@ -11,12 +11,12 @@ import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
 import ca.stevenskelton.tinyakkaslackqueue.views._
-import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackPayload, SlackTs, SlackUserId}
+import ca.stevenskelton.tinyakkaslackqueue._
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
-import java.time.{ZoneId, ZonedDateTime}
+import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -98,50 +98,44 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
 
       val handler: Try[SlackView] = slackPayload.payloadType match {
         case SlackPayload.BlockActions =>
-//          val viewType = (jsObject \ "view" \ "type").asOpt[String]
-//          if (viewType.contains("home")) {
-            val action = slackPayload.action
-            action.actionId match {
-              case ActionId.HomeTabRefresh => Success(new HomeTab(zoneId))
-              case ActionId.TaskCancel => cancelTask(SlackTs(action.value), slackPayload)
-              case ActionId.HomeTabTaskHistory =>
-                slackFactories.findByChannel(SlackChannel.taskId(action.value)).map {
-                  slackTaskMeta => new HomeTabTaskHistory(zoneId, slackTaskMeta.history(Nil))
+          val action = slackPayload.action
+          action match {
+            case SlackAction(ActionId.HomeTabRefresh, _) => Success(new HomeTab(zoneId))
+            case SlackAction(ActionId.TaskCancel, ButtonState(value)) => cancelTask(SlackTs(value), slackPayload)
+            case SlackAction(ActionId.HomeTabTaskHistory, ButtonState(value)) =>
+              slackFactories.findByChannel(SlackChannel.taskId(value)).map {
+                slackTaskMeta => new HomeTabTaskHistory(zoneId, slackTaskMeta.history(Nil))
+              }
+            case SlackAction(ActionId.ModalTaskQueue, ButtonState(value)) =>
+              slackFactories.findByChannel(SlackChannel.taskId(value)).map {
+                slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, None)
+              }
+            case SlackAction(ActionId.ModalTaskSchedule, ButtonState(value)) =>
+              slackFactories.findByChannel(SlackChannel.taskId(value)).map {
+                slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, Some(ZonedDateTime.now(zoneId)))
+              }
+            case SlackAction(ActionId.ModalQueuedTaskView, ButtonState(value)) =>
+              val ts = SlackTs(value)
+              val list = slackFactories.listScheduledTasks
+              val index = list.indexWhere(_.id == ts)
+              if (index == -1) {
+                val ex = new Exception(s"Task ts $ts not found")
+                logger.error("handleAction", ex)
+                Failure(ex)
+              } else {
+                Success(new ViewTaskModal(zoneId, list, index))
+              }
+            case SlackAction(ActionId.HomeTabConfiguration, _) => Success(new HomeTabConfigure(zoneId))
+            case SlackAction(ActionId.RedirectToTaskThread, _) => Success(SlackOkResponse)
+            case SlackAction(actionId, ChannelsState(value)) if slackPayload.callbackId.contains(CallbackId.HomeTabConfigure) =>
+              actionId.getIndex.foreach {
+                case (_, taskIndex) => slackFactories.findByIndex(taskIndex).foreach {
+                  slackTaskFactory => slackFactories.slackClient.slackConfig.setFactoryLogChannel(slackTaskFactory, value)
                 }
-              case ActionId.ModalTaskQueue =>
-                slackFactories.findByChannel(SlackChannel.taskId(action.value)).map {
-                  slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, None)
-                }
-              case ActionId.ModalTaskSchedule =>
-                slackFactories.findByChannel(SlackChannel.taskId(action.value)).map {
-                  slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, Some(ZonedDateTime.now(zoneId)))
-                }
-              case ActionId.ModalQueuedTaskView =>
-                val ts = SlackTs(action.value)
-                val list = slackFactories.listScheduledTasks
-                val index = list.indexWhere(_.id == ts)
-                if (index == -1) {
-                  val ex = new Exception(s"Task ts $ts not found")
-                  logger.error("handleAction", ex)
-                  Failure(ex)
-                } else {
-                  Success(new ViewTaskModal(zoneId, list, index))
-                }
-              case ActionId.HomeTabConfiguration => Success(new HomeTabConfigure(zoneId))
-              case ActionId.RedirectToTaskThread => Success(SlackOkResponse)
-              case _ if slackPayload.callbackId.contains(CallbackId.HomeTabConfigure) =>
-                val taskChannelUpdates = slackPayload.actions.flatMap {
-                  action =>
-                     action.actionId.getIndex.flatMap {
-                      case (_, taskIndex) => slackFactories.findByIndex(taskIndex).map {
-                        slackTaskFactory => (slackTaskFactory, action.value)
-                      }
-                    }
-                }
-                slackFactories.slackClient.slackConfig.setFactoryLogChannel(taskChannelUpdates)
-                //TODO: pass error
-                Success(new HomeTab(zoneId))
-            }
+              }
+              //TODO: pass error
+              Success(new HomeTab(zoneId))
+          }
         case SlackPayload.ViewSubmission if slackPayload.actionStates.contains(ActionId.TaskCancel) =>
           val slackTs = SlackTs(slackPayload.actionStates(ActionId.TaskCancel).asInstanceOf[ButtonState].value)
           slackFactories.cancelScheduledTask(slackTs).map {
