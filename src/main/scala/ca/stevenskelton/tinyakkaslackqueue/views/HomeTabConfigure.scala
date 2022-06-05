@@ -41,7 +41,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
   }
 }
           """
-      }
+      }.mkString(",")
     }
 
     s"""
