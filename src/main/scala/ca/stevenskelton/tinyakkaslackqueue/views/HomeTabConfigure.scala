@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
-import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
+import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
 
 import java.time.ZoneId
 
@@ -47,6 +47,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
     s"""
 {
   "type":"home",
+  ${CallbackId.HomeTabConfigure.block},
   "blocks":[
     {
       "type": "header",

@@ -8,4 +8,5 @@ case class CallbackId(value: String) extends AnyVal {
 
 object CallbackId {
   val Create = CallbackId("task-create")
+  val HomeTabConfigure = CallbackId("hometab-configure")
 }

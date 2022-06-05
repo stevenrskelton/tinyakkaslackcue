@@ -57,6 +57,6 @@ object ActionId {
   val DataNotifyOnComplete = ActionId("multi-users-notify-on-complete")
   val DataNotifyOnFailure = ActionId("multi-users-notify-on-failure")
   val DataLogLevel = ActionId("static-select")
-  val DataChannel = ActionId("channel-select")
+  val DataChannel = ActionId("channels-select")
 
 }

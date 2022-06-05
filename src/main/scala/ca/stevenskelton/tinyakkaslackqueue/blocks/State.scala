@@ -38,7 +38,7 @@ object State {
       case "static_select" => SelectState((jsObject \ "selected_option" \ "value").as[String])
       case "button" => ButtonState((jsObject \ "value").as[String])
       case "channels_select" => ChannelsState(new SlackChannel {
-        override def id: String = ((jsObject \ "selected_channel").as[String])
+        override def id: String = (jsObject \ "selected_channel").as[String]
       })
     }
   }

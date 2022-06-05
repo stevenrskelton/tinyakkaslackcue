@@ -129,12 +129,16 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                 }
               case ActionId.HomeTabConfiguration => Success(new HomeTabConfigure(zoneId))
               case ActionId.RedirectToTaskThread => Success(SlackOkResponse)
-              case actionId if actionId.getIndex.exists(_._1 == ActionId.DataChannel) =>
-                actionId.getIndex.flatMap {
-                  o => slackFactories.findByIndex(o._2)
-                }.map {
-                  taskFactory => slackFactories.slackClient.slackConfig.setFactoryLogChannel(taskFactory, action.value)
+              case _ if slackPayload.callbackId.contains(CallbackId.HomeTabConfigure) =>
+                val taskChannelUpdates = slackPayload.actions.flatMap {
+                  action =>
+                     action.actionId.getIndex.flatMap {
+                      case (_, taskIndex) => slackFactories.findByIndex(taskIndex).map {
+                        slackTaskFactory => (slackTaskFactory, action.value)
+                      }
+                    }
                 }
+                slackFactories.slackClient.slackConfig.setFactoryLogChannel(taskChannelUpdates)
                 //TODO: pass error
                 Success(new HomeTab(zoneId))
             }
