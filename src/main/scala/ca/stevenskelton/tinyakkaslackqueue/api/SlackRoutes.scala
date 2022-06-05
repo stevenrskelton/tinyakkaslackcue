@@ -129,6 +129,14 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
                 }
               case ActionId.HomeTabConfiguration => Success(new HomeTabConfigure(zoneId))
               case ActionId.RedirectToTaskThread => Success(SlackOkResponse)
+              case actionId if actionId.getIndex.exists(_._1 == ActionId.DataChannel) =>
+                actionId.getIndex.flatMap {
+                  o => slackFactories.findByIndex(o._2)
+                }.map {
+                  taskFactory => slackFactories.slackClient.slackConfig.setFactoryLogChannel(taskFactory, action.value)
+                }
+                //TODO: pass error
+                Success(new HomeTab(zoneId))
             }
         case SlackPayload.ViewSubmission if slackPayload.actionStates.contains(ActionId.TaskCancel) =>
           val slackTs = SlackTs(slackPayload.actionStates(ActionId.TaskCancel).asInstanceOf[ButtonState].value)

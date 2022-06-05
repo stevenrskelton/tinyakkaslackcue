@@ -2,6 +2,17 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 case class ActionId(value: String) extends AnyVal {
   override def toString: String = value
+
+  def getIndex: Option[(ActionId, Int)] = {
+    val separator = value.lastIndexOf("-")
+    if(separator > -1){
+      value.drop(separator).toIntOption.map {
+        i => (ActionId(value.take(separator)), i)
+      }
+    }else {
+      None
+    }
+  }
 }
 
 object ActionId {

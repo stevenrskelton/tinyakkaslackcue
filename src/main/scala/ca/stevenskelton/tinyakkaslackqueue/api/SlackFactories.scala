@@ -99,4 +99,6 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     slackTaskMetaFactories.find(_.taskLogChannel.id == privateMetadata.value)
   }
 
+  def findByIndex(i: Int): Option[SlackTaskFactory[_,_]] = factories.drop(i).headOption
+
 }
