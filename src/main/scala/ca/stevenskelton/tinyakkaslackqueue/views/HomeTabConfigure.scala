@@ -11,7 +11,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
 
     val logChannels = slackFactories.factoryLogChannels
     val channels = if (logChannels.isEmpty) {
-      """{
+      """,{
 			"type": "header",
 			"text": {
 				"type": "plain_text",
@@ -27,7 +27,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
   "type": "section",
   "text": {
     "type": "mrkdwn",
-    "text": "*${slackTaskFactory.name.getText}*\n${slackTaskFactory.description}"
+    "text": "*${slackTaskFactory.name.getText}*\n${slackTaskFactory.description.getText}"
   },
   "accessory": {
     "type": "channels_select",
@@ -41,7 +41,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
   }
 }
           """
-      }.mkString(",")
+      }.mkString(",", ",", "")
     }
 
     s"""
@@ -66,8 +66,8 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
     },
     {
 			"type": "divider"
-		},
-    $channels,
+		}
+    $channels
     ${HomeTabTaskHistory.BackToFooterBlocks}
   ]
 }
