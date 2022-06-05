@@ -21,34 +21,44 @@ package object tinyakkaslackqueue {
     def channel: SlackChannel
 
     def url: String = {
-      s"https://www.slack.com/archives/${channel.value}/p${ts.value.replace(".", "")}?thread_ts=${ts.value}&cid=${channel.value}"
+      s"https://www.slack.com/archives/${channel.id}/p${ts.value.replace(".", "")}?thread_ts=${ts.value}&cid=${channel.id}"
     }
   }
 
   trait SlackThread extends SlackMessage
 
-  case class SlackHistoryThread(ts: SlackTs, channel: SlackChannel) extends SlackThread
+  case class SlackHistoryThread(ts: SlackTs, channel: TaskHistoryChannel) extends SlackThread
 
   object SlackHistoryThread {
-    def apply(message: Message, channel: SlackChannel): SlackHistoryThread = SlackHistoryThread(SlackTs(message.getTs), channel)
+    def apply(message: Message, channel: TaskHistoryChannel): SlackHistoryThread = SlackHistoryThread(SlackTs(message.getTs), channel)
   }
 
-  case class SlackTaskThread(ts: SlackTs, channel: SlackChannel) extends SlackThread
+  case class SlackTaskThread(ts: SlackTs, channel: TaskLogChannel) extends SlackThread
 
   object SlackTaskThread {
-    def apply(chatPostMessageResponse: ChatPostMessageResponse): SlackTaskThread = SlackTaskThread(SlackTs(chatPostMessageResponse.getTs), SlackChannel(chatPostMessageResponse.getChannel))
+    def apply(chatPostMessageResponse: ChatPostMessageResponse, taskLogChannel: TaskLogChannel): SlackTaskThread = {
+      SlackTaskThread(SlackTs(chatPostMessageResponse.getTs), taskLogChannel)
+    }
   }
 
+  trait SlackChannel {
+    def id: String
+  }
 
-  case class SlackChannel(value: String) extends AnyVal
+  case class TaskHistoryChannel(id: String) extends SlackChannel
+
+  case class TaskLogChannel(name: String, id: String) extends SlackChannel
 
   object SlackChannel {
-    def apply(conversation: Conversation): SlackChannel = SlackChannel(conversation.getId)
-
-    implicit val reads = implicitly[Reads[String]].map(SlackChannel(_))
-    implicit val writes = new Writes[SlackChannel] {
-      override def writes(o: SlackChannel): JsValue = JsString(o.value)
+    def taskId(value: String): SlackChannel = new SlackChannel {
+      override def id: String = value
     }
+//    def apply(conversation: Conversation): SlackChannel = SlackChannel(conversation.getId)
+
+//    implicit val reads = implicitly[Reads[String]].map(SlackChannel(_))
+//    implicit val writes = new Writes[SlackChannel] {
+//      override def writes(o: SlackChannel): JsValue = JsString(o.value)
+//    }
   }
 
   case class SlackUserId(value: String) extends AnyVal

@@ -28,13 +28,13 @@ object SlackLoggerFactory {
 
   def logToSlack(name: String, slackConfig: SlackClient.SlackConfig, backup: Option[Logger] = None, mirror: Option[Logger] = None)(implicit materializer: Materializer): SlackLogger = {
     val text = s"Log for $name"
-    val slackThread = slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.value).text(text))
+    val slackThread = slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(text))
     val sink = Sink.foreach[Seq[LoggingEvent]] {
       loggingEvents =>
         if (loggingEvents.nonEmpty) {
           val message = loggingEvents.map(logEvent).mkString("\n")
           slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) =>
-            r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.value).text(message).threadTs(slackThread.getTs)
+            r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(message).threadTs(slackThread.getTs)
           )
         }
     }
@@ -84,7 +84,7 @@ object SlackLoggerFactory {
         slackClient.chatUpdate(completed(slackTask, startTimeMs), slackTask.slackTaskThread)
         slackClient.pinsRemove(slackTask.slackTaskThread)
     }
-    new SlackLogger(getName = slackTask.meta.taskChannel.value, sourceQueue, None)
+    new SlackLogger(getName = slackTask.meta.taskLogChannel.id, sourceQueue, None)
   }
 
   private def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long, width: Int = 14): String = {

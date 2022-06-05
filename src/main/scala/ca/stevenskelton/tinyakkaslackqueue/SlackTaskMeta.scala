@@ -10,13 +10,13 @@ import scala.collection.SortedSet
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 object SlackTaskMeta {
-  def initialize(slackClient: SlackClient, taskChannel: SlackChannel, historyThread: SlackHistoryThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
+  def initialize(slackClient: SlackClient, taskChannel: TaskLogChannel, historyThread: SlackHistoryThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
     val response = slackClient.threadReplies(historyThread)
     val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
     if (response.isOk) {
       response.getMessages.asScala.withFilter(_.getParentUserId == slackClient.slackConfig.botUserId.value).foreach {
         message =>
-          TaskHistoryItem.fromHistoryThreadMessage(message, historyThread.channel) match {
+          TaskHistoryItem.fromHistoryThreadMessage(message, taskChannel, historyThread) match {
             case Some(taskHistoryItem) if taskHistoryItem.action.isInstanceOf[TaskHistoryOutcomeItem] =>
               executedTasks.add(taskHistoryItem.asInstanceOf[TaskHistoryItem[TaskHistoryOutcomeItem]])
             case _ =>
@@ -36,7 +36,7 @@ object SlackTaskMeta {
 
 class SlackTaskMeta private(
                              val slackClient: SlackClient,
-                             val taskChannel: SlackChannel,
+                             val taskLogChannel: TaskLogChannel,
                              val historyThread: SlackHistoryThread,
                              val factory: SlackTaskFactory[_, _],
                              executedTasks: scala.collection.mutable.SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]

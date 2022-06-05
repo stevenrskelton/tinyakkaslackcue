@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
-import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackHistoryThread, SlackTaskThread, SlackTs}
+import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackHistoryThread, SlackTaskThread, SlackTs, TaskLogChannel}
 import com.slack.api.model.Message
 import org.slf4j.Logger
 import play.api.libs.json._
@@ -13,11 +13,11 @@ object TaskHistoryItem {
     override def compare(x: TaskHistoryItem[TaskHistoryOutcomeItem], y: TaskHistoryItem[TaskHistoryOutcomeItem]): Int = x.time.compareTo(y.time)
   }
 
-  def fromHistoryThreadMessage(message: Message, slackChannel: SlackChannel)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
+  def fromHistoryThreadMessage(message: Message, taskChannel: TaskLogChannel, historyThread: SlackHistoryThread)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
     try {
       val createdText = message.getItem.getCreated
       val createdBy = message.getItem.getUser
-      implicit val reads = TaskHistoryItem.reads(SlackHistoryThread(message, slackChannel), ZonedDateTime.now())
+      implicit val reads = TaskHistoryItem.reads(taskChannel, historyThread, ZonedDateTime.now())
       val text = message.getText
       if (text.startsWith("```")) {
         val json = Json.parse(text.drop(3).dropRight(3))
@@ -37,9 +37,9 @@ object TaskHistoryItem {
     }
   }
 
-  def reads(historyThreadTs: SlackHistoryThread, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
+  def reads(taskLogChannel: TaskLogChannel, historyThreadTs: SlackHistoryThread, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
     (json: JsValue) => {
-      val slackTaskThreadTs = SlackTaskThread(SlackTs((json \ "ts").as[String]), historyThreadTs.channel)
+      val slackTaskThreadTs = new SlackTaskThread(SlackTs((json \ "ts").as[String]), taskLogChannel)
       (json \ "action").as[String] match {
         case CancelHistoryItem.Action =>
           val format = CancelHistoryItem.fmt

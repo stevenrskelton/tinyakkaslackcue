@@ -50,10 +50,10 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     }.getOrElse {
       s"Queued task *${slackTaskMeta.factory.name.getText}*"
     }
-    val slackPlaceholder = slackClient.chatPostMessage(message, slackTaskMeta.taskChannel)
+    val slackPlaceholder = slackClient.chatPostMessage(message, slackTaskMeta.taskLogChannel)
     val slackTask = slackTaskMeta.factory.create(
       slackTaskMeta,
-      taskThread = SlackTaskThread(slackPlaceholder),
+      taskThread = SlackTaskThread(slackPlaceholder, slackTaskMeta.taskLogChannel),
       createdBy = slackUserId,
       notifyOnError = Nil,
       notifyOnComplete = Nil
@@ -68,50 +68,35 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     slackTaskMetaFactories.map(_.history(allTasks))
   }
 
-  lazy val slackTaskMetaFactories: Seq[SlackTaskMeta] = {
+  def factoryLogChannels: Seq[(SlackTaskFactory[_,_], Option[TaskLogChannel])] = factories.map {
+    factory => factory -> slackClient.slackConfig.taskChannels.find(_._1 == factory.name.getText).map(_._2._1)
+  }
 
-    val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
-    val channels = conversationsResult.getChannels.asScala
-    factories.map {
+  lazy val slackTaskMetaFactories: Seq[SlackTaskMeta] = {
+    var hasError = false
+    val meta = factories.flatMap {
       factory =>
-        val name = factory.name.getText.filter(_.isLetterOrDigit).toLowerCase
-        val channel = channels.find(_.getName == name).getOrElse {
-          logger.debug(s"Channel `$name` not found, creating.")
-          val createdChannel = slackClient.client.conversationsCreate((r: ConversationsCreateRequest.ConversationsCreateRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).name(name).isPrivate(false))
-          if (!createdChannel.isOk) {
-            val ex = new Exception(s"Could not create channel $name: ${createdChannel.getError}")
-            logger.error("slackTaskMetaFactories", ex)
-            throw ex
-          } else {
-            createdChannel.getChannel
-          }
+        slackClient.slackConfig.taskChannels.find(_._1 == factory.name.getText).map {
+          case (_, (taskLogChannel, slackHistoryThread)) => SlackTaskMeta.initialize(slackClient, taskLogChannel, slackHistoryThread, factory)
+        }.orElse {
+          logger.error(s"slackTaskMetaFactories: No config set for task `${factory.name.getText}`")
+          hasError = true
+          None
         }
-        val slackChannel = SlackChannel(channel)
-        val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(channel.getId)).getItems).map(_.asScala).getOrElse(Nil)
-        val pinnedResult = pinnedMessages.filter {
-          o => o.getCreatedBy == slackClient.slackConfig.botUserId.value
-        }
-        val historyThread = pinnedResult.headOption.map(o => SlackHistoryThread(o.getMessage, slackChannel)).getOrElse {
-          val pinnedMessageResult = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(channel.getId).text("History"))
-          if (!pinnedMessageResult.isOk) logger.error(pinnedMessageResult.getError)
-          val pinsAddedResult = slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(channel.getId).timestamp(pinnedMessageResult.getTs))
-          if (!pinsAddedResult.isOk) logger.error(pinsAddedResult.getError)
-          SlackHistoryThread(pinnedMessageResult.getMessage, slackChannel)
-        }
-        SlackTaskMeta.initialize(slackClient, slackChannel, historyThread, factory)
     }
+    if(hasError) Nil else meta
   }
 
   def findByChannel(slackChannel: SlackChannel): Try[SlackTaskMeta] = {
-    slackTaskMetaFactories.find(_.taskChannel == slackChannel).map(Success(_)).getOrElse {
-      val ex = new Exception(s"Task ${slackChannel.value} not found")
+    slackTaskMetaFactories.find(_.taskLogChannel == slackChannel).map(Success(_)).getOrElse {
+      val ex = new Exception(s"Task ${slackChannel.id} not found")
       logger.error("handleAction", ex)
       Failure(ex)
     }
   }
 
   def findByPrivateMetadata(privateMetadata: PrivateMetadata): Option[SlackTaskMeta] = {
-    slackTaskMetaFactories.find(_.taskChannel.value == privateMetadata.value)
+    slackTaskMetaFactories.find(_.taskLogChannel.id == privateMetadata.value)
   }
 
 }

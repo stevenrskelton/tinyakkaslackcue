@@ -105,15 +105,15 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
               case ActionId.HomeTabRefresh => Success(new HomeTab(zoneId))
               case ActionId.TaskCancel => cancelTask(SlackTs(action.value), slackPayload)
               case ActionId.HomeTabTaskHistory =>
-                slackFactories.findByChannel(SlackChannel(action.value)).map {
+                slackFactories.findByChannel(SlackChannel.taskId(action.value)).map {
                   slackTaskMeta => new HomeTabTaskHistory(zoneId, slackTaskMeta.history(Nil))
                 }
               case ActionId.ModalTaskQueue =>
-                slackFactories.findByChannel(SlackChannel(action.value)).map {
+                slackFactories.findByChannel(SlackChannel.taskId(action.value)).map {
                   slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, None)
                 }
               case ActionId.ModalTaskSchedule =>
-                slackFactories.findByChannel(SlackChannel(action.value)).map {
+                slackFactories.findByChannel(SlackChannel.taskId(action.value)).map {
                   slackTaskMeta => new CreateTaskModal(slackPayload.user, slackTaskMeta, Some(ZonedDateTime.now(zoneId)))
                 }
               case ActionId.ModalQueuedTaskView =>

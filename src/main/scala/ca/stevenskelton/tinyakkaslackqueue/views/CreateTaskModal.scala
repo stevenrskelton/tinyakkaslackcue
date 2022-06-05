@@ -109,7 +109,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
 
   override def toString: String =
     s"""{
-  ${PrivateMetadata(slackTaskMeta.taskChannel.value).block},
+  ${PrivateMetadata(slackTaskMeta.taskLogChannel.id).block},
 	"title": {
 		"type": "plain_text",
 		"text": "$AppModalTitle",
