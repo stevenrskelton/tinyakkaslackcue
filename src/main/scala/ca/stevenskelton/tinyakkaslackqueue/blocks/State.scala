@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
-import ca.stevenskelton.tinyakkaslackqueue.SlackUserId
+import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackUserId}
 import play.api.libs.json.{JsLookupResult, JsObject}
 
 import java.time.{LocalDate, LocalTime}
@@ -16,6 +16,8 @@ case class MultiUsersState(users: Seq[SlackUserId]) extends State
 case class SelectState(value: String) extends State
 
 case class ButtonState(value: String) extends State
+
+case class ChannelsState(value: SlackChannel) extends State
 
 object State {
 
@@ -35,6 +37,9 @@ object State {
       case "multi_users_select" => MultiUsersState((jsObject \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
       case "static_select" => SelectState((jsObject \ "selected_option" \ "value").as[String])
       case "button" => ButtonState((jsObject \ "value").as[String])
+      case "channels_select" => ChannelsState(new SlackChannel {
+        override def id: String = ((jsObject \ "selected_channel").as[String])
+      })
     }
   }
 }
