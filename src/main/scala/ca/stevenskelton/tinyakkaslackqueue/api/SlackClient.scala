@@ -54,7 +54,7 @@ object SlackClient {
           taskChannels.update(slackTaskFactory.name.getText, (taskLogChannel, slackHistoryThread))
           persist
       }.getOrElse {
-        logger.error(s"Could not find channel `$slackChannel` for ${slackTaskFactory.name.getText}")
+        logger.error(s"Could not find channel `${slackChannel.id}` for ${slackTaskFactory.name.getText}")
         return false
       }
     }

@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Try}
 
 abstract class SlackFactories()(implicit val logger: Logger, val slackClient: SlackClient, materializer: Materializer) {
 
-  protected val factories: Seq[SlackTaskFactory[_, _]]
+  protected val factories: List[SlackTaskFactory[_, _]]
 
   private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTs, SlackTask]()
 
