@@ -28,7 +28,7 @@ object State {
         case Some("timepicker") => TimePickerState((json \ "selected_time").as[LocalTime])
         case Some("multi_users_select") => MultiUsersState((json \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
         case Some("static_select") => SelectState((json \ "selected_option" \ "value").as[String])
-        case Some("button") => ButtonState((json \ "value").as[String])
+        case Some("button") => ButtonState((json \ "value").asOpt[String].getOrElse(""))
         case Some("channels_select") => ChannelsState(new SlackChannel {
           override def id: String = (json \ "selected_channel").as[String]
         })
