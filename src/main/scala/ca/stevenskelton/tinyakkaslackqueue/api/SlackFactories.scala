@@ -7,14 +7,9 @@ import ca.stevenskelton.tinyakkaslackqueue.blocks.PrivateMetadata
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
-import com.slack.api.methods.request.chat.ChatPostMessageRequest
-import com.slack.api.methods.request.conversations.{ConversationsCreateRequest, ConversationsListRequest}
-import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest}
-import com.slack.api.model.ConversationType
 import org.slf4j.Logger
 
 import java.time.ZonedDateTime
-import scala.jdk.CollectionConverters.{ListHasAsScala, SeqHasAsJava}
 import scala.util.{Failure, Success, Try}
 
 abstract class SlackFactories()(implicit val logger: Logger, val slackClient: SlackClient, materializer: Materializer) {
@@ -68,12 +63,18 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     slackTaskMetaFactories.map(_.history(allTasks))
   }
 
-  def factoryLogChannels: Seq[(SlackTaskFactory[_,_], Option[TaskLogChannel])] = factories.map {
+  def factoryLogChannels: Seq[(SlackTaskFactory[_,_], Option[TaskLogChannel])] = Option(factories).getOrElse{
+    initializeFromConfig
+    factories
+  }.map {
     factory => factory -> slackClient.slackConfig.taskChannels.find(_._1 == factory.name.getText).map(_._2._1)
   }
 
   def updateFactoryLogChannel(taskIndex: Int, slackChannel: SlackChannel): Boolean = {
-    factories.drop(taskIndex).headOption.map {
+    Option(factories).getOrElse{
+      initializeFromConfig
+      factories
+    }.drop(taskIndex).headOption.map {
       slackTaskFactory =>
         val result = slackClient.slackConfig.setFactoryLogChannel(slackTaskFactory, slackChannel)
         if(result) initializeFromConfig else false
@@ -104,5 +105,4 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     slackTaskMetaFactories.find(_.taskLogChannel.id == privateMetadata.value)
   }
 
-  initializeFromConfig
 }
