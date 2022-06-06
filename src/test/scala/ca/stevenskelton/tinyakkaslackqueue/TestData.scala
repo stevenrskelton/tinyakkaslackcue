@@ -74,7 +74,7 @@ object TestData {
   }
 
   implicit val slackTaskFactories = new SlackFactories()(logger, slackClient, materializer) {
-    override protected val factories: Seq[SlackTaskFactory[_, _]] = Seq(
+    override protected val factories: List[SlackTaskFactory[_, _]] = List(
       new TestSlackTaskFactory("One"),
       new TestSlackTaskFactory("Two"),
       new TestSlackTaskFactory("Three")

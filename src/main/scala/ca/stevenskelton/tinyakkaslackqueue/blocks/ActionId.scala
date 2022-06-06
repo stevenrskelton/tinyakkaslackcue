@@ -5,11 +5,11 @@ case class ActionId(value: String) extends AnyVal {
 
   def getIndex: Option[(ActionId, Int)] = {
     val separator = value.lastIndexOf("-")
-    if(separator > -1){
-      value.drop(separator).toIntOption.map {
+    if (separator > -1) {
+      value.drop(separator + 1).toIntOption.map {
         i => (ActionId(value.take(separator)), i)
       }
-    }else {
+    } else {
       None
     }
   }

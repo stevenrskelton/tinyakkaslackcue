@@ -10,10 +10,10 @@ class ActionIdSpec extends AnyWordSpec
 
   "getIndex" should {
     "parse some" in {
-      val compoundActionId = ActionId("channels-select-0")
+      val compoundActionId = ActionId("channels-select-1")
       val (actionId, index) = compoundActionId.getIndex.get
-      actionId shouldBe ActionId("channel-select")
-      index shouldBe 0
+      actionId shouldBe ActionId("channels-select")
+      index shouldBe 1
     }
     "parse none" in {
       val compoundActionId = ActionId("channels-select")

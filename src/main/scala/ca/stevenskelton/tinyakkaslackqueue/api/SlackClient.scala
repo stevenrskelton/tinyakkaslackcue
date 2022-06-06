@@ -37,7 +37,7 @@ object SlackClient {
       val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
       val channels = Option(conversationsResult.getChannels.asScala).getOrElse(Nil)
       val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
-      channels.find(_.getName == slackChannel).map {
+      channels.find(_.getId == slackChannel.id).map {
         channel =>
           val taskLogChannel = TaskLogChannel(name = channel.getName, id = channel.getId)
           val message = s"Task: ${slackTaskFactory.name.getText}"
