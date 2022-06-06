@@ -72,33 +72,37 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     factory => factory -> slackClient.slackConfig.taskChannels.find(_._1 == factory.name.getText).map(_._2._1)
   }
 
-  lazy val slackTaskMetaFactories: Seq[SlackTaskMeta] = {
+  def updateFactoryLogChannel(taskIndex: Int, slackChannel: SlackChannel): Boolean = {
+    factories.drop(taskIndex).headOption.map {
+      slackTaskFactory =>
+        val result = slackClient.slackConfig.setFactoryLogChannel(slackTaskFactory, slackChannel)
+        if(result) initializeFromConfig else false
+    }.getOrElse(false)
+  }
+
+  private def initializeFromConfig: Boolean = {
     var hasError = false
-    val meta = factories.flatMap {
-      factory =>
+    val meta = factories.zipWithIndex.flatMap {
+      case (factory, index) =>
         slackClient.slackConfig.taskChannels.find(_._1 == factory.name.getText).map {
-          case (_, (taskLogChannel, slackHistoryThread)) => SlackTaskMeta.initialize(slackClient, taskLogChannel, slackHistoryThread, factory)
+          case (_, (taskLogChannel, slackHistoryThread)) => SlackTaskMeta.initialize(index, slackClient, taskLogChannel, slackHistoryThread, factory)
         }.orElse {
           logger.error(s"slackTaskMetaFactories: No config set for task `${factory.name.getText}`")
           hasError = true
           None
         }
     }
-    if(hasError) Nil else meta
+    slackTaskMeta = if (hasError) Nil else meta
+    !hasError
   }
 
-  def findByChannel(slackChannel: SlackChannel): Try[SlackTaskMeta] = {
-    slackTaskMetaFactories.find(_.taskLogChannel == slackChannel).map(Success(_)).getOrElse {
-      val ex = new Exception(s"Task ${slackChannel.id} not found")
-      logger.error("handleAction", ex)
-      Failure(ex)
-    }
-  }
+  private var slackTaskMeta: Seq[SlackTaskMeta] = Nil
+
+  def slackTaskMetaFactories: Seq[SlackTaskMeta] = slackTaskMeta
 
   def findByPrivateMetadata(privateMetadata: PrivateMetadata): Option[SlackTaskMeta] = {
     slackTaskMetaFactories.find(_.taskLogChannel.id == privateMetadata.value)
   }
 
-  def findByIndex(i: Int): Option[SlackTaskFactory[_,_]] = factories.drop(i).headOption
-
+  initializeFromConfig
 }

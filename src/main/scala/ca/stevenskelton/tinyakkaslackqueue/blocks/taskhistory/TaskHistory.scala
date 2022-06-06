@@ -27,7 +27,7 @@ case class TaskHistory(
         "text": "View History (${executed.size})"
       },
       "action_id": "${ActionId.HomeTabTaskHistory.value}",
-      "value": "${slackTaskMeta.taskLogChannel.id}"
+      "value": "${slackTaskMeta.index}"
     }"""
 
     s"""
@@ -56,7 +56,7 @@ case class TaskHistory(
       },
       "style": "primary",
       "action_id": "${ActionId.ModalTaskQueue.value}",
-      "value": "${slackTaskMeta.taskLogChannel.id}"
+      "value": "${slackTaskMeta.index}"
     },
     {
       "type": "button",
@@ -67,7 +67,7 @@ case class TaskHistory(
       },
       "style": "primary",
       "action_id": "${ActionId.ModalTaskSchedule.value}",
-      "value": "${slackTaskMeta.taskLogChannel.id}"
+      "value": "${slackTaskMeta.index}"
     }
     $viewHistoryBlocks
   ]

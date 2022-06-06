@@ -10,7 +10,7 @@ import scala.collection.SortedSet
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 object SlackTaskMeta {
-  def initialize(slackClient: SlackClient, taskChannel: TaskLogChannel, historyThread: SlackHistoryThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
+  def initialize(id: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, historyThread: SlackHistoryThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
     val response = slackClient.threadReplies(historyThread)
     val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
     if (response.isOk) {
@@ -29,12 +29,13 @@ object SlackTaskMeta {
         logger.error(s"SlackTaskMeta.initialize failed: ${response.getError}")
       }
     }
-    new SlackTaskMeta(slackClient, taskChannel, historyThread, factory, executedTasks)
+    new SlackTaskMeta(id, slackClient, taskChannel, historyThread, factory, executedTasks)
   }
 
 }
 
 class SlackTaskMeta private(
+                             val index: Int,
                              val slackClient: SlackClient,
                              val taskLogChannel: TaskLogChannel,
                              val historyThread: SlackHistoryThread,

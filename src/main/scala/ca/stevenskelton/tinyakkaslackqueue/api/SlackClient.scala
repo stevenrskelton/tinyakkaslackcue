@@ -71,7 +71,7 @@ object SlackClient {
           )
         }
       )
-      val message = s"Configuration\n```${Json.prettyPrint(json)}```"
+      val message = s"$ConfigurationThreadHeader```${Json.prettyPrint(json)}```"
       val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
       val slackApiTextResponse = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader)).map {
         pinnedConfig => client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).ts(pinnedConfig.getMessage.getTs).text(message))
