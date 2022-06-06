@@ -66,7 +66,7 @@ object SlackClient {
         "taskchannels" -> taskChannels.map {
           case (taskName, (taskLogChannel, slackHistoryThread)) => Json.obj(
             "task" -> taskName,
-            "channelId" -> taskLogChannel.id,
+            "channel" -> taskLogChannel.name,
             "historyTs" -> slackHistoryThread.ts.value
           )
         }
@@ -115,7 +115,7 @@ object SlackClient {
             (bodyJson \ "taskchannels").asOpt[Seq[JsValue]].getOrElse(Nil).flatMap {
               js =>
                 val task = (js \ "task").as[String]
-                val channelName = (js \ "channelId").as[String]
+                val channelName = (js \ "channel").as[String]
                 val historyTs = (js \ "historyTs").as[String]
                 val historyThread = SlackHistoryThread(SlackTs(historyTs), taskHistoryChannel)
                 channels.find(_.getName == channelName).map {

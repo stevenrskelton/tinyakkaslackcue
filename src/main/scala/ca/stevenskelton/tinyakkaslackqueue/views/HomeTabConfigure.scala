@@ -61,7 +61,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
       "fields": [
         {
           "type": "mrkdwn",
-          "text": "*Configure Tasks*\nTasks are cancellable and can be queued"
+          "text": "Warning: Changing task channels will reset any previous history for that task."
         }
       ]
     },
