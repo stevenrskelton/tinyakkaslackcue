@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackUserId}
-import play.api.libs.json.{JsLookupResult, JsObject, JsResult, JsSuccess, JsValue, Reads}
+import play.api.libs.json._
 
 import java.time.{LocalDate, LocalTime}
 
@@ -21,17 +21,19 @@ case class ChannelsState(value: SlackChannel) extends State
 
 object State {
 
-  implicit val rd = new Reads[State]{
+  implicit val rd = new Reads[State] {
     override def reads(json: JsValue): JsResult[State] = {
-      val state = (json \ "type").as[String] match {
-        case "datepicker" => DatePickerState((json \ "selected_date").as[LocalDate])
-        case "timepicker" => TimePickerState((json \ "selected_time").as[LocalTime])
-        case "multi_users_select" => MultiUsersState((json \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
-        case "static_select" => SelectState((json \ "selected_option" \ "value").as[String])
-        case "button" => ButtonState((json \ "value").as[String])
-        case "channels_select" => ChannelsState(new SlackChannel {
+      val state = (json \ "type").asOpt[String] match {
+        case Some("datepicker") => DatePickerState((json \ "selected_date").as[LocalDate])
+        case Some("timepicker") => TimePickerState((json \ "selected_time").as[LocalTime])
+        case Some("multi_users_select") => MultiUsersState((json \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
+        case Some("static_select") => SelectState((json \ "selected_option" \ "value").as[String])
+        case Some("button") => ButtonState((json \ "value").as[String])
+        case Some("channels_select") => ChannelsState(new SlackChannel {
           override def id: String = (json \ "selected_channel").as[String]
         })
+        case Some(x) => return JsError(s"Unknown type `$x`")
+        case None => return JsError(s"No type")
       }
       JsSuccess(state)
     }

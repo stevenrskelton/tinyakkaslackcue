@@ -3,7 +3,7 @@ package ca.stevenskelton
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, State}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
-import com.slack.api.model.{Conversation, Message}
+import com.slack.api.model.Message
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -81,12 +81,7 @@ package object tinyakkaslackqueue {
   case class SlackTriggerId(value: String) extends AnyVal
 
   object SlackAction {
-    implicit val rd: Reads[SlackAction] = new Reads[SlackAction]{
-      override def reads(json: JsValue): JsResult[SlackAction] = {
-        val actionId = ActionId((json \ "action_id").as[String])
-        JsSuccess(SlackAction(actionId, json.as[State]))
-      }
-    }
+    implicit val rd: Reads[SlackAction] = ((__ \ "action_id").read[String].map(ActionId(_)) and __.read[State]) (SlackAction.apply _)
   }
 
 }
