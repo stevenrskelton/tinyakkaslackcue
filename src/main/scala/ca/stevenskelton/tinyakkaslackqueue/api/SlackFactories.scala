@@ -97,5 +97,4 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     _slackTaskMetaFactories
   }
 
-  initializeFromConfig
 }
