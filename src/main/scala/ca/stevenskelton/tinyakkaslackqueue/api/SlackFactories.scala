@@ -3,7 +3,6 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 import akka.Done
 import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.blocks.PrivateMetadata
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
@@ -63,21 +62,15 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
     slackTaskMetaFactories.map(_.history(allTasks))
   }
 
-  def factoryLogChannels: Seq[(SlackTaskFactory[_,_], Option[TaskLogChannel])] = Option(factories).getOrElse{
-    initializeFromConfig
-    factories
-  }.map {
+  def factoryLogChannels: Seq[(SlackTaskFactory[_, _], Option[TaskLogChannel])] = factories.map {
     factory => factory -> slackClient.slackConfig.taskChannels.find(_._1 == factory.name.getText).map(_._2._1)
   }
 
   def updateFactoryLogChannel(taskIndex: Int, slackChannel: SlackChannel): Boolean = {
-    Option(factories).getOrElse{
-      initializeFromConfig
-      factories
-    }.drop(taskIndex).headOption.map {
+    factories.drop(taskIndex).headOption.map {
       slackTaskFactory =>
         val result = slackClient.slackConfig.setFactoryLogChannel(slackTaskFactory, slackChannel)
-        if(result) initializeFromConfig else false
+        if (result) initializeFromConfig else false
     }.getOrElse(false)
   }
 
@@ -93,16 +86,16 @@ abstract class SlackFactories()(implicit val logger: Logger, val slackClient: Sl
           None
         }
     }
-    slackTaskMeta = if (hasError) Nil else meta
+    _slackTaskMetaFactories = if (hasError) Nil else meta
     !hasError
   }
 
-  private var slackTaskMeta: Seq[SlackTaskMeta] = Nil
+  private var _slackTaskMetaFactories: Seq[SlackTaskMeta] = Nil
 
-  def slackTaskMetaFactories: Seq[SlackTaskMeta] = slackTaskMeta
-
-  def findByPrivateMetadata(privateMetadata: PrivateMetadata): Option[SlackTaskMeta] = {
-    slackTaskMetaFactories.find(_.taskLogChannel.id == privateMetadata.value)
+  def slackTaskMetaFactories: Seq[SlackTaskMeta] = {
+    if (_slackTaskMetaFactories.isEmpty) initializeFromConfig
+    _slackTaskMetaFactories
   }
 
+  initializeFromConfig
 }
