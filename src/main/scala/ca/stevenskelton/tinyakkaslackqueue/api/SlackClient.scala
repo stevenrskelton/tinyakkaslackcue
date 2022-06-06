@@ -25,6 +25,8 @@ import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 object SlackClient {
 
+  private val ConfigurationThreadHeader = "Configuration\n"
+
   case class SlackConfig(
                           botOAuthToken: String,
                           botUserId: SlackUserId,
@@ -71,7 +73,7 @@ object SlackClient {
       )
       val message = s"Configuration\n```${Json.prettyPrint(json)}```"
       val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
-      val slackApiTextResponse = pinnedMessages.find(_.getMessage.getText.startsWith("Configuration")).map {
+      val slackApiTextResponse = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader)).map {
         pinnedConfig => client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).ts(pinnedConfig.getMessage.getTs).text(message))
       }.getOrElse {
         val postMessage = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).text(message))
@@ -105,17 +107,17 @@ object SlackClient {
       botChannel =>
         val taskHistoryChannel = TaskHistoryChannel(botChannel.getId)
         val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.getId)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
-        val pinnedConfig = pinnedMessages.find(_.getMessage.getText.startsWith("Configuration"))
+        val pinnedConfig = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader))
         val taskChannels = pinnedConfig.map {
           messageItem =>
-            val body = messageItem.getMessage.getText.drop(3).dropRight(3)
+            val body = messageItem.getMessage.getText.drop(ConfigurationThreadHeader.length + 3).dropRight(3)
             val bodyJson = Json.parse(body)
             (bodyJson \ "taskchannels").asOpt[Seq[JsValue]].getOrElse(Nil).flatMap {
               js =>
                 val task = (js \ "task").as[String]
                 val channelName = (js \ "channelId").as[String]
                 val historyTs = (js \ "historyTs").as[String]
-                val historyThread = new SlackHistoryThread(SlackTs(historyTs), taskHistoryChannel)
+                val historyThread = SlackHistoryThread(SlackTs(historyTs), taskHistoryChannel)
                 channels.find(_.getName == channelName).map {
                   channel => task -> (TaskLogChannel(name = channel.getName, id = channel.getId), historyThread)
                 }
