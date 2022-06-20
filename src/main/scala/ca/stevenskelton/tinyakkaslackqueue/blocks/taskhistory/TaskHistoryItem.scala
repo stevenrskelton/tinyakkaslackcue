@@ -15,8 +15,6 @@ object TaskHistoryItem {
 
   def fromHistoryThreadMessage(message: Message, taskChannel: TaskLogChannel, historyThread: SlackHistoryThread)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
     try {
-      val createdText = message.getItem.getCreated
-      val createdBy = message.getItem.getUser
       implicit val reads = TaskHistoryItem.reads(taskChannel, historyThread, ZonedDateTime.now())
       val text = message.getText
       if (text.startsWith("```")) {
