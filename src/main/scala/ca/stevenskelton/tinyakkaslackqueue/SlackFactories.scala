@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 import akka.Done
 import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{TaskHistory, TaskHistoryItem, TaskHistoryOutcomeItem}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
@@ -52,7 +52,7 @@ object SlackFactories {
         val taskChannelsJson = (bodyJson \ "taskchannels").asOpt[Seq[JsValue]].getOrElse(Nil)
         slackTaskFactories.factories.zipWithIndex.map {
           case (slackTaskFactory, index) =>
-            val slackTaskMeta = taskChannelsJson.find(o => (o \ "task").asOpt[String].contains(slackTaskFactory.name.getText)).map {
+            val slackTaskMeta = taskChannelsJson.find(o => (o \ "task").asOpt[String].contains(slackTaskFactory.name.getText)).flatMap {
               taskJson =>
                 val channelId = (taskJson \ "channelId").as[String]
                 val taskLogChannel = TaskLogChannel(id = channelId)
@@ -127,7 +127,19 @@ class SlackFactories private (val slackTasks: Seq[SlackTaskInitialized])(implici
   def updateFactoryLogChannel(taskIndex: Int, slackChannel: TaskLogChannel): Boolean = {
     slackTasks.drop(taskIndex).headOption.map {
       slackTaskInitialized =>
-        slackTaskInitialized.slackTaskMeta = Some(SlackTaskMeta.initializeNewChannel(taskIndex, slackClient, slackChannel, slackTaskInitialized.slackTaskFactory))
+        slackTaskInitialized.slackTaskMeta.map {
+          _.updateTaskLogChannel(slackChannel)
+        }.getOrElse {
+          val message = s"History: ${slackTaskInitialized.slackTaskFactory.name.getText}"
+          val post = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id).text(message))
+          val queueThread = if (post.isOk) SlackQueueThread(SlackTs(post.getTs), slackClient.slackConfig.botChannel)
+          else {
+            logger.error(s"Could not create slack history thread for ${slackTaskInitialized.slackTaskFactory.name.getText}: ${post.getError}")
+            return false
+          }
+          slackTaskInitialized.slackTaskMeta =  Some(SlackTaskMeta.skipHistory(taskIndex, slackClient, slackChannel, queueThread, slackTaskInitialized.slackTaskFactory))
+        }
+
 
 //            val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
 //            val channels = Option(conversationsResult.getChannels.asScala).getOrElse(Nil)
