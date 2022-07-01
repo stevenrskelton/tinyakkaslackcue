@@ -1,11 +1,9 @@
 package ca.stevenskelton.tinyakkaslackqueue.util
 
-import org.slf4j.Logger
 import play.api.libs.json.{JsValue, Json}
 
 import java.io._
-import java.security.MessageDigest
-import scala.util.{Success, Try, Using}
+import scala.util.{Try, Using}
 
 object FileUtils {
 

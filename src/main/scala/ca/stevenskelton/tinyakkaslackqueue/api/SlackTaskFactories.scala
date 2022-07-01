@@ -5,6 +5,7 @@ object SlackTaskFactories {
     override val factories: List[SlackTaskFactory[_, _]] = slackTaskFactories.toList
   }
 }
+
 trait SlackTaskFactories {
   val factories: List[SlackTaskFactory[_, _]]
 }

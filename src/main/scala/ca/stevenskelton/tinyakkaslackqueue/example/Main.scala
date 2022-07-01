@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.SystemMaterializer
-import ca.stevenskelton.tinyakkaslackqueue.{SlackFactories, SlackTaskMeta}
+import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.api._
 import ca.stevenskelton.tinyakkaslackqueue.logging.SlackLoggerFactory
 import com.typesafe.config.ConfigFactory
@@ -39,7 +39,7 @@ object Main extends App {
   )
 
   implicit val slackFactories = SlackFactories.initialize(slackTaskFactories)
-//  slackTaskFactories.slackTaskMetaFactories
+  //  slackTaskFactories.slackTaskMetaFactories
 
   val slackRoutes = new SlackRoutes()
 

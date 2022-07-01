@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
-import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackQueueThread, SlackTaskThread, SlackTs, TaskLogChannel}
+import ca.stevenskelton.tinyakkaslackqueue.{SlackQueueThread, SlackTaskThread, SlackTs, TaskLogChannel}
 import com.slack.api.model.Message
 import org.slf4j.Logger
 import play.api.libs.json._

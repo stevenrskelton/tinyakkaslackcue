@@ -9,9 +9,9 @@ import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
+import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
 import ca.stevenskelton.tinyakkaslackqueue.views._
-import ca.stevenskelton.tinyakkaslackqueue._
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
@@ -149,12 +149,12 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
         case SlackPayload.ViewSubmission if slackPayload.callbackId.contains(CallbackId.Create) =>
           Try {
             val slackTaskMeta = slackFactories.slackTasks.drop(slackPayload.privateMetadata.get.value.toInt).head.slackTaskMeta.get
-              val zonedDateTimeOpt = for {
-                scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
-                scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
-              } yield scheduledDate.atTime(scheduledTime).atZone(zoneId)
-              val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload.user.id, slackTaskMeta, zonedDateTimeOpt)
-              new HomeTab(zoneId)
+            val zonedDateTimeOpt = for {
+              scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
+              scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
+            } yield scheduledDate.atTime(scheduledTime).atZone(zoneId)
+            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload.user.id, slackTaskMeta, zonedDateTimeOpt)
+            new HomeTab(zoneId)
           }
         case x =>
           val ex = new NotImplementedError(s"Slack type $x, for:\n```$payload```")

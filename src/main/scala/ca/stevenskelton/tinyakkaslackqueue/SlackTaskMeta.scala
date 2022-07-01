@@ -2,10 +2,6 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory._
-import com.slack.api.methods.request.chat.ChatPostMessageRequest
-import com.slack.api.methods.request.conversations.ConversationsListRequest
-import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest}
-import com.slack.api.model.ConversationType
 import org.slf4j.Logger
 import play.api.libs.json.OFormat
 
@@ -14,21 +10,6 @@ import scala.collection.SortedSet
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 object SlackTaskMeta {
-
-//  def initializeNewChannel(id: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
-////    val conversationsResult = slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(taskChannel.id))
-//    val existing = conversationsResult.getItems.asScala.find(o => o.getCreatedBy == slackClient.slackConfig.botUserId.value && o.getMessage.getText.startsWith(SlackFactories.HistoryThreadHeader))
-//    existing.map {
-//      pinsListResponse =>
-//        val historyThread = SlackQueueThread(pinsListResponse.getMessage, slackClient.slackConfig.botChannel)
-//        readHistory(id, slackClient, taskChannel, historyThread, factory)
-//    }.getOrElse {
-//      val queueThreadResult = slackClient.client.chatPostMessage((r:ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id).text(SlackFactories.HistoryThreadHeader))
-//      val historyThread = SlackQueueThread(queueThreadResult.getMessage, slackClient.slackConfig.botChannel)
-//      slackClient.client.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(historyThread.channel.id).timestamp(historyThread.ts.value))
-//      new SlackTaskMeta(id, slackClient, taskChannel, historyThread, factory, scala.collection.mutable.SortedSet.empty)
-//    }
-//  }
 
   def skipHistory(index: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
     new SlackTaskMeta(index, slackClient, taskChannel, queueThread, factory, scala.collection.mutable.SortedSet.empty)
@@ -77,7 +58,7 @@ class SlackTaskMeta private(
     slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId)
   }
 
-  def updateTaskLogChannel(channel: TaskLogChannel): SlackTaskMeta = new SlackTaskMeta(index,slackClient, channel, queueThread, factory, executedTasks)
+  def updateTaskLogChannel(channel: TaskLogChannel): SlackTaskMeta = new SlackTaskMeta(index, slackClient, channel, queueThread, factory, executedTasks)
 
   def historyAddCreate(scheduledSlackTask: ScheduledSlackTask): Unit = {
     val taskHistoryOutcome = TaskHistoryItem(

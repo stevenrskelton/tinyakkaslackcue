@@ -1,7 +1,9 @@
 package ca.stevenskelton
 
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, State}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
+import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.model.Message
 import play.api.libs.functional.syntax._
@@ -31,6 +33,12 @@ package object tinyakkaslackqueue {
 
   object SlackQueueThread {
     def apply(message: Message, channel: BotChannel): SlackQueueThread = SlackQueueThread(SlackTs(message.getTs), channel)
+
+    def create(slackTaskFactory: SlackTaskFactory[_, _])(implicit slackClient: SlackClient): Either[SlackQueueThread, String] = {
+      val message = s"History: ${slackTaskFactory.name.getText}"
+      val post = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id).text(message))
+      if (post.isOk) Left(SlackQueueThread(SlackTs(post.getTs), slackClient.slackConfig.botChannel)) else Right(post.getError)
+    }
   }
 
   case class SlackTaskThread(ts: SlackTs, channel: TaskLogChannel) extends SlackThread
