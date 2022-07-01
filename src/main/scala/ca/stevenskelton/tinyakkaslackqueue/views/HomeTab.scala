@@ -62,7 +62,7 @@ class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends S
   private val taskHistories = slackFactories.history
 
   override def toString: String = {
-    if (taskHistories.isEmpty) new HomeTabConfigure(zoneId).toString else
+    if (taskHistories.isEmpty || taskHistories.size != slackFactories.slackTasks.size) new HomeTabConfigure(zoneId).toString else
       s"""
 {
   "type":"home",
