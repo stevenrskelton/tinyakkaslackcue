@@ -63,7 +63,7 @@ object SlackFactories {
             SlackTaskInitialized(slackTaskFactory, slackTaskMeta)
         }
     }.getOrElse {
-      Nil
+      slackTaskFactories.factories.map(SlackTaskInitialized(_, None))
     }
     new SlackFactories(slackTasksInitialized)
   }
