@@ -38,7 +38,7 @@ object SlackClient {
           case SlackTaskInitialized(slackTaskFactory, Some(slackTaskMeta)) => Json.obj(
             "task" -> slackTaskFactory.name.getText,
             "channelId" -> slackTaskMeta.taskLogChannel.id,
-            "historyTs" -> slackTaskMeta.historyThread.ts.value
+            "queueTs" -> slackTaskMeta.queueThread.ts.value
           )
         }
       )

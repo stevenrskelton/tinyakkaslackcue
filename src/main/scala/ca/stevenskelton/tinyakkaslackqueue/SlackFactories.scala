@@ -44,7 +44,7 @@ object SlackFactories {
     val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId)).getOrElse(Nil)
     val pinnedConfig = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader))
 
-    val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
+//    val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
     val slackTasksInitialized = pinnedConfig.map {
       messageItem =>
         val body = messageItem.getMessage.getText.drop(ConfigurationThreadHeader.length + 3).dropRight(3)
@@ -52,13 +52,13 @@ object SlackFactories {
         val taskChannelsJson = (bodyJson \ "taskchannels").asOpt[Seq[JsValue]].getOrElse(Nil)
         slackTaskFactories.factories.zipWithIndex.map {
           case (slackTaskFactory, index) =>
-            val slackTaskMeta = taskChannelsJson.find(o => (o \ "task").asOpt[String].contains(slackTaskFactory.name)).map {
+            val slackTaskMeta = taskChannelsJson.find(o => (o \ "task").asOpt[String].contains(slackTaskFactory.name.getText)).map {
               taskJson =>
                 val channelId = (taskJson \ "channelId").as[String]
                 val taskLogChannel = TaskLogChannel(id = channelId)
-                val historyTs = (taskJson \ "historyTs").as[String]
-                val historyThread = SlackQueueThread(SlackTs(historyTs), slackClient.slackConfig.botChannel)
-                SlackTaskMeta.readHistory(index, slackClient, taskLogChannel, historyThread, slackTaskFactory)
+                val queueTs = (taskJson \ "queueTs").as[String]
+                val queueThread = SlackQueueThread(SlackTs(queueTs), slackClient.slackConfig.botChannel)
+                SlackTaskMeta.readHistory(index, slackClient, taskLogChannel, queueThread, slackTaskFactory)
             }
             SlackTaskInitialized(slackTaskFactory, slackTaskMeta)
         }

@@ -30,13 +30,13 @@ object SlackTaskMeta {
     }
   }
 
-  def readHistory(id: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, historyThread: SlackQueueThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
-    val response = slackClient.threadReplies(historyThread)
+  def readHistory(id: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
+    val response = slackClient.threadReplies(queueThread)
     val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
     if (response.isOk) {
       response.getMessages.asScala.withFilter(_.getParentUserId == slackClient.slackConfig.botUserId.value).foreach {
         message =>
-          TaskHistoryItem.fromHistoryThreadMessage(message, taskChannel, historyThread) match {
+          TaskHistoryItem.fromHistoryThreadMessage(message, taskChannel, queueThread) match {
             case Some(taskHistoryItem) if taskHistoryItem.action.isInstanceOf[TaskHistoryOutcomeItem] =>
               executedTasks.add(taskHistoryItem.asInstanceOf[TaskHistoryItem[TaskHistoryOutcomeItem]])
             case _ =>
@@ -49,7 +49,7 @@ object SlackTaskMeta {
         logger.error(s"SlackTaskMeta.initialize failed: ${response.getError}")
       }
     }
-    new SlackTaskMeta(id, slackClient, taskChannel, historyThread, factory, executedTasks)
+    new SlackTaskMeta(id, slackClient, taskChannel, queueThread, factory, executedTasks)
   }
 
 }
@@ -58,7 +58,7 @@ class SlackTaskMeta private(
                              val index: Int,
                              val slackClient: SlackClient,
                              val taskLogChannel: TaskLogChannel,
-                             val historyThread: SlackQueueThread,
+                             val queueThread: SlackQueueThread,
                              val factory: SlackTaskFactory[_, _],
                              executedTasks: scala.collection.mutable.SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]
                            ) {
@@ -68,7 +68,7 @@ class SlackTaskMeta private(
   }
 
   private def post[T <: TaskHistoryActionItem](taskHistoryItem: TaskHistoryItem[T]): Unit = {
-    slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, historyThread)
+    slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, queueThread)
     slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId)
   }
 
@@ -76,7 +76,7 @@ class SlackTaskMeta private(
     val taskHistoryOutcome = TaskHistoryItem(
       CreateHistoryItem(scheduledSlackTask.task.createdBy),
       scheduledSlackTask.task.slackTaskThread,
-      historyThread,
+      queueThread,
       ZonedDateTime.now()
     )
     post(taskHistoryOutcome)
@@ -86,7 +86,7 @@ class SlackTaskMeta private(
     val taskHistoryOutcome = TaskHistoryItem(
       RunHistoryItem(estimatedCount),
       ts,
-      historyThread,
+      queueThread,
       ZonedDateTime.now()
     )
     post(taskHistoryOutcome)
@@ -96,7 +96,7 @@ class SlackTaskMeta private(
     val taskHistoryOutcome = TaskHistoryItem(
       taskHistoryOutcomeItem,
       ts,
-      historyThread,
+      queueThread,
       ZonedDateTime.now()
     )
     executedTasks.add(taskHistoryOutcome)
@@ -109,7 +109,7 @@ class SlackTaskMeta private(
     val taskHistoryOutcome = TaskHistoryItem(
       CancelHistoryItem(slackUserId, currentCount),
       ts,
-      historyThread,
+      queueThread,
       ZonedDateTime.now()
     )
     cancel = Some(taskHistoryOutcome)
@@ -118,7 +118,7 @@ class SlackTaskMeta private(
 
   def history(allQueuedTasks: Seq[ScheduledSlackTask]): TaskHistory = {
     var runningTask: Option[(ScheduledSlackTask, Option[TaskHistoryItem[CancelHistoryItem]])] = None
-    val cueTasks = allQueuedTasks.withFilter(_.task.meta.historyThread == historyThread).flatMap {
+    val cueTasks = allQueuedTasks.withFilter(_.task.meta.queueThread == queueThread).flatMap {
       scheduleTask =>
         if (scheduleTask.isRunning) {
           runningTask = Some((scheduleTask, cancel.filter(_.taskId.ts == scheduleTask.id)))
