@@ -27,10 +27,10 @@ package object tinyakkaslackqueue {
 
   trait SlackThread extends SlackMessage
 
-  case class SlackHistoryThread(ts: SlackTs, channel: TaskHistoryChannel) extends SlackThread
+  case class SlackQueueThread(ts: SlackTs, channel: BotChannel) extends SlackThread
 
-  object SlackHistoryThread {
-    def apply(message: Message, channel: TaskHistoryChannel): SlackHistoryThread = SlackHistoryThread(SlackTs(message.getTs), channel)
+  object SlackQueueThread {
+    def apply(message: Message, channel: BotChannel): SlackQueueThread = SlackQueueThread(SlackTs(message.getTs), channel)
   }
 
   case class SlackTaskThread(ts: SlackTs, channel: TaskLogChannel) extends SlackThread
@@ -45,9 +45,9 @@ package object tinyakkaslackqueue {
     def id: String
   }
 
-  case class TaskHistoryChannel(id: String) extends SlackChannel
+  case class BotChannel(id: String) extends SlackChannel
 
-  case class TaskLogChannel(name: String, id: String) extends SlackChannel
+  case class TaskLogChannel(id: String) extends SlackChannel
 
   object SlackChannel {
     def taskId(value: String): SlackChannel = new SlackChannel {

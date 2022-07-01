@@ -18,62 +18,33 @@ import com.slack.api.methods.{MethodsClient, SlackApiTextResponse}
 import com.slack.api.model.ConversationType
 import com.typesafe.config.Config
 import org.slf4j.Logger
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 
 import java.time.ZoneId
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 object SlackClient {
 
-  private val ConfigurationThreadHeader = "Configuration\n"
-
   case class SlackConfig(
                           botOAuthToken: String,
                           botUserId: SlackUserId,
-                          botChannel: TaskHistoryChannel,
-                          taskChannels: scala.collection.mutable.Map[String, (TaskLogChannel, SlackHistoryThread)],
+                          botChannel: BotChannel,
                           client: MethodsClient
                         ) {
 
-    def setFactoryLogChannel(slackTaskFactory: SlackTaskFactory[_, _], slackChannel: SlackChannel)(implicit logger: Logger): Boolean = {
-      val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
-      val channels = Option(conversationsResult.getChannels.asScala).getOrElse(Nil)
-      val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
-      channels.find(_.getId == slackChannel.id).map {
-        channel =>
-          val taskLogChannel = TaskLogChannel(name = channel.getName, id = channel.getId)
-          val message = s"Task: ${slackTaskFactory.name.getText}"
-          val slackHistoryThread = pinnedMessages.find(_.getMessage.getText.startsWith(message))
-            .map(messageItem => SlackHistoryThread(messageItem.getMessage, botChannel))
-            .getOrElse {
-              val post = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).text(message))
-              if (post.isOk) SlackHistoryThread(SlackTs(post.getTs), botChannel)
-              else {
-                logger.error(s"Could not create slack history thread for $slackTaskFactory: ${post.getError}")
-                return false
-              }
-            }
-          taskChannels.update(slackTaskFactory.name.getText, (taskLogChannel, slackHistoryThread))
-          persist
-      }.getOrElse {
-        logger.error(s"Could not find channel `${slackChannel.id}` for ${slackTaskFactory.name.getText}")
-        return false
-      }
-    }
-
-    private def persist(implicit logger: Logger): Boolean = {
+    def persistConfig(slackFactories: SlackFactories)(implicit logger: Logger): Boolean = {
       val json = Json.obj(
-        "taskchannels" -> taskChannels.map {
-          case (taskName, (taskLogChannel, slackHistoryThread)) => Json.obj(
-            "task" -> taskName,
-            "channel" -> taskLogChannel.name,
-            "historyTs" -> slackHistoryThread.ts.value
+        "taskchannels" -> slackFactories.slackTasks.collect {
+          case SlackTaskInitialized(slackTaskFactory, Some(slackTaskMeta)) => Json.obj(
+            "task" -> slackTaskFactory.name.getText,
+            "channelId" -> slackTaskMeta.taskLogChannel.id,
+            "historyTs" -> slackTaskMeta.historyThread.ts.value
           )
         }
       )
-      val message = s"$ConfigurationThreadHeader```${Json.prettyPrint(json)}```"
+      val message = s"${SlackFactories.ConfigurationThreadHeader}```${Json.prettyPrint(json)}```"
       val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
-      val slackApiTextResponse = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader)).map {
+      val slackApiTextResponse = pinnedMessages.find(_.getMessage.getText.startsWith(SlackFactories.ConfigurationThreadHeader)).map {
         pinnedConfig => client.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).ts(pinnedConfig.getMessage.getTs).text(message))
       }.getOrElse {
         val postMessage = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(botOAuthToken).channel(botChannel.id).text(message))
@@ -104,28 +75,7 @@ object SlackClient {
     val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
     val channels = Option(conversationsResult.getChannels.asScala).getOrElse(Nil)
     channels.find(_.getName == botChannelName).map {
-      botChannel =>
-        val taskHistoryChannel = TaskHistoryChannel(botChannel.getId)
-        val pinnedMessages = Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(botOAuthToken).channel(botChannel.getId)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId.value)).getOrElse(Nil)
-        val pinnedConfig = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader))
-        val taskChannels = pinnedConfig.map {
-          messageItem =>
-            val body = messageItem.getMessage.getText.drop(ConfigurationThreadHeader.length + 3).dropRight(3)
-            val bodyJson = Json.parse(body)
-            (bodyJson \ "taskchannels").asOpt[Seq[JsValue]].getOrElse(Nil).flatMap {
-              js =>
-                val task = (js \ "task").as[String]
-                val channelName = (js \ "channel").as[String]
-                val historyTs = (js \ "historyTs").as[String]
-                val historyThread = SlackHistoryThread(SlackTs(historyTs), taskHistoryChannel)
-                channels.find(_.getName == channelName).map {
-                  channel => task -> (TaskLogChannel(name = channel.getName, id = channel.getId), historyThread)
-                }
-            }
-        }.getOrElse {
-          Map.empty
-        }
-        SlackConfig(botOAuthToken, botUserId, taskHistoryChannel, scala.collection.mutable.Map.from(taskChannels), client)
+      botChannel => SlackConfig(botOAuthToken, botUserId, BotChannel(botChannel.getId), client)
     }.getOrElse {
       throw new Exception(s"Could not find bot channel $botChannelName")
     }

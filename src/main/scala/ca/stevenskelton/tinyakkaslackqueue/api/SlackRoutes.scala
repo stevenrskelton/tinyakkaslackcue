@@ -104,18 +104,18 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
             case SlackAction(ActionId.TaskCancel, ButtonState(value)) => cancelTask(SlackTs(value), slackPayload)
             case SlackAction(ActionId.HomeTabTaskHistory, ButtonState(value)) =>
               Try {
-                val slackTaskMeta = slackFactories.slackTaskMetaFactories.drop(value.toInt).head
-                new HomeTabTaskHistory(zoneId, slackTaskMeta.history(Nil))
+                val slackTaskInitialized = slackFactories.slackTasks.drop(value.toInt).head
+                new HomeTabTaskHistory(zoneId, slackTaskInitialized.slackTaskMeta.get.history(Nil))
               }
             case SlackAction(ActionId.ModalTaskQueue, ButtonState(value)) =>
               Try {
-                val slackTaskMeta = slackFactories.slackTaskMetaFactories.drop(value.toInt).head
-                new CreateTaskModal(slackPayload.user, slackTaskMeta, None)
+                val slackTaskInitialized = slackFactories.slackTasks.drop(value.toInt).head
+                new CreateTaskModal(slackPayload.user, slackTaskInitialized.slackTaskMeta.get, None)
               }
             case SlackAction(ActionId.ModalTaskSchedule, ButtonState(value)) =>
               Try {
-                val slackTaskMeta = slackFactories.slackTaskMetaFactories.drop(value.toInt).head
-                new CreateTaskModal(slackPayload.user, slackTaskMeta, Some(ZonedDateTime.now(zoneId)))
+                val slackTaskInitialized = slackFactories.slackTasks.drop(value.toInt).head
+                new CreateTaskModal(slackPayload.user, slackTaskInitialized.slackTaskMeta.get, Some(ZonedDateTime.now(zoneId)))
               }
             case SlackAction(ActionId.ModalQueuedTaskView, ButtonState(value)) =>
               val ts = SlackTs(value)
@@ -132,7 +132,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
             case SlackAction(ActionId.RedirectToTaskThread, _) => Success(SlackOkResponse)
             case SlackAction(actionId, ChannelsState(value)) if slackPayload.callbackId.contains(CallbackId.HomeTabConfigure) =>
               actionId.getIndex.foreach {
-                case (_, taskIndex) => slackFactories.updateFactoryLogChannel(taskIndex, value)
+                case (_, taskIndex) => slackFactories.updateFactoryLogChannel(taskIndex, TaskLogChannel(value.id))
               }
               //TODO: pass error
               Success(new HomeTab(zoneId))
@@ -148,7 +148,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
           }
         case SlackPayload.ViewSubmission if slackPayload.callbackId.contains(CallbackId.Create) =>
           Try {
-            val slackTaskMeta = slackFactories.slackTaskMetaFactories.drop(slackPayload.privateMetadata.get.value.toInt).head
+            val slackTaskMeta = slackFactories.slackTasks.drop(slackPayload.privateMetadata.get.value.toInt).head.slackTaskMeta.get
               val zonedDateTimeOpt = for {
                 scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
                 scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)

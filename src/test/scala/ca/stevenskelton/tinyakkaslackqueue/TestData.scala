@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Keep, Source}
 import akka.stream.{KillSwitches, SystemMaterializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue
-import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackFactories, SlackTaskFactory}
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.methods.MethodsClient

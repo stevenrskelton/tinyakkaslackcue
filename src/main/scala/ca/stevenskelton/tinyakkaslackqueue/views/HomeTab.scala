@@ -1,8 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks.ActionId
-import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackThread}
+import ca.stevenskelton.tinyakkaslackqueue.{ScheduledSlackTask, SlackFactories, SlackThread}
 
 import java.time.{ZoneId, ZoneOffset, ZonedDateTime}
 

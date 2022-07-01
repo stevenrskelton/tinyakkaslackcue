@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue.api.SlackFactories
+import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
 
 import java.time.ZoneId
