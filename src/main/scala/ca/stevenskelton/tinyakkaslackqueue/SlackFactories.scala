@@ -18,29 +18,10 @@ object SlackFactories {
 
   val ConfigurationThreadHeader = "Configuration\n"
 
-  //
-  //  private def initializeFromConfig: Boolean = {
-  //    var hasError = false
-  //    val meta = factories.zipWithIndex.flatMap {
-  //      case (factory, index) =>
-  //        slackClient.slackConfig.taskChannels.find(_._1 == factory.name.getText).map {
-  //          case (_, (taskLogChannel, slackHistoryThread)) => SlackTaskMeta.initialize(index, slackClient, taskLogChannel, slackHistoryThread, factory)
-  //        }.orElse {
-  //          logger.error(s"slackTaskMetaFactories: No config set for task `${factory.name.getText}`")
-  //          hasError = true
-  //          None
-  //        }
-  //    }
-  //    _slackTaskMetaFactories = if (hasError) Nil else meta
-  //    !hasError
-  //  }
-
   def initialize(slackTaskFactories: SlackTaskFactories)(implicit logger: Logger, slackClient: SlackClient, materializer: Materializer): SlackFactories = {
     val botUserId = slackClient.slackConfig.botUserId.value
     val pinnedMessages = Option(slackClient.client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId)).getOrElse(Nil)
     val pinnedConfig = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader))
-
-    //    val conversationsResult = slackClient.client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
     val slackTasksInitialized = pinnedConfig.map {
       messageItem =>
         val body = messageItem.getMessage.getText.drop(ConfigurationThreadHeader.length + 3).dropRight(3)
