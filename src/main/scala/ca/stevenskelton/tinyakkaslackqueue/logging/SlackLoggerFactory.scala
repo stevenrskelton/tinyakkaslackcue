@@ -42,7 +42,7 @@ object SlackLoggerFactory {
     new SlackLogger(getName = name, sourceQueue, backup, mirror)
   }
 
-  def createNewSlackThread(slackTask: SlackTask)(implicit slackClient: SlackClient, materializer: Materializer): SlackLogger = {
+  def createNewSlackThread(slackTask: SlackTask, mainLogger: Logger)(implicit slackClient: SlackClient, materializer: Materializer): SlackLogger = {
 
     val startTimeMs = System.currentTimeMillis
 
@@ -84,7 +84,7 @@ object SlackLoggerFactory {
         slackClient.chatUpdate(completed(slackTask, startTimeMs), slackTask.slackTaskThread)
 //        slackClient.pinsRemove(slackTask.slackTaskThread)
     }
-    new SlackLogger(getName = s"${slackTask.meta.factory.name.getText}-${slackTask.id.value}", sourceQueue, None)
+    new SlackLogger(getName = s"${slackTask.meta.factory.name.getText}-${slackTask.id.value}", sourceQueue, backup = Some(mainLogger), mirror = Some(mainLogger))
   }
 
   private def update(slackTask: SlackTask, percentComplete: Float, startTimeMs: Long, width: Int = 14): String = {

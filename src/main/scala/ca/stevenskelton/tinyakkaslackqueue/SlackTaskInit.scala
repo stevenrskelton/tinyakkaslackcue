@@ -5,6 +5,7 @@ import akka.stream.{Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackTaskFactory
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem}
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackUpdatePercentCompleteEvent}
+import org.slf4j.Logger
 
 import java.time.ZonedDateTime
 import scala.collection.mutable
@@ -16,7 +17,7 @@ trait SlackTaskInit[T, B] {
 
   self: SlackTaskFactory[T, B] =>
 
-  def create(slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThread, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId])
+  def create(slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThread, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId], mainLogger: Logger)
             (implicit materializer: Materializer): SlackTask = {
 
     import materializer.executionContext
@@ -31,7 +32,7 @@ trait SlackTaskInit[T, B] {
 
       override def run(): Unit = {
         implicit val slackClient = slackTaskMeta.slackClient
-        implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this)
+        implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this, mainLogger)
         runStart = Some(ZonedDateTime.now())
 
         val completeElements = new mutable.HashSet[B]()

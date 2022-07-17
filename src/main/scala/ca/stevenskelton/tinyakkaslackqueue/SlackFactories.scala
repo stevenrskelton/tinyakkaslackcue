@@ -85,7 +85,8 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
       taskThread = SlackTaskThread(slackPlaceholder, slackTaskMeta.taskLogChannel),
       createdBy = slackUserId,
       notifyOnError = Nil,
-      notifyOnComplete = Nil
+      notifyOnComplete = Nil,
+      mainLogger = logger
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
     slackTaskMeta.historyAddCreate(scheduledTask)
