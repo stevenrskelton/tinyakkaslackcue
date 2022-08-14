@@ -82,7 +82,7 @@ object SlackLoggerFactory {
     sourceQueue.watchCompletion.map {
       _ =>
         slackClient.chatUpdate(completed(slackTask, startTimeMs), slackTask.slackTaskThread)
-//        slackClient.pinsRemove(slackTask.slackTaskThread)
+      //        slackClient.pinsRemove(slackTask.slackTaskThread)
     }
     new SlackLogger(getName = s"${slackTask.meta.factory.name.getText}-${slackTask.id.value}", sourceQueue, backup = Some(mainLogger), mirror = Some(mainLogger))
   }

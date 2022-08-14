@@ -120,9 +120,9 @@ case class SlackClientImpl(slackConfig: SlackConfig, client: MethodsClient)(impl
   def logError[T <: SlackApiTextResponse](call: String, body: String, f: String => T): T = {
     val result = f(body)
     if (!result.isOk) {
-      if(result.getError == "not_in_channel") {
+      if (result.getError == "not_in_channel") {
         logger.error(s"Add User to channel  permission scope for $call: ${result.getNeeded}")
-      }else if (result.getError == "missing_scope") {
+      } else if (result.getError == "missing_scope") {
         logger.error(s"Missing permission scope for $call: ${result.getNeeded}")
       } else {
         logger.warn(s"$call:${result.getClass.getName} ${result.getError} ${result.getWarning}, body: $body")
