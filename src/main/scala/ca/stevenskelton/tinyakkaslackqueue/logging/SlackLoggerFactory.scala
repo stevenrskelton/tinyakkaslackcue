@@ -18,7 +18,7 @@ import scala.concurrent.duration.DurationInt
 object SlackLoggerFactory {
 
   def logEvent(loggingEvent: LoggingEvent): String = {
-    val sMarker = Option(loggingEvent.getMarker)
+//    val sMarker = Option(loggingEvent.getMarkers.asScala.hea.getMarker)
     val sArgs = Option(loggingEvent.getArgumentArray).getOrElse(Array.empty)
     val text = if (sArgs.isEmpty) loggingEvent.getMessage else String.format(loggingEvent.getMessage, sArgs)
     val emoji = logLevelEmoji(loggingEvent.getLevel)

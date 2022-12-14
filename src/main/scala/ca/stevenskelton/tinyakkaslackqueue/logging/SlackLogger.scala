@@ -2,10 +2,12 @@ package ca.stevenskelton.tinyakkaslackqueue.logging
 
 import akka.stream.QueueOfferResult.{Dropped, QueueClosed}
 import akka.stream.scaladsl.SourceQueueWithComplete
-import org.slf4j.event.{Level, LoggingEvent}
+import org.slf4j.event.{KeyValuePair, Level, LoggingEvent}
 import org.slf4j.helpers.MessageFormatter
 import org.slf4j.{Logger, Marker}
 
+import java.util
+import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.util.{Failure, Success}
 
 object SlackLogger {
@@ -343,7 +345,7 @@ class SlackLogger(
     source.offer(new LoggingEvent {
       override def getLevel: Level = level
 
-      override def getMarker: Marker = marker
+      override def getMarkers: util.List[Marker] = List(marker).asJava
 
       override def getLoggerName: String = self.getName
 
@@ -356,6 +358,10 @@ class SlackLogger(
       override def getTimeStamp: Long = System.currentTimeMillis
 
       override def getThrowable: Throwable = throwable
+
+      override def getArguments: util.List[AnyRef] = ???
+
+      override def getKeyValuePairs: util.List[KeyValuePair] = ???
     })
   }
 

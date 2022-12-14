@@ -1,8 +1,9 @@
 package ca.stevenskelton.tinyakkaslackqueue.logging
 
-import org.slf4j.event.{Level, LoggingEvent}
+import org.slf4j.event.{KeyValuePair, Level, LoggingEvent}
 import org.slf4j.{Logger, Marker}
 
+import java.util
 import scala.util.control.NoStackTrace
 
 object SlackExceptionEvent {
@@ -14,7 +15,7 @@ object SlackExceptionEvent {
 class SlackExceptionEvent private(loggerName: String, throwable: Throwable) extends LoggingEvent {
   override def getLevel: Level = Level.ERROR
 
-  override def getMarker: Marker = null
+  override def getMarkers: util.List[Marker] = null
 
   override def getLoggerName: String = loggerName
 
@@ -27,4 +28,8 @@ class SlackExceptionEvent private(loggerName: String, throwable: Throwable) exte
   override def getTimeStamp: Long = System.currentTimeMillis
 
   override def getThrowable: Throwable = throwable
+
+  override def getArguments: util.List[AnyRef] = null
+
+  override def getKeyValuePairs: util.List[KeyValuePair] = null
 }
