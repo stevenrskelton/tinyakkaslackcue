@@ -20,7 +20,7 @@ lazy val app = (project in file("."))
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.9.3",
   "ch.qos.logback" % "logback-classic" % "1.4.5",
-  "com.slack.api" % "slack-api-client" % "1.27.1",
+  "com.slack.api" % "slack-api-client" % "1.27.2",
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http2-support" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
