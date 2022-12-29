@@ -2,12 +2,14 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory._
+import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackResponseException}
 import org.slf4j.Logger
 import play.api.libs.json.OFormat
 
 import java.time.ZonedDateTime
 import scala.collection.SortedSet
 import scala.jdk.CollectionConverters.ListHasAsScala
+import scala.util.{Failure, Success, Try}
 
 object SlackTaskMeta {
 
@@ -53,14 +55,23 @@ class SlackTaskMeta private(
     override def compare(x: ScheduledSlackTask, y: ScheduledSlackTask): Int = x.executionStart.compareTo(y.executionStart)
   }
 
-  private def post[T <: TaskHistoryActionItem](taskHistoryItem: TaskHistoryItem[T]): Unit = {
-    slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, queueThread)
-    slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId)
+  private def post[T <: TaskHistoryActionItem](taskHistoryItem: TaskHistoryItem[T]): Try[Unit] = {
+    val response1 = slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, queueThread)
+    if(response1.isOk){
+      val response2 = slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId)
+      if (response2.isOk) {
+        Success(())
+      } else {
+        Failure(SlackResponseException(response2))
+      }
+    }else{
+      Failure(SlackResponseException(response1))
+    }
   }
 
   def updateTaskLogChannel(channel: TaskLogChannel): SlackTaskMeta = new SlackTaskMeta(index, slackClient, channel, queueThread, factory, executedTasks)
 
-  def historyAddCreate(scheduledSlackTask: ScheduledSlackTask): Unit = {
+  def historyAddCreate(scheduledSlackTask: ScheduledSlackTask): Try[Unit] = {
     val taskHistoryOutcome = TaskHistoryItem(
       CreateHistoryItem(scheduledSlackTask.task.createdBy),
       scheduledSlackTask.task.slackTaskThread,
@@ -70,7 +81,7 @@ class SlackTaskMeta private(
     post(taskHistoryOutcome)
   }
 
-  def historyAddRun(ts: SlackTaskThread, estimatedCount: Int): Unit = {
+  def historyAddRun(ts: SlackTaskThread, estimatedCount: Int): Try[Unit] = {
     val taskHistoryOutcome = TaskHistoryItem(
       RunHistoryItem(estimatedCount),
       ts,
@@ -80,7 +91,7 @@ class SlackTaskMeta private(
     post(taskHistoryOutcome)
   }
 
-  def historyAddOutcome[T <: TaskHistoryOutcomeItem](taskHistoryOutcomeItem: T, ts: SlackTaskThread)(implicit fmt: OFormat[T]): Unit = {
+  def historyAddOutcome[T <: TaskHistoryOutcomeItem](taskHistoryOutcomeItem: T, ts: SlackTaskThread)(implicit fmt: OFormat[T]): Try[Unit] = {
     val taskHistoryOutcome = TaskHistoryItem(
       taskHistoryOutcomeItem,
       ts,
@@ -93,7 +104,7 @@ class SlackTaskMeta private(
 
   private var cancel: Option[TaskHistoryItem[CancelHistoryItem]] = None
 
-  def historyCancel(ts: SlackTaskThread, slackUserId: SlackUserId, currentCount: Int): Unit = {
+  def historyCancel(ts: SlackTaskThread, slackUserId: SlackUserId, currentCount: Int): Try[Unit] = {
     val taskHistoryOutcome = TaskHistoryItem(
       CancelHistoryItem(slackUserId, currentCount),
       ts,

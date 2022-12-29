@@ -4,7 +4,7 @@ import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue.api.SlackTaskFactory
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem}
-import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackUpdatePercentCompleteEvent}
+import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackResponseException, SlackUpdatePercentCompleteEvent}
 import org.slf4j.Logger
 
 import java.time.ZonedDateTime
@@ -40,7 +40,7 @@ trait SlackTaskInit[T, B] {
         itemCount.foreach {
           i =>
             estimatedCount = i
-            slackTaskMeta.historyAddRun(slackTaskThread, estimatedCount)
+            SlackResponseException.logError(slackTaskMeta.historyAddRun(slackTaskThread, estimatedCount), mainLogger)
         }
         val (killswitch, result) = source.toMat(Sink.fold(0) {
           (_, t) =>
@@ -56,10 +56,10 @@ trait SlackTaskInit[T, B] {
           case Success(totalItemCount) =>
             slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(1))
             isComplete = true
-            slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, runStart.get), slackTaskThread)
+            SlackResponseException.logError(slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, runStart.get), slackTaskThread), mainLogger)
           case Failure(ex) =>
             slackTaskLogger.recordEvent(SlackExceptionEvent(ex))
-            slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, runStart.get), slackTaskThread)
+            SlackResponseException.logError(slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, runStart.get), slackTaskThread), mainLogger)
         }
         Await.result(result, 24.hours)
       }

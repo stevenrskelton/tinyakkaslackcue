@@ -4,6 +4,7 @@ import akka.Done
 import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
+import ca.stevenskelton.tinyakkaslackqueue.logging.SlackResponseException
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.pins.PinsListRequest
@@ -89,7 +90,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
       mainLogger = logger
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))
-    slackTaskMeta.historyAddCreate(scheduledTask)
+    SlackResponseException.logError(slackTaskMeta.historyAddCreate(scheduledTask), logger)
     scheduledTask
   }
 

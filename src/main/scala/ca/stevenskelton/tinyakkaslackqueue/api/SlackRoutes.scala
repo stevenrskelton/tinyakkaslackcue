@@ -15,6 +15,7 @@ import ca.stevenskelton.tinyakkaslackqueue.views._
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
+import akka.http.scaladsl.server.Directives._
 
 import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,6 +24,11 @@ import scala.util.{Failure, Success, Try}
 class SlackRoutes(implicit slackFactories: SlackFactories) {
 
   import slackFactories.logger
+
+  val PublicRoutes: Route = concat(
+    path("slack" / "event")(slackEventRoute),
+    path("slack" / "action")(slackActionRoute)
+  )
 
   private val unmarshaller = new FromRequestUnmarshaller[(String, JsObject)] {
     override def apply(value: HttpRequest)(implicit ec: ExecutionContext, materializer: Materializer): Future[(String, JsObject)] = {

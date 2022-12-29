@@ -64,7 +64,10 @@ object SlackLoggerFactory {
           }
           if (messageEvents.nonEmpty) {
             val message = messageEvents.mkString("\n")
-            slackClient.chatPostMessageInThread(message, slackTask.slackTaskThread)
+            val posted = slackClient.chatPostMessageInThread(message, slackTask.slackTaskThread)
+            if(!posted.isOk){
+              mainLogger.error(s"Could not post to Slack: ${posted.getChannel} : ${posted.getError}")
+            }
           }
           exceptionEvent match {
             case Some(_) =>
