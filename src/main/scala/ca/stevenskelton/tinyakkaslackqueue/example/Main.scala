@@ -31,8 +31,8 @@ object Main extends App {
   implicit val slackClient: SlackClient = SlackClientImpl(slackConfig, slackConfig.client)
 
   implicit val materializer = SystemMaterializer(httpActorSystem).materializer
-  val host = config.getString("env.host")
-  val port = config.getInt("env.http.port")
+  val host = config.getString("tinyakkaslackqueue.env.host")
+  val port = config.getInt("tinyakkaslackqueue.env.http.port")
 
   val slackTaskFactories = SlackTaskFactories(
     new TestSlackTaskFactory(30.seconds)
