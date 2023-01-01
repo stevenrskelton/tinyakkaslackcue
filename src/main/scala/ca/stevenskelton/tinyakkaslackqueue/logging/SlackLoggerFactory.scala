@@ -18,7 +18,7 @@ import scala.concurrent.duration.DurationInt
 object SlackLoggerFactory {
 
   def logEvent(loggingEvent: LoggingEvent): String = {
-//    val sMarker = Option(loggingEvent.getMarkers.asScala.hea.getMarker)
+    //    val sMarker = Option(loggingEvent.getMarkers.asScala.hea.getMarker)
     val sArgs = Option(loggingEvent.getArgumentArray).getOrElse(Array.empty)
     val text = if (sArgs.isEmpty) loggingEvent.getMessage else String.format(loggingEvent.getMessage, sArgs)
     val emoji = logLevelEmoji(loggingEvent.getLevel)
@@ -65,7 +65,7 @@ object SlackLoggerFactory {
           if (messageEvents.nonEmpty) {
             val message = messageEvents.mkString("\n")
             val posted = slackClient.chatPostMessageInThread(message, slackTask.slackTaskThread)
-            if(!posted.isOk){
+            if (!posted.isOk) {
               mainLogger.error(s"Could not post to Slack: ${posted.getChannel} : ${posted.getError}")
             }
           }

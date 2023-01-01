@@ -79,7 +79,7 @@ package object tinyakkaslackqueue {
       (__ \ "id").read[String].map(SlackUserId(_)) and
         (__ \ "username").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "team_id").read[String]) (SlackUser.apply _)
+        (__ \ "team_id").read[String])(SlackUser.apply _)
   }
 
   case class SlackBlocksAsString(value: String) extends AnyVal
@@ -89,7 +89,7 @@ package object tinyakkaslackqueue {
   case class SlackTriggerId(value: String) extends AnyVal
 
   object SlackAction {
-    implicit val rd: Reads[SlackAction] = ((__ \ "action_id").read[String].map(ActionId(_)) and __.read[State]) (SlackAction.apply _)
+    implicit val rd: Reads[SlackAction] = ((__ \ "action_id").read[String].map(ActionId(_)) and __.read[State])(SlackAction.apply _)
   }
 
 }

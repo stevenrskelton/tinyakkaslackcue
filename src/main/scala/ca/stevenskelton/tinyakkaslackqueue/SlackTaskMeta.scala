@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory._
-import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackResponseException}
+import ca.stevenskelton.tinyakkaslackqueue.logging.SlackResponseException
 import org.slf4j.Logger
 import play.api.libs.json.OFormat
 
@@ -57,14 +57,14 @@ class SlackTaskMeta private(
 
   private def post[T <: TaskHistoryActionItem](taskHistoryItem: TaskHistoryItem[T]): Try[Unit] = {
     val response1 = slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, queueThread)
-    if(response1.isOk){
+    if (response1.isOk) {
       val response2 = slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId)
       if (response2.isOk) {
         Success(())
       } else {
         Failure(SlackResponseException(response2))
       }
-    }else{
+    } else {
       Failure(SlackResponseException(response1))
     }
   }

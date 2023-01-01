@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 import akka.Done
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.server.Directives.{as, complete, entity, extractExecutionContext, formField}
+import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import akka.stream.Materializer
@@ -15,7 +15,6 @@ import ca.stevenskelton.tinyakkaslackqueue.views._
 import com.slack.api.methods.SlackApiTextResponse
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
-import akka.http.scaladsl.server.Directives._
 
 import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}

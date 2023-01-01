@@ -1,9 +1,9 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks
 
-case class CallbackId(value: String) extends AnyVal {
-  override def toString: String = value
+import play.api.libs.json.Json.JsValueWrapper
 
-  def block: String = s""""callback_id": "$value""""
+case class CallbackId(value: String) extends AnyVal {
+  def block: (String, JsValueWrapper) = "callback_id" -> value
 }
 
 object CallbackId {
