@@ -59,6 +59,8 @@ class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends S
   //TODO: sort taskHistories
   private val taskHistories = slackFactories.history
 
+  override def toString: String = Json.stringify(blocks)
+
   def blocks: JsObject = {
     if (taskHistories.isEmpty || taskHistories.size != slackFactories.slackTasks.size) new HomeTabConfigure(zoneId).blocks else
       Json.obj(

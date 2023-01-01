@@ -5,6 +5,8 @@ import play.api.libs.json.{JsObject, Json}
 
 class CancelTaskModal(scheduledTask: ScheduledSlackTask) extends SlackModal {
 
+  override def toString: String = Json.stringify(blocks)
+
   def blocks: JsObject = Json.obj(
     "type" -> "modal",
     "close" -> Json.obj(

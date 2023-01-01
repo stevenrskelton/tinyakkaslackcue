@@ -25,8 +25,10 @@ object HomeTabTaskHistory {
 
 class HomeTabTaskHistory(zoneId: ZoneId, taskHistory: TaskHistory) extends SlackHomeTab {
 
+  override def toString: String = Json.stringify(blocks)
+
   def blocks: JsObject = {
-    val blocks = taskHistory.executed.toSeq.reverse.flatMap {
+    val blocks1 = taskHistory.executed.toSeq.reverse.flatMap {
       obj =>
         val outcomeBlocks = TaskHistory.taskHistoryOutcomeBlocks(obj, zoneId)
         if (outcomeBlocks.isEmpty) Nil
@@ -34,7 +36,7 @@ class HomeTabTaskHistory(zoneId: ZoneId, taskHistory: TaskHistory) extends Slack
           outcomeBlocks :+ Json.obj("type" -> "divider")
         }
     }
-    val list = if (blocks.isEmpty) {
+    val list = if (blocks1.isEmpty) {
       Seq(Json.obj(
         "type" -> "header",
         "text" -> Json.obj(
@@ -44,7 +46,7 @@ class HomeTabTaskHistory(zoneId: ZoneId, taskHistory: TaskHistory) extends Slack
         )
       ))
     } else {
-      blocks
+      blocks1
     }
 
     Json.obj(

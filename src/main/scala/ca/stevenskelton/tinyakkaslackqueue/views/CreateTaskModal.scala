@@ -10,6 +10,8 @@ import java.time.format.DateTimeFormatter
 
 class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime])(implicit slackFactories: SlackFactories) extends SlackModal {
 
+  override def toString: String = Json.stringify(blocks)
+
   private val submitButtonText = if (zonedDateTimeOpt.isEmpty) {
     if (slackFactories.isExecuting) "Queue" else "Run"
   } else {

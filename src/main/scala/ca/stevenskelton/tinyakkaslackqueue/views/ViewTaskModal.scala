@@ -8,6 +8,9 @@ import play.api.libs.json.{JsObject, Json}
 import java.time.ZoneId
 
 class ViewTaskModal(zoneId: ZoneId, scheduledTasks: Seq[ScheduledSlackTask], index: Int) extends SlackModal {
+
+  override def toString: String = Json.stringify(blocks)
+
   def blocks: JsObject = {
     val scheduledTask = scheduledTasks(index)
     val bodyBlocks = if (scheduledTask.isRunning) {

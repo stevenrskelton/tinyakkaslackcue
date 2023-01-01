@@ -8,6 +8,8 @@ import java.time.ZoneId
 
 class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends SlackHomeTab {
 
+  override def toString: String = Json.stringify(blocks)
+
   def blocks: JsObject = {
 
     val logChannels = slackFactories.factoryLogChannels
@@ -48,7 +50,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
           )
       }
     }
-    val blocks = Seq(
+    val blocks1 = Seq(
       Json.obj(
         "type" -> "header",
         "text" -> Json.obj(
@@ -70,7 +72,7 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
     Json.obj(
       "type" -> "home",
       CallbackId.HomeTabConfigure.block,
-      "blocks" -> blocks
+      "blocks" -> blocks1
     )
   }
 }
