@@ -51,34 +51,36 @@ case class TaskHistory(
       ),
       Json.obj(
         "type" -> "actions",
-        "elements" -> Seq(
-          Json.obj(
-            "type" -> "button",
-            "text" -> Json.obj(
-              "type" -> "plain_text",
-              "emoji" -> true,
-              "text" -> {
-                if (running.isEmpty) "Run Immediately" else "Queue"
-              }
+        "elements" -> {
+          Seq(
+            Json.obj(
+              "type" -> "button",
+              "text" -> Json.obj(
+                "type" -> "plain_text",
+                "emoji" -> true,
+                "text" -> {
+                  if (running.isEmpty) "Run Immediately" else "Queue"
+                }
+              ),
+              "style" -> "primary",
+              "action_id" -> ActionId.ModalTaskQueue.value,
+              "value" -> slackTaskMeta.index.toString
             ),
-            "style" -> "primary",
-            "action_id" -> ActionId.ModalTaskQueue.value,
-            "value" -> slackTaskMeta.index.toString
-          ),
-          Json.obj(
-            "type" -> "button",
-            "text" -> Json.obj(
-              "type" -> "plain_text",
-              "emoji" -> true,
-              "text" -> "Schedule"
-            ),
-            "style" -> "primary",
-            "action_id" -> ActionId.ModalTaskSchedule.value,
-            "value" -> slackTaskMeta.index.toString
-          )
-        )
+            Json.obj(
+              "type" -> "button",
+              "text" -> Json.obj(
+                "type" -> "plain_text",
+                "emoji" -> true,
+                "text" -> "Schedule"
+              ),
+              "style" -> "primary",
+              "action_id" -> ActionId.ModalTaskSchedule.value,
+              "value" -> slackTaskMeta.index.toString
+            )
+          ) ++ viewHistoryBlocks
+        }
       )
-    ) ++ viewHistoryBlocks ++ TaskHistory.homeTabRunningBlocks(running, zoneId) ++ TaskHistory.homeTabPendingBlocks(pending, zoneId)
+    ) ++ TaskHistory.homeTabRunningBlocks(running, zoneId) ++ TaskHistory.homeTabPendingBlocks(pending, zoneId)
   }
 }
 
