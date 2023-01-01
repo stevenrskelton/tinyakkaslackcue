@@ -15,7 +15,7 @@ case class ErrorHistoryItem(ex: String, message: String, start: ZonedDateTime) e
 
   override def sectionBlocks: Seq[JsObject] = Seq(
     Json.obj("type" -> "mrkdwn", "text" -> s"Error:\n$ex"),
-    Json.obj("type" -> "mrkdwn", "text" -> "Message:\n$message")
+    Json.obj("type" -> "mrkdwn", "text" -> s"Message:\n$message")
   )
 
   override def icon: String = TaskFailure
