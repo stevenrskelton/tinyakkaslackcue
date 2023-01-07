@@ -31,7 +31,7 @@ object State {
         case Some(ActionType.timepicker) => TimePickerState((json \ "selected_time").as[LocalTime])
         case Some(ActionType.multi_users_select) => MultiUsersState((json \ "selected_users").as[Seq[String]].map(SlackUserId(_)))
         case Some(ActionType.static_select) => SelectState((json \ "selected_option" \ "value").as[String])
-        case Some(ActionType.plain_text_input) => TextState((json \ "selected_text" \ "value").as[String])
+        case Some(ActionType.plain_text_input) => TextState((json \ "plain_text_input" \ "value").as[String])
         case Some(ActionType.button) => ButtonState((json \ "value").asOpt[String].getOrElse(""))
         case Some(ActionType.channels_select) => ChannelsState(new SlackChannel {
           override def id: String = (json \ "selected_channel").as[String]
