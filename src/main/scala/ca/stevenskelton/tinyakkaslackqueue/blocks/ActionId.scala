@@ -17,44 +17,45 @@ object ActionId {
   /**
    * Signal task to cancel
    */
-  val TaskCancel = ActionId("task-cancel")
+  val TaskCancel: ActionId = ActionId("task-cancel")
   /**
    * Show modal to create task to run as soon as available
    */
-  val ModalTaskQueue = ActionId("task-queue")
+  val ModalTaskQueue: ActionId = ActionId("task-queue")
   /**
    * Show modal to create task to run at specified time
    */
-  val ModalTaskSchedule = ActionId("task-schedule")
+  val ModalTaskSchedule: ActionId = ActionId("task-schedule")
   /**
    * View scheduled task details in modal
    */
-  val ModalQueuedTaskView = ActionId("modal-task-view")
+  val ModalQueuedTaskView: ActionId = ActionId("modal-task-view")
   /**
    * Redirect to thread for running task's logs
    */
-  val RedirectToTaskThread = ActionId("redirect-task-thread")
+  val RedirectToTaskThread: ActionId = ActionId("redirect-task-thread")
   /**
    * Show list of all previous task executions
    */
-  val HomeTabTaskHistory = ActionId("home-history")
+  val HomeTabTaskHistory: ActionId = ActionId("home-history")
   /**
    * Refresh home tab
    */
-  val HomeTabRefresh = ActionId("home-refresh")
+  val HomeTabRefresh: ActionId = ActionId("home-refresh")
   /**
    * Show configure page in home tab
    */
-  val HomeTabConfiguration = ActionId("home-configure")
+  val HomeTabConfiguration: ActionId = ActionId("home-configure")
 
   /*
    * Create Task Data Fields
    */
-  val DataScheduleDate = ActionId("datepicker")
-  val DataScheduleTime = ActionId("timepicker")
-  val DataNotifyOnComplete = ActionId("multi-users-notify-on-complete")
-  val DataNotifyOnFailure = ActionId("multi-users-notify-on-failure")
-  val DataLogLevel = ActionId("static-select")
-  val DataChannel = ActionId("channels-select")
+  val DataScheduleDate: ActionId = ActionId("datepicker")
+  val DataScheduleTime: ActionId = ActionId("timepicker")
+  val DataNotifyOnComplete: ActionId = ActionId("multi-users-notify-on-complete")
+  val DataNotifyOnFailure: ActionId = ActionId("multi-users-notify-on-failure")
+  val DataLogLevel: ActionId = ActionId("static-select")
+  val DataChannel: ActionId = ActionId("channels-select")
+  val DataMovedExchangeSymbol: ActionId = ActionId("moved-exchange-symbol")
 
 }

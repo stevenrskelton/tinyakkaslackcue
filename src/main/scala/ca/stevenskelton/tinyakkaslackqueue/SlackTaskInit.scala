@@ -2,9 +2,9 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Materializer, UniqueKillSwitch}
-import ca.stevenskelton.tinyakkaslackqueue.api.SlackTaskFactory
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem}
-import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLoggerFactory, SlackResponseException, SlackUpdatePercentCompleteEvent}
+import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackExceptionEvent, SlackLogger, SlackLoggerFactory, SlackResponseException, SlackUpdatePercentCompleteEvent}
 import org.slf4j.Logger
 
 import java.time.ZonedDateTime
@@ -17,7 +17,9 @@ trait SlackTaskInit[T, B] {
 
   self: SlackTaskFactory[T, B] =>
 
-  def create(slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThread, createdBy: SlackUserId, notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId], mainLogger: Logger)
+  def create(slackPayload: SlackPayload, slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThread, createdBy: SlackUserId,
+             notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId], mainLogger: Logger
+            )
             (implicit materializer: Materializer): SlackTask = {
 
     import materializer.executionContext
@@ -31,12 +33,12 @@ trait SlackTaskInit[T, B] {
       var killSwitchOption: Option[UniqueKillSwitch] = None
 
       override def run(): Unit = {
-        implicit val slackClient = slackTaskMeta.slackClient
-        implicit val slackTaskLogger = SlackLoggerFactory.createNewSlackThread(this, mainLogger)
+        implicit val slackClient: SlackClient = slackTaskMeta.slackClient
+        implicit val slackTaskLogger: SlackLogger = SlackLoggerFactory.createNewSlackThread(this, mainLogger)
         runStart = Some(ZonedDateTime.now())
 
         val completeElements = new mutable.HashSet[B]()
-        val (source, itemCount) = sourceAndCount(slackTaskLogger)
+        val (source, itemCount) = sourceAndCount(slackPayload, slackTaskLogger)
         itemCount.foreach {
           i =>
             estimatedCount = i

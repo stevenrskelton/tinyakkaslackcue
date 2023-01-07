@@ -3,6 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 import akka.Done
 import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, DatePickerState, TimePickerState}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 import ca.stevenskelton.tinyakkaslackqueue.logging.SlackResponseException
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
@@ -73,7 +74,14 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
 
   def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
-  def scheduleSlackTask(slackUserId: SlackUserId, slackTaskMeta: SlackTaskMeta, time: Option[ZonedDateTime]): ScheduledSlackTask = {
+  def scheduleSlackTask(slackPayload: SlackPayload): ScheduledSlackTask = {
+    val zoneId = slackClient.userZonedId(slackPayload.user.id)
+    val slackTaskMeta = slackTasks.drop(slackPayload.privateMetadata.get.value.toInt).head.slackTaskMeta.get
+    val time = for {
+      scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
+      scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
+    } yield scheduledDate.atTime(scheduledTime).atZone(zoneId)
+
     val message = time.map {
       zonedDateTime =>
         s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime)}"
@@ -82,9 +90,10 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
     }
     val slackPlaceholder = slackClient.chatPostMessage(message, slackTaskMeta.taskLogChannel)
     val slackTask = slackTaskMeta.factory.create(
+      slackPayload,
       slackTaskMeta,
       taskThread = SlackTaskThread(slackPlaceholder, slackTaskMeta.taskLogChannel),
-      createdBy = slackUserId,
+      createdBy = slackPayload.user.id,
       notifyOnError = Nil,
       notifyOnComplete = Nil,
       mainLogger = logger

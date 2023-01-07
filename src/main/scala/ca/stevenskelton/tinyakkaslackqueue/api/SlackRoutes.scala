@@ -24,14 +24,9 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
 
   import slackFactories.logger
 
-  val PublicRoutes: Route = concat(
-    path("slack" / "event")(slackEventRoute),
-    path("slack" / "action")(slackActionRoute)
-  )
-
   private val unmarshaller = new FromRequestUnmarshaller[(String, JsObject)] {
     override def apply(value: HttpRequest)(implicit ec: ExecutionContext, materializer: Materializer): Future[(String, JsObject)] = {
-      value.entity.getDataBytes().runWith(Sink.fold(ByteString.empty)(_ ++ _), materializer).map {
+      value.entity.getDataBytes.runWith(Sink.fold(ByteString.empty)(_ ++ _), materializer).map {
         byteString =>
           val body = byteString.utf8String
           logger.debug(s"SE:\n```$body```")
@@ -115,12 +110,12 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
             case SlackAction(ActionId.ModalTaskQueue, ButtonState(value)) =>
               Try {
                 val slackTaskInitialized = slackFactories.slackTasks.drop(value.toInt).head
-                new CreateTaskModal(slackPayload.user, slackTaskInitialized.slackTaskMeta.get, None)
+                new CreateTaskModal(slackPayload, slackTaskInitialized.slackTaskMeta.get, None)
               }
             case SlackAction(ActionId.ModalTaskSchedule, ButtonState(value)) =>
               Try {
                 val slackTaskInitialized = slackFactories.slackTasks.drop(value.toInt).head
-                new CreateTaskModal(slackPayload.user, slackTaskInitialized.slackTaskMeta.get, Some(ZonedDateTime.now(zoneId)))
+                new CreateTaskModal(slackPayload, slackTaskInitialized.slackTaskMeta.get, Some(ZonedDateTime.now(zoneId)))
               }
             case SlackAction(ActionId.ModalQueuedTaskView, ButtonState(value)) =>
               val ts = SlackTs(value)
@@ -153,12 +148,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
           }
         case SlackPayload.ViewSubmission if slackPayload.callbackId.contains(CallbackId.Create) =>
           Try {
-            val slackTaskMeta = slackFactories.slackTasks.drop(slackPayload.privateMetadata.get.value.toInt).head.slackTaskMeta.get
-            val zonedDateTimeOpt = for {
-              scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
-              scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
-            } yield scheduledDate.atTime(scheduledTime).atZone(zoneId)
-            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload.user.id, slackTaskMeta, zonedDateTimeOpt)
+            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload)
             new HomeTab(zoneId)
           }
         case x =>
@@ -191,4 +181,8 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
     }
   }
 
+  val PublicRoutes: Route = concat(
+    path("slack" / "event")(slackEventRoute),
+    path("slack" / "action")(slackActionRoute)
+  )
 }

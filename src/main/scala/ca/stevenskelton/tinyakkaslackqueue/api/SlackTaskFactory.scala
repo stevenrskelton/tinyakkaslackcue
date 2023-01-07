@@ -2,7 +2,8 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 
 import akka.stream.UniqueKillSwitch
 import akka.stream.scaladsl.Source
-import ca.stevenskelton.tinyakkaslackqueue.SlackTaskInit
+import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
+import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTaskInit}
 import com.slack.api.model.block.composition.MarkdownTextObject
 import org.slf4j.Logger
 
@@ -38,7 +39,13 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
    * Create a source of T.
    * Use `.async.viaMat(KillSwitches.single)(Keep.right)` to add an kill switch
    */
-  def sourceAndCount: Logger => (Source[T, UniqueKillSwitch], Future[Int])
+  def sourceAndCount: (SlackPayload, Logger) => (Source[T, UniqueKillSwitch], Future[Int])
+
+  /**
+   * Input options completed by user on creation
+   * @return
+   */
+  def taskOptions(slackPayload: SlackPayload): Seq[TaskOptionInput]
 
   /**
    * Helper class to create `name` and `description`

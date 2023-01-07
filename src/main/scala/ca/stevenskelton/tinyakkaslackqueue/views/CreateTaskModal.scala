@@ -2,13 +2,13 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
+import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
 import org.slf4j.event.Level
 import play.api.libs.json.{JsObject, Json}
 
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
-class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime])(implicit slackFactories: SlackFactories) extends SlackModal {
+class CreateTaskModal(slackPayload: SlackPayload, slackTaskMeta: SlackTaskMeta, zonedDateTimeOpt: Option[ZonedDateTime])(implicit slackFactories: SlackFactories) extends SlackModal {
 
   override def toString: String = Json.stringify(blocks)
 
@@ -21,93 +21,19 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
   private val dateTimeBlocks = zonedDateTimeOpt.map {
     zonedDateTime =>
       Seq(
-        Json.obj(
-          "type" -> "input",
-          "element" -> Json.obj(
-            "type" -> "datepicker",
-            "initial_date" -> zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-            "placeholder" -> Json.obj(
-              "type" -> "plain_text",
-              "text" -> "Select a date",
-              "emoji" -> true
-            ),
-            "action_id" -> ActionId.DataScheduleDate.value
-          ),
-          "label" -> Json.obj(
-            "type" -> "plain_text",
-            "text" -> "Start date",
-            "emoji" -> true
-          )
-        ),
-        Json.obj(
-          "type" -> "input",
-          "element" -> Json.obj(
-            "type" -> "timepicker",
-            "initial_time" -> zonedDateTime.format(DateTimeFormatter.ofPattern(" hh: mm")),
-            "placeholder" -> Json.obj(
-              "type" -> "plain_text",
-              "text" -> "Start Time",
-              "emoji" -> true
-            ),
-            "action_id" -> ActionId.DataScheduleTime.value
-          ),
-          "label" -> Json.obj(
-            "type" -> "plain_text",
-            "text" -> "Start time",
-            "emoji" -> true
-          )
-        )
+        TaskOptionInput.dataScheduleDate(zonedDateTime).toJson,
+        TaskOptionInput.dataScheduleTime(zonedDateTime).toJson
       )
   }.getOrElse(Nil)
 
-  private val advancedOptions = Seq(
-    Json.obj("type" -> "divider"),
-    Json.obj(
-      "type" -> "input",
-      "element" -> Json.obj(
-        "type" -> "multi_users_select",
-        "placeholder" -> Json.obj(
-          "type" -> "plain_text",
-          "text" -> "Users",
-          "emoji" -> true
-        ),
-        "initial_users" -> Seq(slackUser.id.value),
-        "action_id" -> ActionId.DataNotifyOnComplete.value
-      ),
-      "label" -> Json.obj(
-        "type" -> "plain_text",
-        "text" -> "Users to notify on task complete",
-        "emoji" -> true
-      )
-    ),
-    Json.obj(
-      "type" -> "input",
-      "element" -> Json.obj(
-        "type" -> "multi_users_select",
-        "placeholder" -> Json.obj(
-          "type" -> "plain_text",
-          "text" -> "Users",
-          "emoji" -> true
-        ),
-        "initial_users" -> Seq(slackUser.id.value),
-        "action_id" -> ActionId.DataNotifyOnFailure.value
-      ),
-      "label" -> Json.obj(
-        "type" -> "plain_text",
-        "text" -> "Users to notify on task failure",
-        "emoji" -> true
-      )
-    )
-  )
-
-  private def logLevelBlock(level: Level): JsObject = Json.obj(
-    "text" -> Json.obj(
-      "type" -> "plain_text",
-      "text" -> s"${logLevelEmoji(level)} ${level.name}",
-      "emoji" -> true
-    ),
-    "value" -> level.name
-  )
+  private def advancedOptions: Seq[JsObject] = {
+    val taskOptions = slackTaskMeta.factory.taskOptions(slackPayload)
+    if(taskOptions.isEmpty) {
+      Nil
+    } else {
+      Json.obj("type" -> "divider") +: taskOptions.map(_.toJson)
+    }
+  }
 
   def blocks: JsObject = Json.obj(
     PrivateMetadata(slackTaskMeta.index.toString).block,
@@ -147,25 +73,7 @@ class CreateTaskModal(slackUser: SlackUser, slackTaskMeta: SlackTaskMeta, zonedD
           )
         )) ++ dateTimeBlocks ++ advancedOptions ++ Seq(
         Json.obj("type" -> "divider"),
-        Json.obj(
-          "type" -> "input",
-          "element" -> Json.obj(
-            "type" -> "static_select",
-            "placeholder" -> Json.obj(
-              "type" -> "plain_text",
-              "text" -> "Select an item",
-              "emoji" -> true
-            ),
-            "options" -> Seq(Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG).map(logLevelBlock),
-            "initial_option" -> logLevelBlock(Level.WARN),
-            "action_id" -> ActionId.DataLogLevel.value
-          ),
-          "label" -> Json.obj(
-            "type" -> "plain_text",
-            "text" -> "Log Level",
-            "emoji" -> true
-          )
-        )
+        TaskOptionInput.dataLogLevel(Level.WARN).toJson
       )
     }
   )
