@@ -13,7 +13,7 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
 
   private class InnerTimerTask(val task: T, onComplete: Try[Done] => Unit) extends TimerTask {
 
-    var (isRunning, isComplete, hasFailed) = (false, false, false)
+    @volatile var (isRunning, isComplete, hasFailed) = (false, false, false)
 
     override def cancel: Boolean = {
       task.cancel

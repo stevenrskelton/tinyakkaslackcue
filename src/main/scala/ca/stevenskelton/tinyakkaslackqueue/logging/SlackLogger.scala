@@ -322,8 +322,7 @@ class SlackLogger(
   private def recordEvent2Args(level: Level, marker: Marker, msg: String, arg1: Any, arg2: Any): Unit = {
     if (arg2.isInstanceOf[Throwable]) {
       recordEvent(level, marker, msg, Seq(arg1), arg2.asInstanceOf[Throwable])
-    }
-    else {
+    } else {
       recordEvent(level, marker, msg, Seq(arg1, arg2), null)
     }
   }
