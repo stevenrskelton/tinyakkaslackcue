@@ -47,7 +47,7 @@ case class TaskHistory(
         "type" -> "section",
         "text" -> Json.obj(
           "type" -> "mrkdwn",
-          "text" -> slackChannelName.fold("-")(_.getName)
+          "text" -> slackChannelName.fold("-")(o => s"#${o.getName}")
         ),
       ),
       Json.obj(
