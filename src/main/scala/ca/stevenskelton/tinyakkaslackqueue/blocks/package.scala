@@ -14,6 +14,7 @@ package object blocks {
   val TaskSuccess = ":white_check_mark:"
   val TaskCancelled = ":no_entry_sign:"
   val TaskScheduled = ":hourglass_flowing_sand:"
+  val TaskRunning = ":eight_spoked_asterisk:"
 
   val logLevelEmoji: Level => String = {
     case Level.INFO => EmojiINFO
