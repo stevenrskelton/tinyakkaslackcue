@@ -28,7 +28,7 @@ class CreateTaskModal(slackPayload: SlackPayload, slackTaskMeta: SlackTaskMeta, 
 
   private def advancedOptions: Seq[JsObject] = {
     val taskOptions = slackTaskMeta.factory.taskOptions(slackPayload)
-    if(taskOptions.isEmpty) {
+    if (taskOptions.isEmpty) {
       Nil
     } else {
       Json.obj("type" -> "divider") +: taskOptions.map(_.toJson)

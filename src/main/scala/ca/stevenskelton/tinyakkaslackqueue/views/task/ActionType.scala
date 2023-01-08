@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.views.task
 
 final case class ActionType(value: String) extends AnyVal
+
 object ActionType {
   val multi_users_select: ActionType = ActionType("multi_users_select")
   val datepicker: ActionType = ActionType("datepicker")

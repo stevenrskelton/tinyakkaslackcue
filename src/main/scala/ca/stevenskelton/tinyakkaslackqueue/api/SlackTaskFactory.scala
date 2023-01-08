@@ -43,6 +43,7 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
 
   /**
    * Input options completed by user on creation
+   *
    * @return
    */
   def taskOptions(slackPayload: SlackPayload): Seq[TaskOptionInput]

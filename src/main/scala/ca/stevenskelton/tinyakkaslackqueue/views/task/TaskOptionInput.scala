@@ -18,14 +18,14 @@ abstract class TaskOptionInput(actionId: ActionId, label: String, text: String) 
     "type" -> "input",
     "element" -> {
       Json.obj(
-      "type" -> actionType.value,
-      "placeholder" -> Json.obj(
-        "type" -> "plain_text",
-        "text" -> text,
-        "emoji" -> true
-      ),
-      "action_id" -> actionId.value
-    ) ++ Json.obj(params: _*)
+        "type" -> actionType.value,
+        "placeholder" -> Json.obj(
+          "type" -> "plain_text",
+          "text" -> text,
+          "emoji" -> true
+        ),
+        "action_id" -> actionId.value
+      ) ++ Json.obj(params: _*)
     },
     "label" -> Json.obj(
       "type" -> "plain_text",
