@@ -2,18 +2,19 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
+import com.slack.api.methods.request.conversations.ConversationsListRequest
+import com.slack.api.model.ConversationType
 import play.api.libs.json.{JsObject, Json}
 
 import java.time.ZoneId
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends SlackHomeTab {
 
   override def toString: String = Json.stringify(blocks)
 
   def blocks: JsObject = {
-
-    val logChannels = slackFactories.factoryLogChannels
-    val channels: Seq[JsObject] = if (logChannels.isEmpty) {
+    val channels: Seq[JsObject] = if (slackFactories.factoryLogChannels.isEmpty) {
       Seq(Json.obj(
         "type" -> "header",
         "text" -> Json.obj(
@@ -23,13 +24,19 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
         )
       ))
     } else {
-      logChannels.zipWithIndex.map {
+      val allChannels = slackFactories.slackClient.allChannels
+
+      slackFactories.factoryLogChannels.zipWithIndex.map {
         case ((slackTaskFactory, taskLogChannelOpt), index) =>
+
+          val exists = allChannels.exists(o => taskLogChannelOpt.exists(_.id == o.getId))
+          val text = if(exists) "Select a channel" else "Missing channel"
+
           val accessory = Json.obj(
             "type" -> "channels_select",
             "placeholder" -> Json.obj(
               "type" -> "plain_text",
-              "text" -> "Select a channel",
+              "text" -> text,
               "emoji" -> true
             ),
             "action_id" -> s"${ActionId.DataChannel}-$index"

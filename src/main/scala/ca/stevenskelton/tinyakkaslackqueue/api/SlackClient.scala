@@ -15,7 +15,7 @@ import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse, ViewsUpdateResponse}
 import com.slack.api.methods.{MethodsClient, SlackApiTextResponse}
-import com.slack.api.model.ConversationType
+import com.slack.api.model.{Conversation, ConversationType}
 import com.typesafe.config.Config
 import org.slf4j.Logger
 import play.api.libs.json.Json
@@ -113,6 +113,8 @@ trait SlackClient {
   def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse
 
   def userZonedId(slackUserId: SlackUserId): ZoneId
+
+  def allChannels: Seq[Conversation]
 }
 
 case class SlackClientImpl(slackConfig: SlackConfig, client: MethodsClient)(implicit logger: Logger) extends SlackClient {
@@ -167,11 +169,15 @@ case class SlackClientImpl(slackConfig: SlackConfig, client: MethodsClient)(impl
   ).getItems.asScala
 
   override def chatPostMessageInThread(text: String, thread: SlackThread): ChatPostMessageResponse = logError("chatPostMessageInThread", text,
-    body => client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(body).threadTs(thread.ts.value))
+    body => client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(body).threadTs(thread.ts.value).replyBroadcast(true))
   )
 
   override def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse = logError("chatPostMessage", text,
-    body => client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(channel.id).text(body))
+    body => {
+      val t = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(channel.id).text(body))
+      chatPostMessageInThread(text, SlackTaskThread.apply(t, TaskLogChannel(channel.id)))
+      t
+    }
   )
 
   override def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse = logError("viewUpdate", slackView.toString,
@@ -193,6 +199,11 @@ case class SlackClientImpl(slackConfig: SlackConfig, client: MethodsClient)(impl
   override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = logError("threadReplies",
     client.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackThread.channel.id).ts(slackThread.ts.value))
   )
+
+  override def allChannels: Seq[Conversation] = {
+    val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
+    conversationsResult.getChannels.asScala.toSeq
+  }
 
   override def userZonedId(slackUserId: SlackUserId): ZoneId = ZoneId.of {
     logError("usersInfo", {
