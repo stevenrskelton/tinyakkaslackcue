@@ -10,5 +10,5 @@ class TaskInputTimepicker(actionId: ActionId, label: String, text: String, defau
   extends TaskOptionInput(actionId, label, text) {
 
   override val actionType: ActionType = ActionType.timepicker
-  override val params: Seq[(String, JsValueWrapper)] = Seq("initial_time" -> default.format(DateTimeFormatter.ofPattern(" hh: mm")))
+  override val params: Seq[(String, JsValueWrapper)] = Seq("initial_time" -> default.format(DateTimeFormatter.ofPattern("hh:mm")))
 }
