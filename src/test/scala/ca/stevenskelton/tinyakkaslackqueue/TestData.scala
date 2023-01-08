@@ -4,9 +4,10 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Keep, Source}
 import akka.stream.{KillSwitches, SystemMaterializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue
-import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
+import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateResponse}
 import com.slack.api.methods.response.conversations.ConversationsRepliesResponse
@@ -26,7 +27,7 @@ object TestData {
 
   implicit val logger = LoggerFactory.getLogger("Specs")
   private val actorSystem = ActorSystem.create()
-  private val materializer = SystemMaterializer(actorSystem).materializer
+  private implicit val materializer = SystemMaterializer(actorSystem).materializer
   implicit val slackClient = new SlackClient {
     override def chatUpdate(text: String, slackMessage: tinyakkaslackqueue.SlackMessage): ChatUpdateResponse = ???
 
@@ -67,19 +68,20 @@ object TestData {
 
     override def distinctBy: Int => Int = identity
 
-    override def sourceAndCount: Logger => (Source[Int, UniqueKillSwitch], Future[Int]) = _ => {
-      val seq = Seq(1, 2, 3)
-      (Source(seq).viaMat(KillSwitches.single)(Keep.right), Future.successful(seq.length))
+    override def sourceAndCount: (SlackPayload, Logger) => (Source[Int, UniqueKillSwitch], Future[Int]) = {
+      case _ =>
+        val seq = Seq(1, 2, 3)
+        (Source(seq).viaMat(KillSwitches.single)(Keep.right), Future.successful(seq.length))
     }
+
+    override def taskOptions(slackPayload: SlackPayload): Seq[TaskOptionInput] = Nil
   }
 
-  implicit val slackTaskFactories = new SlackFactories()(logger, slackClient, materializer) {
-    override protected val factories: List[SlackTaskFactory[_, _]] = List(
-      new TestSlackTaskFactory("One"),
-      new TestSlackTaskFactory("Two"),
-      new TestSlackTaskFactory("Three")
-    )
-  }
+  implicit val slackTaskFactories = SlackFactories.initialize(SlackTaskFactories(
+    new TestSlackTaskFactory("One"),
+    new TestSlackTaskFactory("Two"),
+    new TestSlackTaskFactory("Three")
+  ))
 
   def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackTs, SlackTask].ScheduledTask(
     slackTask,

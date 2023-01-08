@@ -76,7 +76,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
 
   def scheduleSlackTask(slackPayload: SlackPayload): ScheduledSlackTask = {
     val zoneId = slackClient.userZonedId(slackPayload.user.id)
-    val slackTaskMeta = slackTasks.drop(slackPayload.privateMetadata.get.value.toInt).head.slackTaskMeta.get
+    val slackTaskMeta = slackTasks.drop(slackPayload.privateMetadata.map(_.value).flatMap(_.toIntOption).getOrElse(0)).head.slackTaskMeta.get
     val time = for {
       scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
       scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
