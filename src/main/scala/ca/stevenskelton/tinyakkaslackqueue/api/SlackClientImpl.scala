@@ -101,7 +101,8 @@ case class SlackClientImpl(slackConfig: SlackConfig, client: MethodsClient)(impl
 
   override def allChannels: Seq[Conversation] = {
     val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
-    conversationsResult.getChannels.asScala.toSeq
+    slackConfig.allChannels = conversationsResult.getChannels.asScala.toSeq
+    slackConfig.allChannels
   }
 
   override def userZonedId(slackUserId: SlackUserId): ZoneId = ZoneId.of {

@@ -33,6 +33,8 @@ case class TaskHistory(
       ))
     }
 
+    val slackChannelName = slackTaskMeta.slackClient.slackConfig.allChannels.find(_.getId == slackTaskMeta.taskLogChannel.id)
+    val description = slackChannelName.fold(slackTaskMeta.factory.description.getText)(o => s"${o.getName} ${slackTaskMeta.factory.description.getText}")
     Seq(
       Json.obj(
         "type" -> "header",
@@ -46,7 +48,7 @@ case class TaskHistory(
         "type" -> "section",
         "text" -> Json.obj(
           "type" -> "mrkdwn",
-          "text" -> slackTaskMeta.factory.description.getText
+          "text" -> description
         ),
       ),
       Json.obj(
@@ -85,7 +87,7 @@ case class TaskHistory(
 }
 
 object TaskHistory {
-  def homeTabRunningBlocks(running: Option[(ScheduledSlackTask, Option[TaskHistoryItem[CancelHistoryItem]])], zoneId: ZoneId): Seq[JsObject] = {
+  private def homeTabRunningBlocks(running: Option[(ScheduledSlackTask, Option[TaskHistoryItem[CancelHistoryItem]])], zoneId: ZoneId): Seq[JsObject] = {
     running.map {
       case (scheduledTask, cancellingOpt) =>
         val cancellingText = cancellingOpt.fold("")(historyTaskItem => "\nCancelling.")
@@ -146,7 +148,7 @@ object TaskHistory {
     )
   }
 
-  def homeTabPendingBlocks(pending: SortedSet[ScheduledSlackTask], zoneId: ZoneId): Seq[JsObject] = {
+  private def homeTabPendingBlocks(pending: SortedSet[ScheduledSlackTask], zoneId: ZoneId): Seq[JsObject] = {
     if (pending.isEmpty) Nil
     else {
       val pendingObjects = pending.toSeq.map {

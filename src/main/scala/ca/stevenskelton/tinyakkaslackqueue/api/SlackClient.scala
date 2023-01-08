@@ -28,7 +28,8 @@ object SlackClient {
                           botOAuthToken: String,
                           botUserId: SlackUserId,
                           botChannel: BotChannel,
-                          client: MethodsClient
+                          client: MethodsClient,
+                          var allChannels: Seq[Conversation]
                         ) {
 
     def persistConfig(slackFactories: SlackFactories)(implicit logger: Logger): Boolean = {
@@ -74,7 +75,7 @@ object SlackClient {
     val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
     val channels = Option(conversationsResult.getChannels.asScala).getOrElse(Nil)
     channels.find(_.getName == botChannelName).map {
-      botChannel => SlackConfig(botOAuthToken, botUserId, BotChannel(botChannel.getId), client)
+      botChannel => SlackConfig(botOAuthToken, botUserId, BotChannel(botChannel.getId), client, allChannels = channels.toSeq)
     }.getOrElse {
       throw new Exception(s"Could not find bot channel $botChannelName")
     }

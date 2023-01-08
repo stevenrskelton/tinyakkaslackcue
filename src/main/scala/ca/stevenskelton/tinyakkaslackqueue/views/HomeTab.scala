@@ -67,7 +67,9 @@ class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends S
   }
 
   def blocks: JsObject = {
-    if (taskHistories.isEmpty || taskHistories.size != slackFactories.slackTasks.size || hasMissingChannels) new HomeTabConfigure(zoneId).blocks else
+    if (taskHistories.isEmpty || taskHistories.size != slackFactories.slackTasks.size || hasMissingChannels) {
+      new HomeTabConfigure(zoneId).blocks
+    } else {
       Json.obj(
         "type" -> "home",
         "blocks" -> {
@@ -108,5 +110,6 @@ class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends S
           }
         }
       )
+    }
   }
 }
