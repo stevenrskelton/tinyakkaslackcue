@@ -50,12 +50,12 @@ object ActionId {
   /*
    * Create Task Data Fields
    */
-  val DataScheduleDate: ActionId = ActionId("datepicker")
-  val DataScheduleTime: ActionId = ActionId("timepicker")
-  val DataNotifyOnComplete: ActionId = ActionId("multi-users-notify-on-complete")
-  val DataNotifyOnFailure: ActionId = ActionId("multi-users-notify-on-failure")
-  val DataLogLevel: ActionId = ActionId("static-select")
-  val DataChannel: ActionId = ActionId("channels-select")
-  val DataMovedExchangeSymbol: ActionId = ActionId("moved-exchange-symbol")
+  val DataScheduleDate: ActionId = ActionId("data-scheduled-datepicker")
+  val DataScheduleTime: ActionId = ActionId("data-scheduled-timepicker")
+  val DataNotifyOnComplete: ActionId = ActionId("data-multi-users-notify-on-complete")
+  val DataNotifyOnFailure: ActionId = ActionId("data-multi-users-notify-on-failure")
+  val DataLogLevel: ActionId = ActionId("data-log-level")
+  val DataChannel: ActionId = ActionId("data-channel")
+  val DataMovedExchangeSymbol: ActionId = ActionId("data-moved-exchange-symbols")
 
 }

@@ -9,7 +9,7 @@ import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import org.slf4j.Logger
-import org.slf4j.event.LoggingEvent
+import org.slf4j.event.{Level, LoggingEvent}
 
 import java.time.Duration
 import scala.concurrent.ExecutionContext.Implicits._
@@ -26,13 +26,14 @@ object SlackLoggerFactory {
     s"$emoji $text$exception"
   }
 
-  def logToSlack(name: String, slackConfig: SlackClient.SlackConfig, backup: Option[Logger] = None, mirror: Option[Logger] = None)(implicit materializer: Materializer): SlackLogger = {
+  def logToSlack(name: String, logLevel: Level, slackConfig: SlackClient.SlackConfig, backup: Option[Logger] = None, mirror: Option[Logger] = None)(implicit materializer: Materializer): SlackLogger = {
     val text = s"Log for $name"
     val slackThread = slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(text))
     val sink = Sink.foreach[Seq[LoggingEvent]] {
       loggingEvents =>
-        if (loggingEvents.nonEmpty) {
-          val message = loggingEvents.map(logEvent).mkString("\n")
+        val filteredLevelEvents = loggingEvents.filter(_.getLevel.compareTo(logLevel) >= 0)
+        if (filteredLevelEvents.nonEmpty) {
+          val message = filteredLevelEvents.map(logEvent).mkString("\n")
           slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) =>
             r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(message).threadTs(slackThread.getTs)
           )

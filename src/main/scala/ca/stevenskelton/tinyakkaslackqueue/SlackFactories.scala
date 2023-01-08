@@ -4,12 +4,13 @@ import akka.Done
 import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
-import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, DatePickerState, TimePickerState}
+import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, DatePickerState, SelectState, TimePickerState}
 import ca.stevenskelton.tinyakkaslackqueue.logging.SlackResponseException
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.pins.PinsListRequest
 import org.slf4j.Logger
+import org.slf4j.event.Level
 import play.api.libs.json.{JsValue, Json}
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
@@ -92,9 +93,8 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
       slackPayload,
       slackTaskMeta,
       taskThread = SlackTaskThread(slackPlaceholder, slackTaskMeta.taskLogChannel),
-      createdBy = slackPayload.user.id,
-      notifyOnError = Nil,
-      notifyOnComplete = Nil,
+      createdBySlackUser = slackPayload.user.id,
+      logLevel = slackPayload.actionStates.get(ActionId.DataLogLevel).map(o => Level.valueOf(o.asInstanceOf[SelectState].value)).getOrElse(Level.WARN),
       mainLogger = logger
     )
     val scheduledTask = time.fold(interactiveTimer.schedule(slackTask, onComplete(slackTask, _)))(interactiveTimer.schedule(slackTask, _, onComplete(slackTask, _)))

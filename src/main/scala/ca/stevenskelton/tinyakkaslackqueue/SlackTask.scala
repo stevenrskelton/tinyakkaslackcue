@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.timer.IdTask
+import org.slf4j.event.Level
 
 import java.time.ZonedDateTime
 
@@ -11,6 +12,8 @@ trait SlackTask extends IdTask[SlackTs] {
   override def id: SlackTs = slackTaskThread.ts
 
   def meta: SlackTaskMeta
+
+  def logLevel: Level
 
   def createdBy: SlackUserId
 
@@ -28,7 +31,4 @@ trait SlackTask extends IdTask[SlackTs] {
     else 0f
   }
 
-  def notifyOnError: Seq[SlackUserId]
-
-  def notifyOnComplete: Seq[SlackUserId]
 }

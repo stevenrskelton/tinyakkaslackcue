@@ -6,6 +6,7 @@ import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem}
 import ca.stevenskelton.tinyakkaslackqueue.logging._
 import org.slf4j.Logger
+import org.slf4j.event.Level
 
 import java.time.ZonedDateTime
 import scala.collection.mutable
@@ -17,16 +18,15 @@ trait SlackTaskInit[T, B] {
 
   self: SlackTaskFactory[T, B] =>
 
-  def create(slackPayload: SlackPayload, slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThread, createdBy: SlackUserId,
-             notifyOnError: Seq[SlackUserId], notifyOnComplete: Seq[SlackUserId], mainLogger: Logger
+  def create(
+              slackPayload: SlackPayload, slackTaskMeta: SlackTaskMeta, taskThread: SlackTaskThread,
+              createdBySlackUser: SlackUserId, logLevel: Level, mainLogger: Logger
             )
             (implicit materializer: Materializer): SlackTask = {
 
     import materializer.executionContext
 
-    val lcreatedBy = createdBy
-    val lnotifyOnError = notifyOnError
-    val lnotifiyOnComplete = notifyOnComplete
+    val pLogLevel = logLevel
 
     new SlackTask {
 
@@ -73,15 +73,13 @@ trait SlackTaskInit[T, B] {
         super.cancel
       }
 
-      override def slackTaskThread: SlackTaskThread = taskThread
+      override val slackTaskThread: SlackTaskThread = taskThread
 
-      override def meta: SlackTaskMeta = slackTaskMeta
+      override val meta: SlackTaskMeta = slackTaskMeta
 
-      override def createdBy: SlackUserId = lcreatedBy
+      override val createdBy: SlackUserId = createdBySlackUser
 
-      override def notifyOnError: Seq[SlackUserId] = lnotifyOnError
-
-      override def notifyOnComplete: Seq[SlackUserId] = lnotifiyOnComplete
+      override val logLevel: Level = pLogLevel
     }
   }
 
