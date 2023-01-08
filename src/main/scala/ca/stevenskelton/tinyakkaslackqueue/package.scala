@@ -45,7 +45,8 @@ package object tinyakkaslackqueue {
 
   object SlackTaskThread {
     def apply(chatPostMessageResponse: ChatPostMessageResponse, taskLogChannel: TaskLogChannel): SlackTaskThread = {
-      SlackTaskThread(SlackTs(chatPostMessageResponse.getTs), taskLogChannel)
+      val threadTs = Option(chatPostMessageResponse.getMessage.getThreadTs).getOrElse(chatPostMessageResponse.getTs)
+      SlackTaskThread(SlackTs(threadTs), taskLogChannel)
     }
   }
 
