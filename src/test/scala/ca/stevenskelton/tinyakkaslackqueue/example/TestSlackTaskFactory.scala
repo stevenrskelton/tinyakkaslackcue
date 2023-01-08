@@ -21,8 +21,6 @@ class TestSlackTaskFactory(duration: FiniteDuration, updateInterval: FiniteDurat
 
   override def sourceAndCount: (SlackPayload, Logger) => (Source[Int, UniqueKillSwitch], Future[Int]) = {
     case (payload, logger) =>
-      implicit val log = logger
-
       val totalSeconds = duration.toSeconds.toInt
       val totalCount = Future.successful(totalSeconds)
       val start = System.currentTimeMillis

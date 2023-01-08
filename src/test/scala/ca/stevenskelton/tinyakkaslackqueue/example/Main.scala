@@ -6,11 +6,11 @@ import akka.http.scaladsl.model.StatusCodes.NotFound
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream.SystemMaterializer
+import akka.stream.{Materializer, SystemMaterializer}
 import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.api._
-import ca.stevenskelton.tinyakkaslackqueue.logging.SlackLoggerFactory
-import com.typesafe.config.ConfigFactory
+import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackLogger, SlackLoggerFactory}
+import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits._
@@ -19,18 +19,18 @@ import scala.concurrent.duration.DurationInt
 
 object Main extends App {
 
-  private implicit val config = ConfigFactory.defaultApplication().resolve()
+  private implicit val config: Config = ConfigFactory.defaultApplication().resolve()
 
-  private implicit val httpActorSystem = ActorSystem("HTTPServer", config)
+  private implicit val httpActorSystem: ActorSystem = ActorSystem("HTTPServer", config)
 
   val slackConfig = SlackClient.initialize(config)
 
   val backupLogger = LoggerFactory.getLogger("HTTPServer")
-  private implicit val httpLogger = SlackLoggerFactory.logToSlack(backupLogger.getName, slackConfig, backup = Some(backupLogger), mirror = Some(backupLogger))(SystemMaterializer(httpActorSystem).materializer)
+  private implicit val httpLogger: SlackLogger = SlackLoggerFactory.logToSlack(backupLogger.getName, slackConfig, backup = Some(backupLogger), mirror = Some(backupLogger))(SystemMaterializer(httpActorSystem).materializer)
 
   implicit val slackClient: SlackClient = SlackClientImpl(slackConfig, slackConfig.client)
 
-  implicit val materializer = SystemMaterializer(httpActorSystem).materializer
+  implicit val materializer: Materializer = SystemMaterializer(httpActorSystem).materializer
   val host = config.getString("tinyakkaslackqueue.env.host")
   val port = config.getInt("tinyakkaslackqueue.env.http.port")
 
@@ -38,7 +38,7 @@ object Main extends App {
     new TestSlackTaskFactory(30.seconds)
   )
 
-  implicit val slackFactories = SlackFactories.initialize(slackTaskFactories)
+  implicit val slackFactories: SlackFactories = SlackFactories.initialize(slackTaskFactories)
   //  slackTaskFactories.slackTaskMetaFactories
 
   val slackRoutes = new SlackRoutes()

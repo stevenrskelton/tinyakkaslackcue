@@ -34,7 +34,6 @@ case class TaskHistory(
     }
 
     val slackChannelName = slackTaskMeta.slackClient.slackConfig.allChannels.find(_.getId == slackTaskMeta.taskLogChannel.id)
-    val description = slackChannelName.fold(slackTaskMeta.factory.description.getText)(o => s"${o.getName} ${slackTaskMeta.factory.description.getText}")
     Seq(
       Json.obj(
         "type" -> "header",
@@ -48,7 +47,14 @@ case class TaskHistory(
         "type" -> "section",
         "text" -> Json.obj(
           "type" -> "mrkdwn",
-          "text" -> description
+          "text" -> slackChannelName.fold("-")(_.getName)
+        ),
+      ),
+      Json.obj(
+        "type" -> "section",
+        "text" -> Json.obj(
+          "type" -> "mrkdwn",
+          "text" -> slackTaskMeta.factory.description.getText
         ),
       ),
       Json.obj(
