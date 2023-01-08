@@ -71,7 +71,6 @@ class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends S
       Json.obj(
         "type" -> "home",
         "blocks" -> {
-
           Seq(
             Json.obj(
               "type" -> "actions",
