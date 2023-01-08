@@ -2,12 +2,9 @@ package ca.stevenskelton.tinyakkaslackqueue.views
 
 import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, CallbackId}
-import com.slack.api.methods.request.conversations.ConversationsListRequest
-import com.slack.api.model.ConversationType
 import play.api.libs.json.{JsObject, Json}
 
 import java.time.ZoneId
-import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 
 class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends SlackHomeTab {
 
@@ -30,7 +27,13 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
         case ((slackTaskFactory, taskLogChannelOpt), index) =>
 
           val exists = allChannels.exists(o => taskLogChannelOpt.exists(_.id == o.getId))
-          val text = if(exists) "Select a channel" else "Missing channel"
+          val text = if (taskLogChannelOpt.isEmpty) {
+            "Select a channel"
+          } else if (exists) {
+            "Change channel"
+          } else {
+            ":red_circle: Missing channel"
+          }
 
           val accessory = Json.obj(
             "type" -> "channels_select",

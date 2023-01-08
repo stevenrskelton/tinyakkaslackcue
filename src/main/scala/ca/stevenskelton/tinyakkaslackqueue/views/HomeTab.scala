@@ -63,7 +63,7 @@ class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends S
 
   private def hasMissingChannels: Boolean = {
     val allChannels = slackFactories.slackClient.allChannels
-    slackFactories.factoryLogChannels.exists(_._2.fold(true)(id => allChannels.forall(_.getId != id)))
+    slackFactories.factoryLogChannels.exists(_._2.fold(true)(id => allChannels.forall(_.getId != id.id)))
   }
 
   def blocks: JsObject = {
