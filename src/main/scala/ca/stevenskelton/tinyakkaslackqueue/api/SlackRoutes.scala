@@ -148,7 +148,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
           }
         case SlackPayload.ViewSubmission if slackPayload.callbackId.contains(CallbackId.Create) =>
           Try {
-            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload)
+            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload, zoneId)
             new HomeTab(zoneId)
           }
         case x =>

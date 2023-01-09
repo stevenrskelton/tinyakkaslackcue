@@ -13,6 +13,7 @@ import org.slf4j.Logger
 import org.slf4j.event.Level
 import play.api.libs.json.{JsValue, Json}
 
+import java.time.ZoneId
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Failure, Success, Try}
 
@@ -74,7 +75,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
 
   def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
-  def scheduleSlackTask(slackPayload: SlackPayload): ScheduledSlackTask = {
+  def scheduleSlackTask(slackPayload: SlackPayload, zoneId: ZoneId): ScheduledSlackTask = {
     val zoneId = slackClient.userZonedId(slackPayload.user.id)
     val slackTaskMeta = slackTasks.drop(slackPayload.privateMetadata.map(_.value).flatMap(_.toIntOption).getOrElse(0)).head.slackTaskMeta.get
     val time = for {
@@ -84,7 +85,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit
 
     val message = time.map {
       zonedDateTime =>
-        s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime)}"
+        s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime, zoneId)}"
     }.getOrElse {
       s"Queued task *${slackTaskMeta.factory.name.getText}*"
     }

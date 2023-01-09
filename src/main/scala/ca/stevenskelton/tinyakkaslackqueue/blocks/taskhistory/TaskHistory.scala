@@ -110,7 +110,7 @@ object TaskHistory {
             "fields" -> Seq(
               Json.obj(
                 "type" -> "mrkdwn",
-                "text" -> s"*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}"
+                "text" -> s"*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart, zoneId)}"
               )
             ),
           ),
@@ -133,7 +133,7 @@ object TaskHistory {
       "type" -> "section",
       "text" -> Json.obj(
         "type" -> "mrkdwn",
-        "text" -> s"${taskHistoryItem.action.icon} *${taskHistoryItem.action.action.toUpperCase}* ${DateUtils.humanReadable(taskHistoryItem.time.withZoneSameInstant(zoneId))}"
+        "text" -> s"${taskHistoryItem.action.icon} *${taskHistoryItem.action.action.toUpperCase}* ${DateUtils.humanReadable(taskHistoryItem.time, zoneId)}"
       ),
       "accessory" -> HomeTab.viewLogsButton(taskHistoryItem.taskId)
     )
@@ -163,7 +163,7 @@ object TaskHistory {
             "type" -> "section",
             "text" -> Json.obj(
               "type" -> "mrkdwn",
-              "text" -> s":watch: *Scheduled:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}"
+              "text" -> s":watch: *Scheduled:* ${DateUtils.humanReadable(scheduledTask.executionStart, zoneId)}"
             ),
             "accessory" -> Json.obj(
               "type" -> "button",

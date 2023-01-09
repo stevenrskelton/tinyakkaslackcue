@@ -20,8 +20,10 @@ object DateUtils {
     }
   }
 
-  def humanReadable(zonedDateTime: ZonedDateTime): String = {
-    zonedDateTime.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+  private val formatter = DateTimeFormatter.ofPattern("EEE, MMM dd hh:mmaa")
+
+  def humanReadable(zonedDateTime: ZonedDateTime, zoneId: ZoneId): String = {
+    zonedDateTime.withZoneSameInstant(zoneId).format(formatter)
   }
 
 }

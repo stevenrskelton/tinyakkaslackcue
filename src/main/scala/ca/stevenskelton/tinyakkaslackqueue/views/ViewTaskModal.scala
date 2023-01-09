@@ -18,7 +18,7 @@ class ViewTaskModal(zoneId: ZoneId, scheduledTasks: Seq[ScheduledSlackTask], ind
         "type" -> "section",
         "text" -> Json.obj(
           "type" -> "plain_text",
-          "text" -> s"*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}"
+          "text" -> s"*Started:* ${DateUtils.humanReadable(scheduledTask.executionStart, zoneId)}"
         )
       )
     } else {
@@ -27,7 +27,7 @@ class ViewTaskModal(zoneId: ZoneId, scheduledTasks: Seq[ScheduledSlackTask], ind
         "type" -> "section",
         "text" -> Json.obj(
           "type" -> "mrkdwn",
-          "text" -> s"*Scheduled for:* ${DateUtils.humanReadable(scheduledTask.executionStart.withZoneSameInstant(zoneId))}\n*Queue Position*: ${if (index == 0 || (isQueueExecuting && index == 1)) "Next" else (index + 1).toString}"
+          "text" -> s"*Scheduled for:* ${DateUtils.humanReadable(scheduledTask.executionStart, zoneId)}\n*Queue Position*: ${if (index == 0 || (isQueueExecuting && index == 1)) "Next" else (index + 1).toString}"
         )
       )
     }
