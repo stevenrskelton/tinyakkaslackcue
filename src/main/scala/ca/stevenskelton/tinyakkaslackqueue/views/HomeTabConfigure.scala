@@ -6,20 +6,45 @@ import play.api.libs.json.{JsObject, Json}
 
 import java.time.ZoneId
 
+object HomeTabConfigure {
+
+  private val NoTasksBlocks = Seq(Json.obj(
+    "type" -> "header",
+    "text" -> Json.obj(
+      "type" -> "plain_text",
+      "text" -> "No Tasks Found. Override `SlackFactories.factories`",
+      "emoji" -> true
+    )
+  ))
+
+  private val HeaderBlocks = Seq(
+    Json.obj(
+      "type" -> "header",
+      "text" -> Json.obj(
+        "type" -> "plain_text",
+        "text" -> ":card_index: Tiny Akka Slack Cue Settings",
+        "emoji" -> true
+      )
+    ),
+    Json.obj(
+      "type" -> "section",
+      "fields" -> Seq(Json.obj(
+        "type" -> "mrkdwn",
+        "text" -> "Warning: Changing task channels will reset any previous history for that task."
+      ))
+    ),
+    Json.obj("type" -> "divider")
+  )
+
+}
+
 class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends SlackHomeTab {
 
   override def toString: String = Json.stringify(blocks)
 
   def blocks: JsObject = {
     val channels: Seq[JsObject] = if (slackFactories.factoryLogChannels.isEmpty) {
-      Seq(Json.obj(
-        "type" -> "header",
-        "text" -> Json.obj(
-          "type" -> "plain_text",
-          "text" -> "No Tasks Found. Override `SlackFactories.factories`",
-          "emoji" -> true
-        )
-      ))
+      HomeTabConfigure.NoTasksBlocks
     } else {
       val allChannels = slackFactories.slackClient.allChannels
 
@@ -60,29 +85,10 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
           )
       }
     }
-    val blocks1 = Seq(
-      Json.obj(
-        "type" -> "header",
-        "text" -> Json.obj(
-          "type" -> "plain_text",
-          "text" -> ":card_index: Tiny Akka Slack Cue Settings",
-          "emoji" -> true
-        )
-      ),
-      Json.obj(
-        "type" -> "section",
-        "fields" -> Seq(Json.obj(
-          "type" -> "mrkdwn",
-          "text" -> "Warning: Changing task channels will reset any previous history for that task."
-        ))
-      ),
-      Json.obj("type" -> "divider")
-    ) ++ channels ++ HomeTabTaskHistory.BackToFooterBlocks
-
     Json.obj(
       "type" -> "home",
       CallbackId.HomeTabConfigure.block,
-      "blocks" -> blocks1
+      "blocks" -> { HomeTabConfigure.HeaderBlocks ++ channels :+ HomeTabTaskHistory.BackToFooterBlocks }
     )
   }
 }

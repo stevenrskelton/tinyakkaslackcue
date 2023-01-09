@@ -7,19 +7,14 @@ import play.api.libs.json.{JsObject, Json}
 import java.time.ZoneId
 
 object HomeTabTaskHistory {
-  val BackToFooterBlocks: Seq[JsObject] = Seq(
-    Json.obj(
-      "type" -> "divider"
-    ),
-    Json.obj(
-      "type" -> "actions",
-      "elements" -> Seq(Json.obj(
-        "type" -> "button",
-        "text" -> Json.obj("type" -> "plain_text", "text" -> ":back: All Tasks", "emoji" -> true),
-        "style" -> "primary",
-        "action_id" -> ActionId.HomeTabRefresh.value
-      ))
-    )
+  val BackToFooterBlocks: JsObject = Json.obj(
+    "type" -> "actions",
+    "elements" -> Seq(Json.obj(
+      "type" -> "button",
+      "text" -> Json.obj("type" -> "plain_text", "text" -> ":back: All Tasks", "emoji" -> true),
+      "style" -> "primary",
+      "action_id" -> ActionId.HomeTabRefresh.value
+    ))
   )
 }
 
@@ -71,7 +66,7 @@ class HomeTabTaskHistory(zoneId: ZoneId, taskHistory: TaskHistory) extends Slack
           Json.obj(
             "type" -> "divider"
           )
-        ) ++ list ++ HomeTabTaskHistory.BackToFooterBlocks
+        ) ++ list :+ HomeTabTaskHistory.BackToFooterBlocks
       }
     )
   }
