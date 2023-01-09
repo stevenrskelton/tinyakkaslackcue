@@ -9,7 +9,7 @@ import play.api.libs.json.{JsObject, Json}
 import java.time.ZonedDateTime
 
 //https://api.slack.com/reference/block-kit/block-elements
-abstract class TaskOptionInput(actionId: ActionId, label: String, text: String) {
+abstract class TaskOptionInput(val actionId: ActionId, val label: String, text: String) {
 
   val actionType: ActionType
   val params: Seq[(String, JsValueWrapper)]

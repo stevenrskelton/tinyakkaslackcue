@@ -8,19 +8,33 @@ import java.time.{LocalDate, LocalTime}
 
 trait State {}
 
-case class DatePickerState(value: LocalDate) extends State
+case class DatePickerState(value: LocalDate) extends State {
+  override def toString: String = value.toString
+}
 
-case class TimePickerState(value: LocalTime) extends State
+case class TimePickerState(value: LocalTime) extends State {
+  override def toString: String = value.toString
+}
 
-case class MultiUsersState(users: Seq[SlackUserId]) extends State
+case class MultiUsersState(users: Seq[SlackUserId]) extends State {
+  override def toString: String = users.map(_.value).mkString(",")
+}
 
-case class SelectState(value: String) extends State
+case class SelectState(value: String) extends State {
+  override def toString: String = value
+}
 
-case class TextState(value: String) extends State
+case class TextState(value: String) extends State {
+  override def toString: String = value
+}
 
-case class ButtonState(value: String) extends State
+case class ButtonState(value: String) extends State {
+  override def toString: String = value
+}
 
-case class ChannelsState(value: SlackChannel) extends State
+case class ChannelsState(value: SlackChannel) extends State {
+  override def toString: String = value.id
+}
 
 object State {
 

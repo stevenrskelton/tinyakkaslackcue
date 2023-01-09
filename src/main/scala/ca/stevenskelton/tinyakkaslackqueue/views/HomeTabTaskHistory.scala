@@ -26,8 +26,9 @@ class HomeTabTaskHistory(zoneId: ZoneId, taskHistory: TaskHistory) extends Slack
     val blocks1 = taskHistory.executed.toSeq.reverse.flatMap {
       obj =>
         val outcomeBlocks = TaskHistory.taskHistoryOutcomeBlocks(obj, zoneId)
-        if (outcomeBlocks.isEmpty) Nil
-        else {
+        if (outcomeBlocks.isEmpty) {
+          Nil
+        } else {
           outcomeBlocks :+ Json.obj("type" -> "divider")
         }
     }
@@ -47,7 +48,7 @@ class HomeTabTaskHistory(zoneId: ZoneId, taskHistory: TaskHistory) extends Slack
     Json.obj(
       "type" -> "home",
       "blocks" -> {
-        Seq(
+        Seq(HomeTabTaskHistory.BackToFooterBlocks) ++ Seq(
           Json.obj(
             "type" -> "header",
             "text" -> Json.obj(

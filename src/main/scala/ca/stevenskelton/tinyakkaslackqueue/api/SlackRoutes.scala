@@ -52,7 +52,7 @@ class SlackRoutes(implicit slackFactories: SlackFactories) {
     slackFactories.cancelScheduledTask(ts).map {
       cancelledTask =>
         logger.error("Cancelled Task")
-        val view = new CancelTaskModal(cancelledTask)
+        val view = new CancelTaskModal(cancelledTask, slackPayload)
         val update = slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
         if (!update.isOk) {
           logger.error(view.toString)
