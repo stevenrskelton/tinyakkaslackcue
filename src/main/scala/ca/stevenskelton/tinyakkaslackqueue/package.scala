@@ -36,8 +36,14 @@ package object tinyakkaslackqueue {
 
     def create(slackTaskFactory: SlackTaskFactory[_, _])(implicit slackClient: SlackClient): Either[SlackQueueThread, String] = {
       val message = s"History: ${slackTaskFactory.name.getText}"
-      val post = slackClient.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id).text(message))
-      if (post.isOk) Left(SlackQueueThread(SlackTs(post.getTs), slackClient.slackConfig.botChannel)) else Right(post.getError)
+      slackClient.slackConfig.clientOption.map {
+        client =>
+          val post = client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id).text(message))
+          if (post.isOk) Left(SlackQueueThread(SlackTs(post.getTs), slackClient.slackConfig.botChannel)) else Right(post.getError)
+      }.getOrElse {
+        Right("Could not initialize Slack client")
+      }
+
     }
   }
 

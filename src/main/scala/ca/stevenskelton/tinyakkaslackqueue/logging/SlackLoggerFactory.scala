@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.logging
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{Materializer, OverflowStrategy}
 import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.api.SlackClient
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackConfig}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{TaskCancelled, TaskFailure, TaskRunning, TaskSuccess, logLevelEmoji}
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
@@ -26,17 +26,25 @@ object SlackLoggerFactory {
     s"$emoji $text$exception"
   }
 
-  def logToSlack(name: String, logLevel: Level, slackConfig: SlackClient.SlackConfig, backup: Option[Logger] = None, mirror: Option[Logger] = None)(implicit materializer: Materializer): SlackLogger = {
+  def logToSlack(name: String, logLevel: Level, slackConfig: SlackConfig, backup: Option[Logger] = None, mirror: Option[Logger] = None)(implicit materializer: Materializer): SlackLogger = {
     val text = s"Log for $name"
-    val slackThread = slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(text))
+
+    def initSlackThread = slackConfig.clientOption.map { client => client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(text)) }
+
+    val slackThreadOption = initSlackThread
+
     val sink = Sink.foreach[Seq[LoggingEvent]] {
       loggingEvents =>
         val filteredLevelEvents = loggingEvents.filter(_.getLevel.compareTo(logLevel) >= 0)
         if (filteredLevelEvents.nonEmpty) {
           val message = filteredLevelEvents.map(logEvent).mkString("\n")
-          slackConfig.client.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) =>
-            r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(message).threadTs(slackThread.getTs)
-          )
+
+          slackThreadOption.orElse(initSlackThread).foreach {
+            slackThread =>
+              slackConfig.clientOption.foreach(_.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) =>
+                r.token(slackConfig.botOAuthToken).channel(slackConfig.botChannel.id).text(message).threadTs(slackThread.getTs)
+              ))
+          }
         }
     }
     val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()

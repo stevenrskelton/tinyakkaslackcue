@@ -20,9 +20,11 @@ import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class SlackRoutes(implicit slackFactories: SlackFactories) {
+class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClient)(implicit logger: Logger, materializer: Materializer) {
 
-  import slackFactories.logger
+  implicit lazy val slackFactories: SlackFactories = {
+    SlackFactories.initialize(slackTaskFactories)(logger, slackClient, materializer)
+  }
 
   private val unmarshaller = new FromRequestUnmarshaller[(String, JsObject)] {
     override def apply(value: HttpRequest)(implicit ec: ExecutionContext, materializer: Materializer): Future[(String, JsObject)] = {
