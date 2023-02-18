@@ -61,6 +61,10 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
     toScheduledTask(allTimerTasks.asScala.find(_.task == task).get)
   }
 
+  def scheduleSystemTask(task: TimerTask, time: ZonedDateTime): Unit = {
+    timer.schedule(task, Date.from(time.toInstant))
+  }
+
   def schedule(task: T, time: ZonedDateTime, onComplete: Try[Done] => Unit): ScheduledTask = {
     val innerTimerTask = new InnerTimerTask(task, onComplete)
     allTimerTasks.add(innerTimerTask)

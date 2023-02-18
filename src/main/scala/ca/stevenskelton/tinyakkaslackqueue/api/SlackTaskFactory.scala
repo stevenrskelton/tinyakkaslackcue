@@ -5,8 +5,10 @@ import akka.stream.scaladsl.Source
 import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
 import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTaskInit}
 import com.slack.api.model.block.composition.MarkdownTextObject
+import com.typesafe.config.Config
 import org.slf4j.Logger
 
+import java.time.{LocalDateTime, ZonedDateTime}
 import scala.concurrent.Future
 
 /**
@@ -52,6 +54,11 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
    * Helper class to create `name` and `description`
    */
   protected def createMarkdownText(value: String): MarkdownTextObject = MarkdownTextObject.builder().text(value).build()
+
+  /**
+   * Returns the next scheduled execution of this event, if applicable
+   */
+  def nextRunDate(config: Config): Option[ZonedDateTime] = None
 
 }
 

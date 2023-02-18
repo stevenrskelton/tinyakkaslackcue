@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.Done
 import akka.stream.Materializer
+import ca.stevenskelton.tinyakkaslackqueue.SlackPayload.SlackPayloadType
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, DatePickerState, SelectState, TimePickerState}
@@ -9,11 +10,14 @@ import ca.stevenskelton.tinyakkaslackqueue.logging.SlackResponseException
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.pins.PinsListRequest
+import com.typesafe.config.Config
 import org.slf4j.Logger
 import org.slf4j.event.Level
 import play.api.libs.json.{JsValue, Json}
 
-import java.time.ZoneId
+import java.time.{ZoneId, ZonedDateTime}
+import java.util.TimerTask
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Failure, Success, Try}
 
@@ -21,7 +25,7 @@ object SlackFactories {
 
   val ConfigurationThreadHeader = "Configuration\n"
 
-  def initialize(slackTaskFactories: SlackTaskFactories)(implicit logger: Logger, slackClient: SlackClient, materializer: Materializer): SlackFactories = {
+  def initialize(slackTaskFactories: SlackTaskFactories, config: Config)(implicit logger: Logger, slackClient: SlackClient, materializer: Materializer): SlackFactories = {
     val botUserId = slackClient.slackConfig.botUserId.value
     val pinnedMessages = Option(slackClient.slackConfig.clientOption.get.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId)).getOrElse(Nil)
     val pinnedConfig = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader))
@@ -45,15 +49,44 @@ object SlackFactories {
     }.getOrElse {
       slackTaskFactories.factories.map(SlackTaskInitialized(_, None))
     }
-    new SlackFactories(slackTasksInitialized)
+    new SlackFactories(slackTasksInitialized, config)
   }
 }
 
 case class SlackTaskInitialized(slackTaskFactory: SlackTaskFactory[_, _], var slackTaskMeta: Option[SlackTaskMeta])
 
-class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized])(implicit val logger: Logger, val slackClient: SlackClient, materializer: Materializer) {
+class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: Config)(implicit val logger: Logger, val slackClient: SlackClient, materializer: Materializer) {
 
   private val interactiveTimer = new InteractiveJavaUtilTimer[SlackTs, SlackTask]()
+
+  private def queuePollingForScheduled(zonedDateTime: ZonedDateTime): Unit = {
+    interactiveTimer.scheduleSystemTask(new TimerTask {
+      override def run(): Unit = {
+        queuePollingForScheduled(zonedDateTime.plusMinutes(10))
+
+        val alreadyScheduled = listScheduledTasks
+        slackTasks.foreach {
+          slackTaskInitialized =>
+            slackTaskInitialized.slackTaskFactory.nextRunDate(config).foreach {
+              nextScheduledRun =>
+                if (!alreadyScheduled.exists(task => slackTaskInitialized.slackTaskMeta.contains(task.task.meta) && task.executionStart == nextScheduledRun)) {
+                  val actionStates = Map(
+                    ActionId.DataScheduleDate -> DatePickerState(nextScheduledRun.toLocalDate),
+                    ActionId.DataScheduleTime -> TimePickerState(nextScheduledRun.toLocalTime)
+                  )
+                  val slackPayload = SlackPayload(
+                    payloadType = SlackPayload.BlockActions, viewId = "", user = SlackUser.System, actions = Nil, triggerId = SlackTriggerId.Empty,
+                    privateMetadata = None, callbackId = None, actionStates
+
+                  )
+                  scheduleSlackTask(slackPayload, ZoneId.systemDefault())
+                }
+            }
+        }
+      }
+    }, zonedDateTime)
+  }
+  queuePollingForScheduled(ZonedDateTime.now)
 
   def onComplete(slackTask: SlackTask, result: Try[Done]): Unit = {
     result match {

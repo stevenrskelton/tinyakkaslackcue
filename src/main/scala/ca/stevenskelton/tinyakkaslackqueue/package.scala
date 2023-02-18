@@ -82,6 +82,8 @@ package object tinyakkaslackqueue {
   case class SlackUser(id: SlackUserId, username: String, name: String, teamId: String)
 
   object SlackUser {
+    val System = SlackUser(SlackUserId(""), "System", "System", "")
+
     implicit val rd: Reads[SlackUser] = (
       (__ \ "id").read[String].map(SlackUserId(_)) and
         (__ \ "username").read[String] and
@@ -94,6 +96,10 @@ package object tinyakkaslackqueue {
   case class SlackAction(actionId: ActionId, state: State)
 
   case class SlackTriggerId(value: String) extends AnyVal
+
+  object SlackTriggerId {
+    val Empty = SlackTriggerId("")
+  }
 
   object SlackAction {
     implicit val rd: Reads[SlackAction] = ((__ \ "action_id").read[String].map(ActionId(_)) and __.read[State])(SlackAction.apply _)

@@ -14,6 +14,7 @@ import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
 import ca.stevenskelton.tinyakkaslackqueue.views._
 import com.slack.api.methods.SlackApiTextResponse
+import com.typesafe.config.Config
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
 
@@ -21,10 +22,10 @@ import java.time.ZonedDateTime
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClient)(implicit logger: Logger, materializer: Materializer) {
+class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClient, config: Config)(implicit logger: Logger, materializer: Materializer) {
 
   implicit lazy val slackFactories: SlackFactories = {
-    SlackFactories.initialize(slackTaskFactories)(logger, slackClient, materializer)
+    SlackFactories.initialize(slackTaskFactories, config)(logger, slackClient, materializer)
   }
 
   private val unmarshaller = new FromRequestUnmarshaller[(String, JsObject)] {
