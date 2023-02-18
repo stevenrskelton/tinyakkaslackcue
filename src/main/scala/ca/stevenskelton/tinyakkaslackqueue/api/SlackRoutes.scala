@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
 import akka.Done
+import akka.http.scaladsl.coding.Coders
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.server.Directives._
@@ -183,8 +184,11 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
     }
   }
 
-  val PublicRoutes: Route = concat(
-    path("slack" / "event")(slackEventRoute),
-    path("slack" / "action")(slackActionRoute)
-  )
+  val PublicRoutes: Route = encodeResponseWith(Coders.Gzip) {
+    concat(
+      path("slack" / "event")(slackEventRoute),
+      path("slack" / "action")(slackActionRoute)
+    )
+  }
+
 }
