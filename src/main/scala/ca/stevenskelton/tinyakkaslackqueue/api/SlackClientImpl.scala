@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
+import com.slack.api.methods.SlackApiTextResponse
 import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateRequest}
 import com.slack.api.methods.request.conversations.{ConversationsListRequest, ConversationsRepliesRequest}
 import com.slack.api.methods.request.pins.{PinsAddRequest, PinsListRequest, PinsRemoveRequest}
@@ -12,7 +13,6 @@ import com.slack.api.methods.response.conversations.ConversationsRepliesResponse
 import com.slack.api.methods.response.pins.PinsListResponse.MessageItem
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse, ViewsUpdateResponse}
-import com.slack.api.methods.{MethodsClient, SlackApiTextResponse}
 import com.slack.api.model.{Conversation, ConversationType}
 import org.slf4j.Logger
 
@@ -51,63 +51,69 @@ case class SlackClientImpl(slackConfig: SlackConfig)(implicit logger: Logger) ex
   }
 
   override def chatUpdate(text: String, slackMessage: SlackMessage): ChatUpdateResponse = logError("chatUpdate", text,
-    body =>  slackConfig.clientOption.get.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).ts(slackMessage.ts.value).text(body))
+    body => slackConfig.clientOption.get.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).ts(slackMessage.ts.value).text(body))
   )
 
   override def chatUpdateBlocks(blocks: SlackBlocksAsString, slackMessage: SlackMessage): ChatUpdateResponse = logError("chatUpdateBlocks", blocks.value,
-    body =>  slackConfig.clientOption.get.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).ts(slackMessage.ts.value).blocksAsString(body))
+    body => slackConfig.clientOption.get.chatUpdate((r: ChatUpdateRequest.ChatUpdateRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).ts(slackMessage.ts.value).blocksAsString(body))
   )
 
   override def pinsAdd(slackMessage: SlackMessage): PinsAddResponse = logError("pinsAdd",
-     slackConfig.clientOption.get.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).timestamp(slackMessage.ts.value))
+    slackConfig.clientOption.get.pinsAdd((r: PinsAddRequest.PinsAddRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).timestamp(slackMessage.ts.value))
   )
 
   override def pinsRemove(slackMessage: SlackMessage): PinsRemoveResponse = logError("pinsRemove",
-     slackConfig.clientOption.get.pinsRemove((r: PinsRemoveRequest.PinsRemoveRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).timestamp(slackMessage.ts.value))
+    slackConfig.clientOption.get.pinsRemove((r: PinsRemoveRequest.PinsRemoveRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackMessage.channel.id).timestamp(slackMessage.ts.value))
   )
 
   override def pinsList(channel: SlackChannel): Iterable[MessageItem] = logError("pinsList",
-     slackConfig.clientOption.get.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(channel.id))
+    slackConfig.clientOption.get.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(channel.id))
   ).getItems.asScala
 
   override def chatPostMessageInThread(text: String, thread: SlackThread): ChatPostMessageResponse = logError("chatPostMessageInThread", text,
-    body =>  slackConfig.clientOption.get.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(thread.channel.id).text(body).threadTs(thread.ts.value))
+    body => slackConfig.clientOption.get.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(thread.channel.id).text(body).threadTs(thread.ts.value))
   )
 
   override def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse = logError("chatPostMessage", text,
-    body =>   slackConfig.clientOption.get.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(channel.id).text(body))
+    body => slackConfig.clientOption.get.chatPostMessage((r: ChatPostMessageRequest.ChatPostMessageRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(channel.id).text(body))
   )
 
   override def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse = logError("viewUpdate", slackView.toString,
-    body =>  slackConfig.clientOption.get.viewsUpdate((r: ViewsUpdateRequest.ViewsUpdateRequestBuilder) => r.token(slackConfig.botOAuthToken).viewId(viewId).viewAsString(body))
+    body => slackConfig.clientOption.get.viewsUpdate((r: ViewsUpdateRequest.ViewsUpdateRequestBuilder) => r.token(slackConfig.botOAuthToken).viewId(viewId).viewAsString(body))
   )
 
   override def viewsPublish(userId: SlackUserId, slackView: SlackView): ViewsPublishResponse = logError("viewsPublish", slackView.toString,
-    body =>  slackConfig.clientOption.get.viewsPublish((r: ViewsPublishRequest.ViewsPublishRequestBuilder) => r.token(slackConfig.botOAuthToken).userId(userId.value).viewAsString(body))
+    body => slackConfig.clientOption.get.viewsPublish((r: ViewsPublishRequest.ViewsPublishRequestBuilder) => r.token(slackConfig.botOAuthToken).userId(userId.value).viewAsString(body))
   )
 
   override def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse = logError("viewsOpen", slackView.toString,
-    body =>  slackConfig.clientOption.get.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(slackConfig.botOAuthToken).triggerId(slackTriggerId.value).viewAsString(body))
+    body => slackConfig.clientOption.get.viewsOpen((r: ViewsOpenRequest.ViewsOpenRequestBuilder) => r.token(slackConfig.botOAuthToken).triggerId(slackTriggerId.value).viewAsString(body))
   )
 
   override def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse = logError("threadRepliesMessage",
-     slackConfig.clientOption.get.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(messageItem.getChannel).ts(messageItem.getMessage.getTs))
+    slackConfig.clientOption.get.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(messageItem.getChannel).ts(messageItem.getMessage.getTs))
   )
 
   override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = logError("threadReplies",
-     slackConfig.clientOption.get.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackThread.channel.id).ts(slackThread.ts.value))
+    slackConfig.clientOption.get.conversationsReplies((r: ConversationsRepliesRequest.ConversationsRepliesRequestBuilder) => r.token(slackConfig.botOAuthToken).channel(slackThread.channel.id).ts(slackThread.ts.value))
   )
 
   override def allChannels: Seq[Conversation] = {
-    val conversationsResult =  slackConfig.clientOption.get.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
+    val conversationsResult = slackConfig.clientOption.get.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(slackConfig.botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
     slackConfig.allChannels = conversationsResult.getChannels.asScala.toSeq
     slackConfig.allChannels
   }
 
-  override def userZonedId(slackUserId: SlackUserId): ZoneId = ZoneId.of {
-    logError("usersInfo", {
-       slackConfig.clientOption.get.usersInfo((r: UsersInfoRequest.UsersInfoRequestBuilder) => r.token(slackConfig.botOAuthToken).user(slackUserId.value))
-    }).getUser.getTz
+  override def userZonedId(slackUserId: SlackUserId): ZoneId = {
+    if (slackUserId == SlackUser.System.id) {
+      ZoneId.systemDefault
+    } else {
+      ZoneId.of {
+        logError("usersInfo", {
+          slackConfig.clientOption.get.usersInfo((r: UsersInfoRequest.UsersInfoRequestBuilder) => r.token(slackConfig.botOAuthToken).user(slackUserId.value))
+        }).getUser.getTz
+      }
+    }
   }
 
 }

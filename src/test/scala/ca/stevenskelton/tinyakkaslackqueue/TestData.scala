@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Keep, Source}
 import akka.stream.{KillSwitches, SystemMaterializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue
-import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
+import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackConfig, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
@@ -13,7 +13,9 @@ import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateR
 import com.slack.api.methods.response.conversations.ConversationsRepliesResponse
 import com.slack.api.methods.response.pins.{PinsAddResponse, PinsListResponse, PinsRemoveResponse}
 import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResponse, ViewsUpdateResponse}
+import com.slack.api.model.Conversation
 import com.slack.api.model.block.composition.MarkdownTextObject
+import com.typesafe.config.ConfigFactory
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.{ZoneId, ZonedDateTime}
@@ -39,7 +41,7 @@ object TestData {
 
     override def viewsPublish(userId: tinyakkaslackqueue.SlackUserId, view: SlackView): ViewsPublishResponse = ???
 
-    override def client: MethodsClient = ???
+//    override def client: MethodsClient = ???
 
     override def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse = ???
 
@@ -47,7 +49,7 @@ object TestData {
 
     override def threadReplies(messageItem: PinsListResponse.MessageItem): ConversationsRepliesResponse = ???
 
-    override def slackConfig: SlackClient.SlackConfig = ???
+    override def slackConfig: SlackConfig = ???
 
     override def pinsList(channel: SlackChannel): Iterable[PinsListResponse.MessageItem] = ???
 
@@ -58,6 +60,8 @@ object TestData {
     override def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse = ???
 
     override def userZonedId(slackUserId: SlackUserId): ZoneId = ???
+
+    override def allChannels: Seq[Conversation] = ???
   }
 
   private class TestSlackTaskFactory(number: String) extends SlackTaskFactory[Int, Int] {
@@ -81,7 +85,7 @@ object TestData {
     new TestSlackTaskFactory("One"),
     new TestSlackTaskFactory("Two"),
     new TestSlackTaskFactory("Three")
-  ))
+  ), ConfigFactory.defaultReference())
 
   def toScheduledTask(slackTask: SlackTask): ScheduledSlackTask = new InteractiveJavaUtilTimer[SlackTs, SlackTask].ScheduledTask(
     slackTask,

@@ -8,7 +8,7 @@ import com.slack.api.model.block.composition.MarkdownTextObject
 import com.typesafe.config.Config
 import org.slf4j.Logger
 
-import java.time.{LocalDateTime, ZonedDateTime}
+import java.time.{LocalDateTime, ZoneId, ZonedDateTime}
 import scala.concurrent.Future
 
 /**
@@ -58,7 +58,25 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
   /**
    * Returns the next scheduled execution of this event, if applicable
    */
-  def nextRunDate(config: Config): Option[ZonedDateTime] = None
+  def nextRunDate(config: Config)(implicit logger: Logger): Option[ZonedDateTime] = {
+    val className = getClass.getName
+    val name = className.drop(className.lastIndexOf(".")).replace(".", "").toLowerCase
+    val path = s"tinyakkaslackqueue.$name"
+    if(config.hasPath(path)) {
+      val taskConfig = config.getConfig(path)
+      val schedule = ScheduleConfiguration(taskConfig)
+      if (schedule.isEmpty) {
+        logger.info(s"Schedule empty for task $name")
+        None
+      } else {
+        logger.info(s"Schedule for task $name: ${ScheduleConfiguration.stringify(schedule)}")
+        Some(ZonedDateTime.of(ScheduleConfiguration.next(LocalDateTime.now, schedule), ZoneId.systemDefault))
+      }
+    } else {
+      logger.info(s"No schedule for task $name")
+      None
+    }
+  }
 
 }
 

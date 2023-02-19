@@ -152,7 +152,8 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
           }
         case SlackPayload.ViewSubmission if slackPayload.callbackId.contains(CallbackId.Create) =>
           Try {
-            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackPayload, zoneId)
+            val slackTaskMeta = slackFactories.slackTasks.drop(slackPayload.privateMetadata.get.value.toInt).head.slackTaskMeta.get
+            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackTaskMeta, slackPayload, zoneId)
             new HomeTab(zoneId)
           }
         case x =>
@@ -185,11 +186,14 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
     }
   }
 
-  val PublicRoutes: Route = encodeResponseWith(Coders.Gzip) {
-    concat(
-      path("slack" / "event")(slackEventRoute),
-      path("slack" / "action")(slackActionRoute)
-    )
+  val PublicRoutes: Route = {
+    Try(slackFactories)
+    encodeResponseWith(Coders.Gzip) {
+      concat(
+        path("slack" / "event")(slackEventRoute),
+        path("slack" / "action")(slackActionRoute)
+      )
+    }
   }
 
 }

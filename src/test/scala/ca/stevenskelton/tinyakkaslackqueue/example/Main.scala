@@ -12,6 +12,7 @@ import ca.stevenskelton.tinyakkaslackqueue.api._
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackLogger, SlackLoggerFactory}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.Future
@@ -23,17 +24,17 @@ object Main extends App {
 
   private implicit val httpActorSystem: ActorSystem = ActorSystem("HTTPServer", config)
 
-  val slackConfig = SlackClient.initialize(config)
-
   val backupLogger = LoggerFactory.getLogger("HTTPServer")
+
+  val slackConfig = SlackConfig(config, backupLogger)
 
   implicit val materializer: Materializer = SystemMaterializer(httpActorSystem).materializer
 
   private implicit val httpLogger: SlackLogger = SlackLoggerFactory.logToSlack(
-    backupLogger.getName, slackConfig, backup = Some(backupLogger), mirror = Some(backupLogger)
+    backupLogger.getName, Level.INFO, slackConfig, backup = Some(backupLogger), mirror = Some(backupLogger)
   )
 
-  implicit val slackClient: SlackClient = SlackClientImpl(slackConfig, slackConfig.client)
+  implicit val slackClient: SlackClient = SlackClientImpl(slackConfig)
 
   val host = config.getString("tinyakkaslackqueue.env.host")
   val port = config.getInt("tinyakkaslackqueue.env.http.port")
@@ -42,10 +43,10 @@ object Main extends App {
     new TestSlackTaskFactory(30.seconds)
   )
 
-  implicit val slackFactories: SlackFactories = SlackFactories.initialize(slackTaskFactories)
+  implicit val slackFactories: SlackFactories = SlackFactories.initialize(slackTaskFactories, config)
   //  slackTaskFactories.slackTaskMetaFactories
 
-  val slackRoutes = new SlackRoutes()
+  val slackRoutes = new SlackRoutes(slackTaskFactories, slackClient, config)
 
   val publicRoutes = concat(
     path("slack" / "event")(slackRoutes.slackEventRoute),

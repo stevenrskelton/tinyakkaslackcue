@@ -2,7 +2,6 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.Done
 import akka.stream.Materializer
-import ca.stevenskelton.tinyakkaslackqueue.SlackPayload.SlackPayloadType
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, DatePickerState, SelectState, TimePickerState}
@@ -17,7 +16,6 @@ import play.api.libs.json.{JsValue, Json}
 
 import java.time.{ZoneId, ZonedDateTime}
 import java.util.TimerTask
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.util.{Failure, Success, Try}
 
@@ -62,10 +60,10 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
   private def queuePollingForScheduled(zonedDateTime: ZonedDateTime): Unit = {
     interactiveTimer.scheduleSystemTask(new TimerTask {
       override def run(): Unit = {
-        queuePollingForScheduled(zonedDateTime.plusMinutes(10))
+        queuePollingForScheduled(zonedDateTime.plusMinutes(1))
 
         val alreadyScheduled = listScheduledTasks
-        slackTasks.foreach {
+        slackTasks.filter(_.slackTaskMeta.isDefined).foreach {
           slackTaskInitialized =>
             slackTaskInitialized.slackTaskFactory.nextRunDate(config).foreach {
               nextScheduledRun =>
@@ -77,9 +75,8 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
                   val slackPayload = SlackPayload(
                     payloadType = SlackPayload.BlockActions, viewId = "", user = SlackUser.System, actions = Nil, triggerId = SlackTriggerId.Empty,
                     privateMetadata = None, callbackId = None, actionStates
-
                   )
-                  scheduleSlackTask(slackPayload, ZoneId.systemDefault())
+                  scheduleSlackTask(slackTaskInitialized.slackTaskMeta.get, slackPayload, ZoneId.systemDefault)
                 }
             }
         }
@@ -108,9 +105,8 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
 
   def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
-  def scheduleSlackTask(slackPayload: SlackPayload, zoneId: ZoneId): ScheduledSlackTask = {
+  def scheduleSlackTask(slackTaskMeta: SlackTaskMeta, slackPayload: SlackPayload, zoneId: ZoneId): ScheduledSlackTask = {
     val zoneId = slackClient.userZonedId(slackPayload.user.id)
-    val slackTaskMeta = slackTasks.drop(slackPayload.privateMetadata.map(_.value).flatMap(_.toIntOption).getOrElse(0)).head.slackTaskMeta.get
     val time = for {
       scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
       scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
@@ -122,6 +118,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
     }.getOrElse {
       s"Queued task *${slackTaskMeta.factory.name.getText}*"
     }
+    logger.info(message)
     val slackPlaceholder = slackClient.chatPostMessage(message, slackTaskMeta.taskLogChannel)
     val slackTask = slackTaskMeta.factory.create(
       slackPayload,
