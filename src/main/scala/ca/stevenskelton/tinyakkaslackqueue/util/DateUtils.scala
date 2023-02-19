@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter
 
 object DateUtils {
 
+  val NewYorkZoneId: ZoneId = ZoneId.of("America/New_York")
+
   def humanReadable(duration: Duration): String = {
     val seconds = duration.toSeconds
     if (seconds >= 2592000) {

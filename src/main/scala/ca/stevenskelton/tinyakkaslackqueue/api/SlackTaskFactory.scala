@@ -2,6 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 
 import akka.stream.UniqueKillSwitch
 import akka.stream.scaladsl.Source
+import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
 import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTaskInit}
 import com.slack.api.model.block.composition.MarkdownTextObject
@@ -70,7 +71,7 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
         None
       } else {
         logger.info(s"Schedule for task $name: ${ScheduleConfiguration.stringify(schedule)}")
-        Some(ZonedDateTime.of(ScheduleConfiguration.next(LocalDateTime.now, schedule), ZoneId.systemDefault))
+        Some(ScheduleConfiguration.next(ZonedDateTime.now(DateUtils.NewYorkZoneId), schedule))
       }
     } else {
       logger.info(s"No schedule for task $name")

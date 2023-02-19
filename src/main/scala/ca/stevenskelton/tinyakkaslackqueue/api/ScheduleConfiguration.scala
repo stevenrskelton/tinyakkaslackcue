@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 
 import com.typesafe.config.Config
 
-import java.time.{DayOfWeek, Duration, LocalDateTime, LocalTime}
+import java.time.{DayOfWeek, Duration, LocalDateTime, LocalTime, ZonedDateTime}
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 object ScheduleConfiguration {
@@ -39,7 +39,7 @@ object ScheduleConfiguration {
             }
           }
         } else {
-          DayOfWeek.values().toSeq.map(Right(_))
+          DayOfWeek.values.toSeq.map(Right(_))
         }
         val timeString = instanceConfig.getString("time")
         val hourMinute = timeString.split(':')
@@ -48,7 +48,7 @@ object ScheduleConfiguration {
     }.toSeq
   }
 
-  def next(now: LocalDateTime, instances: Seq[ScheduleConfiguration]): LocalDateTime = {
+  def next(now: ZonedDateTime, instances: Seq[ScheduleConfiguration]): ZonedDateTime = {
     require(instances.nonEmpty)
 
     instances.map(_.nextTime(now)).minBy(Duration.between(now, _).toMinutes)
@@ -57,12 +57,12 @@ object ScheduleConfiguration {
 
 case class ScheduleConfiguration(day: Either[Int, DayOfWeek], time: LocalTime) {
 
-  def nextTime(now: LocalDateTime): LocalDateTime = {
+  def nextTime(now: ZonedDateTime): ZonedDateTime = {
     var next = now
     if (next.toLocalTime.isAfter(time)) {
-      next = next.toLocalDate.plusDays(1).atTime(time)
+      next = ZonedDateTime.of(next.toLocalDate.plusDays(1).atTime(time), next.getOffset)
     } else {
-      next = next.toLocalDate.atTime(time)
+      next = ZonedDateTime.of(next.toLocalDate.atTime(time), next.getOffset)
     }
 
     day match {
