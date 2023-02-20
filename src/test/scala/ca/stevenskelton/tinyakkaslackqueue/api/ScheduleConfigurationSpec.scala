@@ -5,7 +5,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import java.time.{DayOfWeek, LocalDate, LocalDateTime, LocalTime}
+import java.time._
 
 class ScheduleConfigurationSpec extends AnyWordSpec
   with Matchers
@@ -58,30 +58,30 @@ class ScheduleConfigurationSpec extends AnyWordSpec
 
   "nextTime" when {
     val instanceTime = LocalTime.of(17, 0)
-    val now = LocalDateTime.of(LocalDate.of(2023, 2, 18), LocalTime.of(3, 0))
+    val now = ZonedDateTime.of(LocalDateTime.of(LocalDate.of(2023, 2, 18), LocalTime.of(3, 0)), ZoneId.systemDefault())
 
     "dayOfWeek" should {
       "handle before" in {
         val nextTime = ScheduleConfiguration(Right(DayOfWeek.MONDAY), instanceTime).nextTime(now)
-        nextTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 20), instanceTime)
+        nextTime.toLocalDateTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 20), instanceTime)
       }
       "handle after" in {
         val nextTime = ScheduleConfiguration(Right(DayOfWeek.SUNDAY), instanceTime).nextTime(now)
-        nextTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 19), instanceTime)
+        nextTime.toLocalDateTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 19), instanceTime)
       }
     }
     "dayOfMonth" should {
       "handle before" in {
         val nextTime = ScheduleConfiguration(Left(5), instanceTime).nextTime(now)
-        nextTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 3, 5), instanceTime)
+        nextTime.toLocalDateTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 3, 5), instanceTime)
       }
       "handle after" in {
         val nextTime = ScheduleConfiguration(Left(25), instanceTime).nextTime(now)
-        nextTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 25), instanceTime)
+        nextTime.toLocalDateTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 25), instanceTime)
       }
       "handle values > 31" in {
         val nextTime = ScheduleConfiguration(Left(30), instanceTime).nextTime(now)
-        nextTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 28), instanceTime)
+        nextTime.toLocalDateTime shouldEqual LocalDateTime.of(LocalDate.of(2023, 2, 28), instanceTime)
       }
     }
   }

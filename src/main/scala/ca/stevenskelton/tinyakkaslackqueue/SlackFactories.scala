@@ -23,6 +23,8 @@ object SlackFactories {
 
   val ConfigurationThreadHeader = "Configuration\n"
 
+  private val QueuePollingForScheduledMinutes = 5
+
   def initialize(slackTaskFactories: SlackTaskFactories, config: Config)(implicit logger: Logger, slackClient: SlackClient, materializer: Materializer): SlackFactories = {
     val botUserId = slackClient.slackConfig.botUserId.value
     val pinnedMessages = Option(slackClient.slackConfig.clientOption.get.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId)).getOrElse(Nil)
@@ -60,7 +62,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
   private def queuePollingForScheduled(zonedDateTime: ZonedDateTime): Unit = {
     interactiveTimer.scheduleSystemTask(new TimerTask {
       override def run(): Unit = {
-        queuePollingForScheduled(zonedDateTime.plusMinutes(1))
+        queuePollingForScheduled(zonedDateTime.plusMinutes(SlackFactories.QueuePollingForScheduledMinutes))
 
         val alreadyScheduled = listScheduledTasks
         slackTasks.filter(_.slackTaskMeta.isDefined).foreach {
