@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
+import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
@@ -58,7 +59,7 @@ class ScheduleConfigurationSpec extends AnyWordSpec
 
   "nextTime" when {
     val instanceTime = LocalTime.of(17, 0)
-    val now = ZonedDateTime.of(LocalDateTime.of(LocalDate.of(2023, 2, 18), LocalTime.of(3, 0)), ZoneId.systemDefault())
+    val now = ZonedDateTime.of(LocalDateTime.of(LocalDate.of(2023, 2, 18), LocalTime.of(3, 0)), DateUtils.NewYorkZoneId)
 
     "dayOfWeek" should {
       "handle before" in {

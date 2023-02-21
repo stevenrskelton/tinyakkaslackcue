@@ -1,5 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
+import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.typesafe.config.Config
 
 import java.time.{DayOfWeek, Duration, LocalDateTime, LocalTime, ZonedDateTime}
@@ -48,9 +49,9 @@ object ScheduleConfiguration {
     }.toSeq
   }
 
-  def next(now: ZonedDateTime, instances: Seq[ScheduleConfiguration]): ZonedDateTime = {
+  def next(instances: Seq[ScheduleConfiguration]): ZonedDateTime = {
     require(instances.nonEmpty)
-
+    val now = ZonedDateTime.now(DateUtils.NewYorkZoneId)
     instances.map(_.nextTime(now)).minBy(Duration.between(now, _).toMinutes)
   }
 }
