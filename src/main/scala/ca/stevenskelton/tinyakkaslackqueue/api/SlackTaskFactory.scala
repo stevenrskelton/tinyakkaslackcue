@@ -59,7 +59,7 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
   /**
    * Returns the next scheduled execution of this event, if applicable
    */
-  def nextRunDate(config: Config)(implicit logger: Logger): Option[ZonedDateTime] = {
+  def nextRunDate(config: Config)(implicit logger: Logger): Option[LocalDateTime] = {
     val className = getClass.getName
     val name = className.drop(className.lastIndexOf(".")).replace(".", "").toLowerCase
     val path = s"tinyakkaslackqueue.$name"
@@ -71,7 +71,7 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
         None
       } else {
         logger.info(s"Schedule for task $name: ${ScheduleConfiguration.stringify(schedule)}")
-        Some(ScheduleConfiguration.next(schedule))
+        Some(ScheduleConfiguration.next(schedule).toLocalDateTime)
       }
     } else {
       logger.info(s"No schedule for task $name")

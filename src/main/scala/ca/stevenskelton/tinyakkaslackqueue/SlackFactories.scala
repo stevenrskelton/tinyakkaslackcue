@@ -78,7 +78,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
                     payloadType = SlackPayload.BlockActions, viewId = "", user = SlackUser.System, actions = Nil, triggerId = SlackTriggerId.Empty,
                     privateMetadata = None, callbackId = None, actionStates
                   )
-                  scheduleSlackTask(slackTaskInitialized.slackTaskMeta.get, slackPayload, ZoneId.systemDefault)
+                  scheduleSlackTask(slackTaskInitialized.slackTaskMeta.get, slackPayload)
                 }
             }
         }
@@ -107,16 +107,16 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
 
   def cancelScheduledTask(slackTs: SlackTs): Option[ScheduledSlackTask] = interactiveTimer.cancel(slackTs)
 
-  def scheduleSlackTask(slackTaskMeta: SlackTaskMeta, slackPayload: SlackPayload, zoneId: ZoneId): ScheduledSlackTask = {
-    val zoneId = slackClient.userZonedId(slackPayload.user.id)
+  def scheduleSlackTask(slackTaskMeta: SlackTaskMeta, slackPayload: SlackPayload): ScheduledSlackTask = {
+    val userZoneId = slackClient.userZonedId(slackPayload.user.id)
     val time = for {
       scheduledDate <- slackPayload.actionStates.get(ActionId.DataScheduleDate).map(_.asInstanceOf[DatePickerState].value)
       scheduledTime <- slackPayload.actionStates.get(ActionId.DataScheduleTime).map(_.asInstanceOf[TimePickerState].value)
-    } yield scheduledDate.atTime(scheduledTime).atZone(zoneId)
+    } yield ZonedDateTime.of(scheduledDate.atTime(scheduledTime), userZoneId)
 
     val message = time.map {
       zonedDateTime =>
-        s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime, zoneId)}"
+        s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime)}"
     }.getOrElse {
       s"Queued task *${slackTaskMeta.factory.name.getText}*"
     }

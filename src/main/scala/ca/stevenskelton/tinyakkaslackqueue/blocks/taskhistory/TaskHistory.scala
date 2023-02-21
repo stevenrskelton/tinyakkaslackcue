@@ -133,7 +133,7 @@ object TaskHistory {
       "type" -> "section",
       "text" -> Json.obj(
         "type" -> "mrkdwn",
-        "text" -> s"${taskHistoryItem.action.icon} *${taskHistoryItem.action.action.toUpperCase}* ${DateUtils.humanReadable(taskHistoryItem.time, zoneId)}"
+        "text" -> s"${taskHistoryItem.action.icon} *${taskHistoryItem.action.action.toUpperCase}* ${DateUtils.humanReadable(taskHistoryItem.time.toLocalDateTime, zoneId)}"
       ),
       "accessory" -> HomeTab.viewLogsButton(taskHistoryItem.taskId)
     )

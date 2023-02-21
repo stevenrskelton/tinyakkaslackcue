@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.timer
 
 import akka.Done
 
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.{Instant, LocalDateTime, ZoneId, ZonedDateTime}
 import java.util
 import java.util.{Date, Timer, TimerTask}
 import scala.jdk.CollectionConverters.IterableHasAsScala
@@ -38,14 +38,14 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
     }
   }
 
-  case class ScheduledTask(task: T, executionStart: ZonedDateTime, isRunning: Boolean) {
+  case class ScheduledTask(task: T, executionStart: LocalDateTime, isRunning: Boolean) {
     val id: S = task.id
   }
 
   private def toScheduledTask(innerTimerTask: InnerTimerTask): ScheduledTask = {
     ScheduledTask(
       innerTimerTask.task,
-      ZonedDateTime.ofInstant(Instant.ofEpochMilli(innerTimerTask.scheduledExecutionTime), ZoneId.systemDefault()),
+      LocalDateTime.ofInstant(Instant.ofEpochMilli(innerTimerTask.scheduledExecutionTime), ZoneId.systemDefault()),
       innerTimerTask.isRunning
     )
   }
@@ -78,7 +78,7 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
         val isCancelled = innerTimerTask.task.isCancelled && !innerTimerTask.isRunning
         if (isCancelled || innerTimerTask.isComplete || innerTimerTask.hasFailed) None
         else Some(toScheduledTask(innerTimerTask))
-    }.toSeq.sortBy(o => (!o.isRunning, o.executionStart.toInstant))
+    }.toSeq.sortBy(o => (!o.isRunning, o.executionStart))
   }
 
   def isExecuting: Boolean = allTimerTasks.asScala.exists(_.isRunning)

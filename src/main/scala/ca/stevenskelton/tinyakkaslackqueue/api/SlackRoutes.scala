@@ -153,7 +153,7 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
         case SlackPayload.ViewSubmission if slackPayload.callbackId.contains(CallbackId.Create) =>
           Try {
             val slackTaskMeta = slackFactories.slackTasks.drop(slackPayload.privateMetadata.get.value.toInt).head.slackTaskMeta.get
-            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackTaskMeta, slackPayload, zoneId)
+            val scheduledSlackTask = slackFactories.scheduleSlackTask(slackTaskMeta, slackPayload)
             new HomeTab(zoneId)
           }
         case x =>
