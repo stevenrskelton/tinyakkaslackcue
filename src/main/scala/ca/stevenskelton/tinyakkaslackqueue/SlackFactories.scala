@@ -70,9 +70,10 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
             slackTaskInitialized.slackTaskFactory.nextRunDate(config).foreach {
               nextScheduledRun =>
                 if (!alreadyScheduled.exists(task => slackTaskInitialized.slackTaskMeta.contains(task.task.meta) && task.executionStart == nextScheduledRun)) {
+                  val nextScheduledRunInUserTimezone = ZonedDateTime.of(nextScheduledRun, ZoneId.systemDefault).withZoneSameInstant(DateUtils.NewYorkZoneId)
                   val actionStates = Map(
-                    ActionId.DataScheduleDate -> DatePickerState(nextScheduledRun.toLocalDate),
-                    ActionId.DataScheduleTime -> TimePickerState(nextScheduledRun.toLocalTime)
+                    ActionId.DataScheduleDate -> DatePickerState(nextScheduledRunInUserTimezone.toLocalDate),
+                    ActionId.DataScheduleTime -> TimePickerState(nextScheduledRunInUserTimezone.toLocalTime)
                   )
                   val slackPayload = SlackPayload(
                     payloadType = SlackPayload.BlockActions, viewId = "", user = SlackUser.System, actions = Nil, triggerId = SlackTriggerId.Empty,
@@ -115,8 +116,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
     } yield ZonedDateTime.of(scheduledDate.atTime(scheduledTime), userZoneId)
 
     val message = time.map {
-      zonedDateTime =>
-        s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime)}"
+      zonedDateTime => s"Scheduled task *${slackTaskMeta.factory.name.getText}* for ${DateUtils.humanReadable(zonedDateTime)}"
     }.getOrElse {
       s"Queued task *${slackTaskMeta.factory.name.getText}*"
     }

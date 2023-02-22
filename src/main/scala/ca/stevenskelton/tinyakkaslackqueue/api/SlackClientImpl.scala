@@ -1,6 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
 import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.methods.SlackApiTextResponse
 import com.slack.api.methods.request.chat.{ChatPostMessageRequest, ChatUpdateRequest}
@@ -106,7 +107,7 @@ case class SlackClientImpl(slackConfig: SlackConfig)(implicit logger: Logger) ex
 
   override def userZonedId(slackUserId: SlackUserId): ZoneId = {
     if (slackUserId == SlackUser.System.id) {
-      ZoneId.systemDefault
+      DateUtils.NewYorkZoneId
     } else {
       ZoneId.of {
         logError("usersInfo", {
