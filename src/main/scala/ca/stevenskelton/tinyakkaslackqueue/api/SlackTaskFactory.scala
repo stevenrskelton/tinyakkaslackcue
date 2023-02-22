@@ -71,7 +71,7 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
         None
       } else {
         logger.info(s"Schedule for task $name: ${ScheduleConfiguration.stringify(schedule)}")
-        Some(ScheduleConfiguration.next(schedule).toLocalDateTime)
+        Some(ScheduleConfiguration.next(schedule))
       }
     } else {
       logger.info(s"No schedule for task $name")

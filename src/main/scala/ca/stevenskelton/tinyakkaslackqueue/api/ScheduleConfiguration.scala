@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.typesafe.config.Config
 
-import java.time.{DayOfWeek, Duration, LocalDateTime, LocalTime, ZonedDateTime}
+import java.time.{DayOfWeek, Duration, LocalDateTime, LocalTime, ZoneId, ZonedDateTime}
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 object ScheduleConfiguration {
@@ -49,10 +49,11 @@ object ScheduleConfiguration {
     }.toSeq
   }
 
-  def next(instances: Seq[ScheduleConfiguration]): ZonedDateTime = {
+  def next(instances: Seq[ScheduleConfiguration]): LocalDateTime = {
     require(instances.nonEmpty)
     val now = ZonedDateTime.now(DateUtils.NewYorkZoneId)
-    instances.map(_.nextTime(now)).minBy(Duration.between(now, _).toMinutes)
+    val selected = instances.map(_.nextTime(now)).minBy(Duration.between(now, _).toMinutes)
+    selected.withZoneSameInstant(ZoneId.systemDefault).toLocalDateTime
   }
 }
 
