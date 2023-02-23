@@ -2,14 +2,13 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 
 import akka.stream.UniqueKillSwitch
 import akka.stream.scaladsl.Source
-import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
 import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTaskInit}
 import com.slack.api.model.block.composition.MarkdownTextObject
 import com.typesafe.config.Config
 import org.slf4j.Logger
 
-import java.time.{LocalDateTime, ZoneId, ZonedDateTime}
+import java.time.LocalDateTime
 import scala.concurrent.Future
 
 /**
@@ -63,7 +62,7 @@ trait SlackTaskFactory[T, B] extends SlackTaskInit[T, B] {
     val className = getClass.getName
     val name = className.drop(className.lastIndexOf(".")).replace(".", "").toLowerCase
     val path = s"tinyakkaslackqueue.$name"
-    if(config.hasPath(path)) {
+    if (config.hasPath(path)) {
       val taskConfig = config.getConfig(path)
       val schedule = ScheduleConfiguration(taskConfig)
       if (schedule.isEmpty) {

@@ -46,49 +46,61 @@ class HomeTabConfigure(zoneId: ZoneId)(implicit slackFactories: SlackFactories) 
     val channels: Seq[JsObject] = if (slackFactories.factoryLogChannels.isEmpty) {
       HomeTabConfigure.NoTasksBlocks
     } else {
-      val allChannels = slackFactories.slackClient.allChannels
+      slackFactories.slackClient.allChannels.map {
+        allChannels =>
+          slackFactories.factoryLogChannels.zipWithIndex.map {
+            case ((slackTaskFactory, taskLogChannelOpt), index) =>
 
-      slackFactories.factoryLogChannels.zipWithIndex.map {
-        case ((slackTaskFactory, taskLogChannelOpt), index) =>
+              val exists = allChannels.exists(o => taskLogChannelOpt.exists(_.id == o.getId))
+              val text = if (taskLogChannelOpt.isEmpty) {
+                "Select a channel"
+              } else if (exists) {
+                "Change channel"
+              } else {
+                ":red_circle: Missing channel"
+              }
 
-          val exists = allChannels.exists(o => taskLogChannelOpt.exists(_.id == o.getId))
-          val text = if (taskLogChannelOpt.isEmpty) {
-            "Select a channel"
-          } else if (exists) {
-            "Change channel"
-          } else {
-            ":red_circle: Missing channel"
+              val accessory = Json.obj(
+                "type" -> "channels_select",
+                "placeholder" -> Json.obj(
+                  "type" -> "plain_text",
+                  "text" -> text,
+                  "emoji" -> true
+                ),
+                "action_id" -> s"${ActionId.DataChannel}-$index"
+              )
+              val accessory2 = taskLogChannelOpt.map {
+                channel => accessory ++ Json.obj("initial_channel" -> channel.id)
+              }.getOrElse {
+                accessory
+              }
+
+              Json.obj(
+                "type" -> "section",
+                "text" -> Json.obj(
+                  "type" -> "mrkdwn",
+                  "text" -> s"*${slackTaskFactory.name.getText}*\n${slackTaskFactory.description.getText}"
+                ),
+                "accessory" -> accessory2
+              )
           }
 
-          val accessory = Json.obj(
-            "type" -> "channels_select",
-            "placeholder" -> Json.obj(
-              "type" -> "plain_text",
-              "text" -> text,
-              "emoji" -> true
-            ),
-            "action_id" -> s"${ActionId.DataChannel}-$index"
+      }.getOrElse {
+        Seq(Json.obj(
+          "type" -> "section",
+          "text" -> Json.obj(
+            "type" -> "mrkdwn",
+            "text" -> s"*Error loading Channels*"
           )
-          val accessory2 = taskLogChannelOpt.map {
-            channel => accessory ++ Json.obj("initial_channel" -> channel.id)
-          }.getOrElse {
-            accessory
-          }
-
-          Json.obj(
-            "type" -> "section",
-            "text" -> Json.obj(
-              "type" -> "mrkdwn",
-              "text" -> s"*${slackTaskFactory.name.getText}*\n${slackTaskFactory.description.getText}"
-            ),
-            "accessory" -> accessory2
-          )
+        ))
       }
     }
     Json.obj(
       "type" -> "home",
       CallbackId.HomeTabConfigure.block,
-      "blocks" -> { HomeTabConfigure.HeaderBlocks ++ channels :+ HomeTabTaskHistory.BackToFooterBlocks }
+      "blocks" -> {
+        HomeTabConfigure.HeaderBlocks ++ channels :+ HomeTabTaskHistory.BackToFooterBlocks
+      }
     )
   }
 }

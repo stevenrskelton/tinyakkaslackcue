@@ -13,7 +13,6 @@ import akka.util.ByteString
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.blocks._
 import ca.stevenskelton.tinyakkaslackqueue.views._
-import com.slack.api.methods.SlackApiTextResponse
 import com.typesafe.config.Config
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}
@@ -41,15 +40,17 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
   }
 
   private def publishHomeTab(slackUserId: SlackUserId, slackHomeTab: SlackHomeTab)(implicit logger: Logger, slackFactories: SlackFactories): Future[Done] = {
-    val response = slackFactories.slackClient.viewsPublish(slackUserId, slackHomeTab)
-    if (response.isOk) {
-      logger.debug(s"Created home view for ${slackUserId.value}")
-      Future.successful(Done)
-    } else {
-      logger.error(s"Home view creation failed: ${response.getError}")
-      logger.error(s"\n```${slackHomeTab.toString}```\n")
-      Future.failed(new Exception(response.getError))
-    }
+    slackFactories.slackClient.viewsPublish(slackUserId, slackHomeTab).fold(ex => Future.failed(ex), {
+      response =>
+        if (response.isOk) {
+          logger.debug(s"Created home view for ${slackUserId.value}")
+          Future.successful(Done)
+        } else {
+          logger.error(s"Home view creation failed: ${response.getError}")
+          logger.error(s"\n```${slackHomeTab.toString}```\n")
+          Future.failed(new Exception(response.getError))
+        }
+    })
   }
 
   private def cancelTask(ts: SlackTs, slackPayload: SlackPayload)(implicit slackFactories: SlackFactories, logger: Logger): Try[HomeTab] = {
@@ -57,10 +58,12 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
       cancelledTask =>
         logger.error("Cancelled Task")
         val view = new CancelTaskModal(cancelledTask, slackPayload)
-        val update = slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view)
-        if (!update.isOk) {
-          logger.error(view.toString)
-          logger.error(update.getError)
+        slackFactories.slackClient.viewsUpdate(slackPayload.viewId, view).foreach {
+          update =>
+            if (!update.isOk) {
+              logger.error(view.toString)
+              logger.error(update.getError)
+            }
         }
         val zoneId = slackFactories.slackClient.userZonedId(slackPayload.user.id)
         Success(new HomeTab(zoneId))
@@ -165,14 +168,16 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
         case Success(SlackOkResponse) => Future.successful(Done)
         case Success(homeTab: SlackHomeTab) => publishHomeTab(slackPayload.user.id, homeTab)
         case Success(slackModal: SlackModal) =>
-          val result: SlackApiTextResponse = slackFactories.slackClient.viewsOpen(slackPayload.triggerId, slackModal)
-          if (!result.isOk) {
-            if (result.getError == "missing_scope") {
-              logger.error(s"Missing permission scope: ${result.getNeeded}")
-            } else {
-              logger.debug(s"\n```$slackModal```\n")
-              logger.error(result.getError)
-            }
+          slackFactories.slackClient.viewsOpen(slackPayload.triggerId, slackModal).foreach {
+            result =>
+              if (!result.isOk) {
+                if (result.getError == "missing_scope") {
+                  logger.error(s"Missing permission scope: ${result.getNeeded}")
+                } else {
+                  logger.debug(s"\n```$slackModal```\n")
+                  logger.error(result.getError)
+                }
+              }
           }
           Future.successful(Done)
         case Failure(ex) => Future.failed(ex)

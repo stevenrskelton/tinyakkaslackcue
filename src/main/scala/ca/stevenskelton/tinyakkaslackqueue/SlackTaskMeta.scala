@@ -18,24 +18,28 @@ object SlackTaskMeta {
   }
 
   def readHistory(id: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): Option[SlackTaskMeta] = {
-    val response = slackClient.threadReplies(queueThread)
-    val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
-    if (response.isOk) {
-      response.getMessages.asScala.withFilter(_.getParentUserId == slackClient.slackConfig.botUserId.value).foreach {
-        message =>
-          TaskHistoryItem.fromHistoryThreadMessage(message, taskChannel, queueThread) match {
-            case Some(taskHistoryItem) if taskHistoryItem.action.isInstanceOf[TaskHistoryOutcomeItem] =>
-              executedTasks.add(taskHistoryItem.asInstanceOf[TaskHistoryItem[TaskHistoryOutcomeItem]])
-            case _ =>
+    slackClient.threadReplies(queueThread).map {
+      response =>
+        val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
+        if (response.isOk) {
+          response.getMessages.asScala.withFilter(_.getParentUserId == slackClient.slackConfig.botUserId.value).foreach {
+            message =>
+              TaskHistoryItem.fromHistoryThreadMessage(message, taskChannel, queueThread) match {
+                case Some(taskHistoryItem) if taskHistoryItem.action.isInstanceOf[TaskHistoryOutcomeItem] =>
+                  executedTasks.add(taskHistoryItem.asInstanceOf[TaskHistoryItem[TaskHistoryOutcomeItem]])
+                case _ =>
+              }
           }
-      }
-      Some(new SlackTaskMeta(id, slackClient, taskChannel, queueThread, factory, executedTasks))
-    } else {
-      if (response.getError == "missing_scope") {
-        logger.error(s"SlackTaskMeta.initialize missing permissions: ${response.getNeeded}")
-      } else {
-        logger.error(s"SlackTaskMeta.initialize failed: ${response.getError}")
-      }
+          Some(new SlackTaskMeta(id, slackClient, taskChannel, queueThread, factory, executedTasks))
+        } else {
+          if (response.getError == "missing_scope") {
+            logger.error(s"SlackTaskMeta.initialize missing permissions: ${response.getNeeded}")
+          } else {
+            logger.error(s"SlackTaskMeta.initialize failed: ${response.getError}")
+          }
+          None
+        }
+    }.getOrElse {
       None
     }
   }
@@ -56,16 +60,20 @@ class SlackTaskMeta private(
   }
 
   private def post[T <: TaskHistoryActionItem](taskHistoryItem: TaskHistoryItem[T]): Try[Unit] = {
-    val response1 = slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, queueThread)
-    if (response1.isOk) {
-      val response2 = slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId)
-      if (response2.isOk) {
-        Success(())
-      } else {
-        Failure(SlackResponseException(response2))
-      }
-    } else {
-      Failure(SlackResponseException(response1))
+    slackClient.chatPostMessageInThread(taskHistoryItem.toHistoryThreadMessage, queueThread).flatMap {
+      response1 =>
+        if (response1.isOk) {
+          slackClient.chatPostMessageInThread(taskHistoryItem.toTaskThreadMessage, taskHistoryItem.taskId).flatMap {
+            response2 =>
+              if (response2.isOk) {
+                Success(())
+              } else {
+                Failure(SlackResponseException(response2))
+              }
+          }
+        } else {
+          Failure(SlackResponseException(response1))
+        }
     }
   }
 

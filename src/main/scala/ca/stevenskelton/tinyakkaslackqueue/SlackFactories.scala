@@ -86,6 +86,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
       }
     }, zonedDateTime)
   }
+
   queuePollingForScheduled(ZonedDateTime.now)
 
   def onComplete(slackTask: SlackTask, result: Try[Done]): Unit = {
@@ -122,10 +123,15 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
     }
     logger.info(message)
     val slackPlaceholder = slackClient.chatPostMessage(message, slackTaskMeta.taskLogChannel)
+    val taskThread = slackPlaceholder.map {
+      SlackTaskThread(_, slackTaskMeta.taskLogChannel)
+    }.getOrElse {
+      new SlackTaskThread(SlackTs.Empty, slackTaskMeta.taskLogChannel)
+    }
     val slackTask = slackTaskMeta.factory.create(
       slackPayload,
       slackTaskMeta,
-      taskThread = SlackTaskThread(slackPlaceholder, slackTaskMeta.taskLogChannel),
+      taskThread = taskThread,
       createdBySlackUser = slackPayload.user.id,
       logLevel = slackPayload.actionStates.get(ActionId.DataLogLevel).map(o => Level.valueOf(o.asInstanceOf[SelectState].value)).getOrElse(Level.WARN),
       mainLogger = logger

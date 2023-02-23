@@ -10,35 +10,36 @@ import com.slack.api.methods.response.views.{ViewsOpenResponse, ViewsPublishResp
 import com.slack.api.model.Conversation
 
 import java.time.ZoneId
+import scala.util.Try
 
 trait SlackClient {
   def slackConfig: SlackConfig
 
-  def chatUpdate(text: String, slackMessage: SlackMessage): ChatUpdateResponse
+  def chatUpdate(text: String, slackMessage: SlackMessage): Try[ChatUpdateResponse]
 
-  def chatUpdateBlocks(blocks: SlackBlocksAsString, slackPost: SlackMessage): ChatUpdateResponse
+  def chatUpdateBlocks(blocks: SlackBlocksAsString, slackPost: SlackMessage): Try[ChatUpdateResponse]
 
-  def pinsAdd(slackMessage: SlackMessage): PinsAddResponse
+  def pinsAdd(slackMessage: SlackMessage): Try[PinsAddResponse]
 
-  def pinsRemove(slackMessage: SlackMessage): PinsRemoveResponse
+  def pinsRemove(slackMessage: SlackMessage): Try[PinsRemoveResponse]
 
-  def pinsList(channel: SlackChannel): Iterable[MessageItem]
+  def pinsList(channel: SlackChannel): Try[Iterable[MessageItem]]
 
-  def chatPostMessageInThread(text: String, thread: SlackThread): ChatPostMessageResponse
+  def chatPostMessageInThread(text: String, thread: SlackThread): Try[ChatPostMessageResponse]
 
-  def chatPostMessage(text: String, channel: SlackChannel): ChatPostMessageResponse
+  def chatPostMessage(text: String, channel: SlackChannel): Try[ChatPostMessageResponse]
 
-  def viewsUpdate(viewId: String, slackView: SlackView): ViewsUpdateResponse
+  def viewsUpdate(viewId: String, slackView: SlackView): Try[ViewsUpdateResponse]
 
-  def viewsPublish(userId: SlackUserId, slackView: SlackView): ViewsPublishResponse
+  def viewsPublish(userId: SlackUserId, slackView: SlackView): Try[ViewsPublishResponse]
 
-  def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): ViewsOpenResponse
+  def viewsOpen(slackTriggerId: SlackTriggerId, slackView: SlackView): Try[ViewsOpenResponse]
 
-  def threadReplies(slackThread: SlackThread): ConversationsRepliesResponse
+  def threadReplies(slackThread: SlackThread): Try[ConversationsRepliesResponse]
 
-  def threadReplies(messageItem: MessageItem): ConversationsRepliesResponse
+  def threadReplies(messageItem: MessageItem): Try[ConversationsRepliesResponse]
 
   def userZonedId(slackUserId: SlackUserId): ZoneId
 
-  def allChannels: Seq[Conversation]
+  def allChannels: Try[Seq[Conversation]]
 }

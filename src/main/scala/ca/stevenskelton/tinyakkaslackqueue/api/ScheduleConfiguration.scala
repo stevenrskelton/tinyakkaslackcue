@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.typesafe.config.Config
 
-import java.time.{DayOfWeek, Duration, LocalDateTime, LocalTime, ZoneId, ZonedDateTime}
+import java.time._
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 object ScheduleConfiguration {

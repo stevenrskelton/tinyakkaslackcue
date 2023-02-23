@@ -62,8 +62,12 @@ class HomeTab(zoneId: ZoneId)(implicit slackFactories: SlackFactories) extends S
   override def toString: String = Json.stringify(blocks)
 
   private def hasMissingChannels: Boolean = {
-    val allChannels = slackFactories.slackClient.allChannels
-    slackFactories.factoryLogChannels.exists(_._2.fold(true)(id => allChannels.forall(_.getId != id.id)))
+    slackFactories.slackClient.allChannels.map {
+      allChannels =>
+        slackFactories.factoryLogChannels.exists(_._2.fold(true)(id => allChannels.forall(_.getId != id.id)))
+    }.getOrElse {
+      true
+    }
   }
 
   def blocks: JsObject = {

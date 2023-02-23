@@ -17,6 +17,10 @@ package object tinyakkaslackqueue {
 
   case class SlackTs(value: String) extends AnyVal
 
+  object SlackTs {
+    val Empty = SlackTs("")
+  }
+
   trait SlackMessage {
     def ts: SlackTs
 

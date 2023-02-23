@@ -4,7 +4,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{Materializer, OverflowStrategy}
 import ca.stevenskelton.tinyakkaslackqueue._
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackConfig}
-import ca.stevenskelton.tinyakkaslackqueue.blocks.{TaskCancelled, TaskFailure, TaskRunning, TaskSuccess, logLevelEmoji}
+import ca.stevenskelton.tinyakkaslackqueue.blocks._
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
@@ -73,9 +73,11 @@ object SlackLoggerFactory {
           }
           if (messageEvents.nonEmpty) {
             val message = messageEvents.mkString("\n")
-            val posted = slackClient.chatPostMessageInThread(message, slackTask.slackTaskThread)
-            if (!posted.isOk) {
-              mainLogger.error(s"Could not post to Slack: ${posted.getChannel} : ${posted.getError}")
+            slackClient.chatPostMessageInThread(message, slackTask.slackTaskThread).foreach {
+              posted =>
+                if (!posted.isOk) {
+                  mainLogger.error(s"Could not post to Slack: ${posted.getChannel} : ${posted.getError}")
+                }
             }
           }
           exceptionEvent match {
