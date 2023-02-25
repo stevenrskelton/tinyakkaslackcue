@@ -8,7 +8,7 @@ scalaVersion := "2.13.10"
 val javaVersion = "11"
 
 lazy val akkaVersion = "2.7.0"
-lazy val akkaHttpVersion = "10.4.0"
+lazy val akkaHttpVersion = "10.5.0"
 
 lazy val app = (project in file("."))
   .settings(
@@ -28,5 +28,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-pki" % akkaVersion,
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
+  "org.scalamock" %% "scalamock" % "5.2.0" % Test,
   "org.scalatest" %% "scalatest" % "3.2.15" % Test
 )

@@ -61,13 +61,13 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val name1 = prelist(0)
       name1.task.name shouldBe task1.name
       name1.isRunning shouldBe true
-      name1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name1.executionStart should be < LocalDateTime.now
 
       val name2 = prelist(1)
       name2.task.name shouldBe task2.name
       name2.isRunning shouldBe false
-      name2.executionStart.toInstant should be >= name1.executionStart.toInstant
-      name2.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name2.executionStart should be >= name1.executionStart
+      name2.executionStart should be < LocalDateTime.now
 
       i shouldBe 0
       eventually(timeout2sec) {
@@ -99,19 +99,19 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val name1 = prelist(0)
       name1.task.name shouldBe task1.name
       name1.isRunning shouldBe true
-      name1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name1.executionStart should be < LocalDateTime.now
 
       val name2 = prelist(1)
       name2.task.name shouldBe task2.name
       name2.isRunning shouldBe false
-      name2.executionStart.toInstant should be >= name1.executionStart.toInstant
-      name2.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name2.executionStart should be >= name1.executionStart
+      name2.executionStart should be < LocalDateTime.now
 
       val name3 = prelist(2)
       name3.task.name shouldBe task3.name
       name3.isRunning shouldBe false
-      name3.executionStart.toInstant should be >= name1.executionStart.toInstant
-      name3.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name3.executionStart should be >= name1.executionStart
+      name3.executionStart should be < LocalDateTime.now
 
       i shouldBe 0
       timer.cancel(task2.id)
@@ -123,8 +123,8 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val postname1 = postlist(0)
       postname1.task.name shouldBe task3.name
       postname1.isRunning shouldBe true
-      postname1.executionStart.toInstant should be >= name3.executionStart.toInstant
-      postname1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      postname1.executionStart should be >= name3.executionStart
+      postname1.executionStart should be < LocalDateTime.now
 
       eventually(timeout2sec) {
         i shouldBe 6
@@ -145,13 +145,13 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val name1 = prelist(0)
       name1.task.name shouldBe task1.name
       name1.isRunning shouldBe true
-      name1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name1.executionStart should be < LocalDateTime.now
 
       val name2 = prelist(1)
       name2.task.name shouldBe task2.name
       name2.isRunning shouldBe false
-      name2.executionStart.toInstant should be >= name1.executionStart.toInstant
-      name2.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name2.executionStart should be >= name1.executionStart
+      name2.executionStart should be < LocalDateTime.now
 
       i shouldBe 0
       timer.cancel(task1.id)
@@ -161,13 +161,13 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val postName1 = postlist(0)
       postName1.task.name shouldBe task1.name
       postName1.isRunning shouldBe true
-      postName1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      postName1.executionStart should be < LocalDateTime.now
 
       val postName2 = postlist(1)
       postName2.task.name shouldBe task2.name
       postName2.isRunning shouldBe false
-      postName2.executionStart.toInstant should be >= name1.executionStart.toInstant
-      postName2.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      postName2.executionStart should be >= name1.executionStart
+      postName2.executionStart should be < LocalDateTime.now
 
       eventually(timeout2sec) {
         i shouldBe -10
@@ -193,13 +193,13 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val name1 = prelist(0)
       name1.task.name shouldBe task1.name
       name1.isRunning shouldBe true
-      name1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name1.executionStart should be < LocalDateTime.now
 
       val name2 = prelist(1)
       name2.task.name shouldBe task2.name
       name2.isRunning shouldBe false
-      name2.executionStart.toInstant should be >= name1.executionStart.toInstant
-      name2.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      name2.executionStart should be >= name1.executionStart
+      name2.executionStart should be < LocalDateTime.now
 
       i shouldBe 0
       timer.cancel()
@@ -209,7 +209,7 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       val postName1 = postlist(0)
       postName1.task.name shouldBe task1.name
       postName1.isRunning shouldBe true
-      postName1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+      postName1.executionStart should be < LocalDateTime.now
 
       eventually(timeout2sec) {
         i shouldBe -10
@@ -223,9 +223,9 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
       timer.cancel()
       i = 0
       val task1 = createTask1
-      val task1time = ZonedDateTime.now().plusDays(1)
+      val task1time = ZonedDateTime.of(LocalDateTime.now.plusDays(1), ZoneId.systemDefault)
       val task2 = createTask2
-      val task2time = ZonedDateTime.now().plusMinutes(5)
+      val task2time = ZonedDateTime.of(LocalDateTime.now.plusMinutes(5), ZoneId.systemDefault)
 
       timer.schedule(task1, task1time, _ => ())
       timer.schedule(task2, task2time, _ => ())
@@ -325,7 +325,7 @@ class InteractiveJavaUtilTimerSpec extends AnyWordSpec
   //      val name1 = postlist(0)
   //      name1.task.name shouldBe task2.name
   //      name1.isRunning shouldBe true
-  //      name1.executionStart.toInstant should be < ZonedDateTime.now().toInstant
+  //      name1.executionStart should be < LocalDateTime.now
   //
   //      eventually(timeout2sec) {
   //        i shouldBe 3

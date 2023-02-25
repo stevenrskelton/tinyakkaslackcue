@@ -10,6 +10,7 @@ import akka.stream.{Materializer, SystemMaterializer}
 import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.api._
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackLogger, SlackLoggerFactory}
+import com.slack.api.Slack
 import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
@@ -26,7 +27,7 @@ object Main extends App {
 
   val backupLogger = LoggerFactory.getLogger("HTTPServer")
 
-  val slackConfig = SlackConfig(config, backupLogger)
+  val slackConfig = SlackConfig(config, backupLogger, () => Slack.getInstance.methods)
 
   implicit val materializer: Materializer = SystemMaterializer(httpActorSystem).materializer
 

@@ -16,13 +16,14 @@ import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 import scala.util.control.NonFatal
 
 object SlackConfig {
-  def apply(config: Config, logger: Logger): SlackConfig = {
+  def apply(config: Config, logger: Logger, loadMethodsClient: () => MethodsClient): SlackConfig = {
     val returnValue = SlackConfig(
       botOAuthToken = config.getString("secrets.botOAuthToken"),
       botUserName = config.getString("secrets.botUserName"),
       botChannelName = config.getString("secrets.botChannelName"),
       logger,
       methodsClient = None,
+      loadMethodsClient,
       botUserId = SlackUserId(""),
       botChannel = BotChannel(""),
       allChannels = Nil
@@ -40,6 +41,7 @@ case class SlackConfig private(
                                 botChannelName: String,
                                 logger: Logger,
                                 private var methodsClient: Option[MethodsClient],
+                                private val loadMethodsClient: () => MethodsClient,
                                 var botUserId: SlackUserId,
                                 var botChannel: BotChannel,
                                 var allChannels: Seq[Conversation]
@@ -49,7 +51,7 @@ case class SlackConfig private(
     if (methodsClient.isDefined) methodsClient
     else {
       try {
-        val client = Slack.getInstance.methods
+        val client = loadMethodsClient()
 
         if (botUserId.value.isEmpty) {
           try {
