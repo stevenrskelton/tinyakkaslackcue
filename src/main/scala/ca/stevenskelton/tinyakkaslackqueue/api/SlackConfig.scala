@@ -13,6 +13,7 @@ import org.slf4j.Logger
 import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
+import scala.util.Try
 import scala.util.control.NonFatal
 
 object SlackConfig {
@@ -50,47 +51,49 @@ case class SlackConfig private(
   def clientOption: Option[MethodsClient] = {
     if (methodsClient.isDefined) methodsClient
     else {
-      try {
-        val client = loadMethodsClient()
-
-        if (botUserId.value.isEmpty) {
+      Try(loadMethodsClient()).toOption.flatMap {
+        client =>
           try {
-            val findBotUserQuery = client.usersList((r: UsersListRequest.UsersListRequestBuilder) => r.token(botOAuthToken))
-            val botUser = findBotUserQuery.getMembers.asScala.find(o => o.isBot && o.getName == botUserName.toLowerCase).get
-            botUserId = SlackUserId(botUser.getId)
+
+            if (botUserId.value.isEmpty) {
+              try {
+                val findBotUserQuery = client.usersList((r: UsersListRequest.UsersListRequestBuilder) => r.token(botOAuthToken))
+                val botUser = findBotUserQuery.getMembers.asScala.find(o => o.isBot && o.getName == botUserName.toLowerCase).get
+                botUserId = SlackUserId(botUser.getId)
+              } catch {
+                case NonFatal(ex) =>
+                  logger.error("SlackClient failed botUserId", ex)
+                  return None
+              }
+            }
+
+            if (botChannel.id.isEmpty) {
+              try {
+                val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
+                Option(conversationsResult.getChannels.asScala).foreach {
+                  channels => allChannels = channels.toSeq
+                }
+              } catch {
+                case NonFatal(ex) => logger.error("SlackClient failed botChannel", ex)
+                  return None
+              }
+              allChannels.find(_.getName == botChannelName).map {
+                foundBotChannel =>
+                  botChannel = BotChannel(foundBotChannel.getId)
+              }.getOrElse {
+                val ex = new Exception(s"Could not find bot channel $botChannelName")
+                logger.error("SlackClient bot config", ex)
+                throw ex
+              }
+            }
+
+            methodsClient = Some(client)
+            methodsClient
           } catch {
             case NonFatal(ex) =>
-              logger.error("SlackClient failed botUserId", ex)
-              return None
+              logger.error("SlackClient failed getInstance", ex)
+              None
           }
-        }
-
-        if (botChannel.id.isEmpty) {
-          try {
-            val conversationsResult = client.conversationsList((r: ConversationsListRequest.ConversationsListRequestBuilder) => r.token(botOAuthToken).types(Seq(ConversationType.PUBLIC_CHANNEL).asJava))
-            Option(conversationsResult.getChannels.asScala).foreach {
-              channels => allChannels = channels.toSeq
-            }
-          } catch {
-            case NonFatal(ex) => logger.error("SlackClient failed botChannel", ex)
-              return None
-          }
-          allChannels.find(_.getName == botChannelName).map {
-            foundBotChannel =>
-              botChannel = BotChannel(foundBotChannel.getId)
-          }.getOrElse {
-            val ex = new Exception(s"Could not find bot channel $botChannelName")
-            logger.error("SlackClient bot config", ex)
-            throw ex
-          }
-        }
-
-        methodsClient = Some(client)
-        methodsClient
-      } catch {
-        case NonFatal(ex) =>
-          logger.error("SlackClient failed getInstance", ex)
-          None
       }
     }
   }
