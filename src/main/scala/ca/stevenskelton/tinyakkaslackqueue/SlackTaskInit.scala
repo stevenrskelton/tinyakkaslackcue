@@ -58,8 +58,10 @@ trait SlackTaskInit[T, B] {
           case Success(totalItemCount) =>
             slackTaskLogger.recordEvent(SlackUpdatePercentCompleteEvent(1))
             isComplete = true
+            mainLogger.info(s"Completed $totalItemCount for ${slackTaskMeta.factory.name.getText}")
             SlackResponseException.logError(slackTaskMeta.historyAddOutcome(SuccessHistoryItem(totalItemCount, runStart.get), slackTaskThread), mainLogger)
           case Failure(ex) =>
+            mainLogger.error(s"Failed ${slackTaskMeta.factory.name}", ex)
             slackTaskLogger.recordEvent(SlackExceptionEvent(ex))
             SlackResponseException.logError(slackTaskMeta.historyAddOutcome(ErrorHistoryItem(ex.getClass.getName, ex.getMessage, runStart.get), slackTaskThread), mainLogger)
         }
