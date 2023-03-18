@@ -27,7 +27,7 @@ object SlackFactories {
 
   def initialize(slackTaskFactories: SlackTaskFactories, config: Config)(implicit logger: Logger, slackClient: SlackClient, materializer: Materializer): SlackFactories = {
     val botUserId = slackClient.slackConfig.botUserId.value
-    val pinnedMessages = slackClient.slackConfig.clientOption.flatMap(client =>  Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId))).getOrElse(Nil)
+    val pinnedMessages = slackClient.slackConfig.clientOption.flatMap(client => Option(client.pinsList((r: PinsListRequest.PinsListRequestBuilder) => r.token(slackClient.slackConfig.botOAuthToken).channel(slackClient.slackConfig.botChannel.id)).getItems).map(_.asScala.filter(_.getCreatedBy == botUserId))).getOrElse(Nil)
     val pinnedConfig = pinnedMessages.find(_.getMessage.getText.startsWith(ConfigurationThreadHeader))
     val slackTasksInitialized = pinnedConfig.map {
       messageItem =>

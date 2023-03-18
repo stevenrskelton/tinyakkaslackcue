@@ -7,7 +7,7 @@ scalaVersion := "2.13.10"
 
 val javaVersion = "11"
 
-lazy val akkaVersion = "2.7.0"
+lazy val akkaVersion = "2.8.0"
 lazy val akkaHttpVersion = "10.5.0"
 
 lazy val app = (project in file("."))
@@ -18,8 +18,8 @@ lazy val app = (project in file("."))
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.9.4",
-  "ch.qos.logback" % "logback-classic" % "1.4.5",
-  "com.slack.api" % "slack-api-client" % "1.27.3",
+  "ch.qos.logback" % "logback-classic" % "1.4.6",
+  "com.slack.api" % "slack-api-client" % "1.28.0",
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http2-support" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
