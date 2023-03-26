@@ -53,7 +53,7 @@ case class SlackConfig private(
       Try(loadMethodsClient()).toOption.flatMap {
         client =>
           try {
-
+            return None
             if (botUserId.value.isEmpty) {
               try {
                 val findBotUserQuery = client.usersList((r: UsersListRequest.UsersListRequestBuilder) => r.token(botOAuthToken))
