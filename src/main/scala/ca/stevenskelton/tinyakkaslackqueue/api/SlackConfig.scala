@@ -24,8 +24,8 @@ object SlackConfig {
       logger,
       methodsClient = None,
       loadMethodsClient,
-      botUserId = SlackUserId(""),
-      botChannel = BotChannel(""),
+      botUserId = SlackUserId.Unset,
+      botChannel = BotChannel.Unset,
       allChannels = Nil
     )
     //non-lazy initialize
@@ -53,7 +53,6 @@ case class SlackConfig private(
       Try(loadMethodsClient()).toOption.flatMap {
         client =>
           try {
-            return None
             if (botUserId.value.isEmpty) {
               try {
                 val findBotUserQuery = client.usersList((r: UsersListRequest.UsersListRequestBuilder) => r.token(botOAuthToken))

@@ -24,7 +24,7 @@ class ScheduleConfigurationSpec extends AnyWordSpec
               day = tuesday
               time = "9:30"
             }
-      ]"""
+          ]"""
         )
 
         val instances = ScheduleConfiguration(config)
@@ -35,6 +35,31 @@ class ScheduleConfigurationSpec extends AnyWordSpec
         instances(1).day shouldEqual Right(DayOfWeek.TUESDAY)
         instances(1).time shouldEqual LocalTime.of(9, 30)
       }
+      "multiple parse" in {
+        val config = ConfigFactory.parseString(
+          """schedule = [
+            {
+              days = [
+                Monday,
+                Tuesday,
+                Friday
+              ],
+              time = "20:00"
+            }
+          ]"""
+        )
+
+        val instances = ScheduleConfiguration(config)
+        instances.size shouldEqual 3
+        instances(0).day shouldEqual Right(DayOfWeek.MONDAY)
+        instances(0).time shouldEqual LocalTime.of(20, 0)
+
+        instances(1).day shouldEqual Right(DayOfWeek.TUESDAY)
+        instances(1).time shouldEqual LocalTime.of(20, 0)
+
+        instances(2).day shouldEqual Right(DayOfWeek.FRIDAY)
+        instances(2).time shouldEqual LocalTime.of(20, 0)
+      }
     }
     "no day" should {
       "parse" in {
@@ -43,7 +68,7 @@ class ScheduleConfigurationSpec extends AnyWordSpec
             {
               time = "20:00"
             }
-      ]"""
+          ]"""
         )
 
         val instances = ScheduleConfiguration(config)

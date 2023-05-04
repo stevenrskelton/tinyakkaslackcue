@@ -19,25 +19,27 @@ object ScheduleConfiguration {
     }
   }
 
+  private def parseDayString(value: String): DayOfWeek = {
+    value.toLowerCase match {
+      case "mon" | "monday" => DayOfWeek.MONDAY
+      case "tue" | "tuesday" => DayOfWeek.TUESDAY
+      case "wed" | "wednesday" => DayOfWeek.WEDNESDAY
+      case "thu" | "thursday" => DayOfWeek.THURSDAY
+      case "fri" | "friday" => DayOfWeek.FRIDAY
+      case "sat" | "saturday" => DayOfWeek.SATURDAY
+      case "sun" | "sunday" => DayOfWeek.SUNDAY
+    }
+  }
+
   def apply(config: Config): Seq[ScheduleConfiguration] = {
     config.getConfigList("schedule").asScala.flatMap {
       instanceConfig =>
         val days = if (instanceConfig.hasPath("day")) {
           val dayString = instanceConfig.getString("day")
-          Seq {
-            dayString.toIntOption.map(Left(_)).getOrElse {
-              Right {
-                dayString.toLowerCase match {
-                  case "mon" | "monday" => DayOfWeek.MONDAY
-                  case "tue" | "tuesday" => DayOfWeek.TUESDAY
-                  case "wed" | "wednesday" => DayOfWeek.WEDNESDAY
-                  case "thu" | "thursday" => DayOfWeek.THURSDAY
-                  case "fri" | "friday" => DayOfWeek.FRIDAY
-                  case "sat" | "saturday" => DayOfWeek.SATURDAY
-                  case "sun" | "sunday" => DayOfWeek.SUNDAY
-                }
-              }
-            }
+          Seq(dayString.toIntOption.map(Left(_)).getOrElse(Right(parseDayString(dayString))))
+        } else if(instanceConfig.hasPath("days")){
+          instanceConfig.getStringList("days").asScala.map {
+            dayString => dayString.toIntOption.map(Left(_)).getOrElse(Right(parseDayString(dayString)))
           }
         } else {
           DayOfWeek.values.toSeq.map(Right(_))

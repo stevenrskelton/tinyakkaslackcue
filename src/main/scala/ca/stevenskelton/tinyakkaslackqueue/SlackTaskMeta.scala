@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
 object SlackTaskMeta {
 
   def singleAppRunSlackDisabled(slackClient: SlackClient, factory: SlackTaskFactory[_, _]): SlackTaskMeta = {
-    new SlackTaskMeta(0, slackClient, TaskLogChannel(""), SlackQueueThread(SlackTs.Empty, BotChannel("")), factory, scala.collection.mutable.SortedSet.empty)
+    new SlackTaskMeta(0, slackClient, TaskLogChannel.Unset, SlackQueueThread(SlackTs.Empty, BotChannel.Unset), factory, scala.collection.mutable.SortedSet.empty)
   }
 
   def skipHistory(index: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {

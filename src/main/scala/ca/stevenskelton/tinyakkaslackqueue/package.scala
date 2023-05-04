@@ -66,7 +66,15 @@ package object tinyakkaslackqueue {
 
   case class BotChannel(id: String) extends SlackChannel
 
+  object BotChannel {
+    val Unset: BotChannel = BotChannel("")
+  }
+
   case class TaskLogChannel(id: String) extends SlackChannel
+
+  object TaskLogChannel {
+    val Unset: TaskLogChannel = TaskLogChannel("")
+  }
 
   object SlackChannel {
     def taskId(value: String): SlackChannel = new SlackChannel {
@@ -77,6 +85,9 @@ package object tinyakkaslackqueue {
   case class SlackUserId(value: String) extends AnyVal
 
   object SlackUserId {
+
+    val Unset: SlackUserId = SlackUserId("")
+
     implicit val reads = implicitly[Reads[String]].map(SlackUserId(_))
     implicit val writes = new Writes[SlackUserId] {
       override def writes(o: SlackUserId): JsValue = JsString(o.value)
