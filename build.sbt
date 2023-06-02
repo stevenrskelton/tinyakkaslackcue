@@ -7,8 +7,8 @@ scalaVersion := "2.13.10"
 
 val javaVersion = "11"
 
-lazy val akkaVersion = "2.8.0"
-lazy val akkaHttpVersion = "10.5.0"
+lazy val akkaVersion = "2.6.20"
+lazy val akkaHttpVersion = "10.2.10"
 
 lazy val app = (project in file("."))
   .settings(
