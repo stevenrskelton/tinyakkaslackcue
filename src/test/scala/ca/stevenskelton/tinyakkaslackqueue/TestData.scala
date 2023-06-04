@@ -33,7 +33,7 @@ object TestData extends MockFactory {
   private val actorSystem = ActorSystem.create()
   private implicit val materializer = SystemMaterializer(actorSystem).materializer
 
-  private val slackConfig = SlackConfig(ConfigFactory.defaultReference.resolve, logger, () => mock[MethodsClient])
+  private val slackConfig1 = SlackConfig(ConfigFactory.defaultReference.resolve, logger, () => mock[MethodsClient])
 
   implicit val slackClient = new SlackClient {
     override def chatUpdate(text: String, slackMessage: tinyakkaslackqueue.SlackMessage): Try[ChatUpdateResponse] = ???
@@ -54,7 +54,7 @@ object TestData extends MockFactory {
 
     override def threadReplies(messageItem: PinsListResponse.MessageItem): Try[ConversationsRepliesResponse] = ???
 
-    override def slackConfig: SlackConfig = slackConfig
+    override def slackConfig: SlackConfig = slackConfig1
 
     override def pinsList(channel: SlackChannel): Try[Iterable[PinsListResponse.MessageItem]] = ???
 
