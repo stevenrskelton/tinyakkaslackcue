@@ -3,9 +3,9 @@ name := "tinyakkaslackqueue"
 version := "0.1.0-SNAPSHOT"
 organization := "ca.stevenskelton.tinyakkaslackqueue"
 
-scalaVersion := "2.13.11"
+scalaVersion := "2.13.12"
 
-val javaVersion = "12"
+val javaVersion = "16"
 
 lazy val akkaVersion = "2.6.20"
 lazy val akkaHttpVersion = "10.2.10"
