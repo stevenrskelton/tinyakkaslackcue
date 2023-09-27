@@ -1,12 +1,12 @@
 package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
 import ca.stevenskelton.tinyakkaslackqueue.blocks.TaskSuccess
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, Json, OFormat}
 
 import java.time.ZonedDateTime
 
 object SuccessHistoryItem {
-  implicit val fmt = Json.format[SuccessHistoryItem]
+  implicit val fmt: OFormat[SuccessHistoryItem] = Json.format[SuccessHistoryItem]
   val Action = "success"
 }
 

@@ -9,7 +9,7 @@ import java.time.ZonedDateTime
 import scala.util.control.NonFatal
 
 object TaskHistoryItem {
-  implicit val ordering = new Ordering[TaskHistoryItem[TaskHistoryOutcomeItem]] {
+  implicit val ordering: Ordering[TaskHistoryItem[TaskHistoryOutcomeItem]] = new Ordering[TaskHistoryItem[TaskHistoryOutcomeItem]] {
     override def compare(x: TaskHistoryItem[TaskHistoryOutcomeItem], y: TaskHistoryItem[TaskHistoryOutcomeItem]): Int = x.time.compareTo(y.time)
   }
 

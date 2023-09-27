@@ -3,22 +3,44 @@ name := "tinyakkaslackqueue"
 version := "0.1.0-SNAPSHOT"
 organization := "ca.stevenskelton.tinyakkaslackqueue"
 
-scalaVersion := "2.13.12"
+scalaVersion := "3.3.1"
+crossScalaVersions ++= Seq("2.13.12", "3.3.1")
 
 val javaVersion = "16"
 
 lazy val akkaVersion = "2.6.20"
-lazy val akkaHttpVersion = "10.2.10"
+lazy val akkaHttpVersion = "10.5.2"
 
 lazy val app = (project in file("."))
   .settings(
-    scalacOptions += s"-target:jvm-$javaVersion",
+    scalacOptions ++= {
+      Seq(
+        "-encoding",
+        "UTF-8",
+        "-feature",
+//        "-language:implicitConversions",
+        // disabled during the migration
+        // "-Xfatal-warnings"
+      ) ++
+        (CrossVersion.partialVersion(scalaVersion.value) match {
+          case Some((3, _)) => Seq(
+            "-unchecked",
+            "-source:3.0-migration"
+          )
+          case _ => Seq(
+            "-deprecation",
+            "-Xfatal-warnings",
+            "-Wunused:imports,privates,locals",
+            "-Wvalue-discard"
+          )
+        })
+    },
     javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion)
   )
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play-json" % "2.9.4",
-  "ch.qos.logback" % "logback-classic" % "1.4.6",
+  "com.typesafe.play" %% "play-json" % "2.10.1",
+  "ch.qos.logback" % "logback-classic" % "1.4.7",
   "com.slack.api" % "slack-api-client" % "1.28.0",
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http2-support" % akkaHttpVersion,
@@ -28,6 +50,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-pki" % akkaVersion,
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
-  "org.scalamock" %% "scalamock" % "5.2.0" % Test,
+//  "org.scalamock" %% "scalamock" % "5.2.0" % Test,
   "org.scalatest" %% "scalatest" % "3.2.15" % Test
 )

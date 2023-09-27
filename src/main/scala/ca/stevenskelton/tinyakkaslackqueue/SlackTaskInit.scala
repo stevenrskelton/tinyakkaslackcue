@@ -72,7 +72,7 @@ trait SlackTaskInit[T, B] {
         killSwitchOption.foreach {
           _.abort(SlackExceptionEvent.UserCancelledException)
         }
-        super.cancel
+        super.cancel()
       }
 
       override val slackTaskThread: SlackTaskThread = taskThread

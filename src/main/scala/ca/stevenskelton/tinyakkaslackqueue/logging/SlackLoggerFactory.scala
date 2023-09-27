@@ -19,7 +19,7 @@ object SlackLoggerFactory {
 
   def logEvent(loggingEvent: LoggingEvent): String = {
     //    val sMarker = Option(loggingEvent.getMarkers.asScala.hea.getMarker)
-    val sArgs = Option(loggingEvent.getArgumentArray).getOrElse(Array.empty)
+    val sArgs = Option(loggingEvent.getArgumentArray).getOrElse(Array.empty[Object])
     val text = if (sArgs.isEmpty) loggingEvent.getMessage else String.format(loggingEvent.getMessage, sArgs)
     val emoji = logLevelEmoji(loggingEvent.getLevel)
     val exception = Option(loggingEvent.getThrowable).fold("")(ex => s"${ex.getMessage} ${ex.getStackTrace}")
@@ -95,7 +95,7 @@ object SlackLoggerFactory {
         }
     }
     val sourceQueue = Source.queue[LoggingEvent](1, OverflowStrategy.fail).groupedWithin(1000, 5.seconds).to(sink).run()
-    sourceQueue.watchCompletion.map {
+    sourceQueue.watchCompletion().map {
       _ =>
         slackClient.chatUpdate(completed(slackTask, startTimeMs), slackTask.slackTaskThread)
       //        slackClient.pinsRemove(slackTask.slackTaskThread)

@@ -16,7 +16,7 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
     @volatile var (isRunning, isComplete, hasFailed) = (false, false, false)
 
     override def cancel: Boolean = {
-      task.cancel
+      task.cancel()
       super.cancel()
     }
 

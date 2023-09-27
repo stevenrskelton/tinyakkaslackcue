@@ -2,12 +2,12 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 
 import ca.stevenskelton.tinyakkaslackqueue.SlackUserId
 import ca.stevenskelton.tinyakkaslackqueue.blocks.TaskCancelled
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, Json, OFormat}
 
 import java.time.ZonedDateTime
 
 object CancelledHistoryItem {
-  implicit val fmt = Json.format[ErrorHistoryItem]
+  implicit val fmt: OFormat[ErrorHistoryItem] = Json.format[ErrorHistoryItem]
   val Action = "cancelled"
 }
 

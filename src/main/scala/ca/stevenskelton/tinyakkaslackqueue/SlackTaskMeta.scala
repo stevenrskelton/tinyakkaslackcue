@@ -59,7 +59,7 @@ class SlackTaskMeta private(
                              executedTasks: scala.collection.mutable.SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]
                            ) {
 
-  implicit val ordering = new Ordering[ScheduledSlackTask] {
+  implicit val ordering: Ordering[ScheduledSlackTask] = new Ordering[ScheduledSlackTask] {
     override def compare(x: ScheduledSlackTask, y: ScheduledSlackTask): Int = x.executionStart.compareTo(y.executionStart)
   }
 

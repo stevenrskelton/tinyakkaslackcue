@@ -29,7 +29,7 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
 
   private val unmarshaller = new FromRequestUnmarshaller[(String, JsObject)] {
     override def apply(value: HttpRequest)(implicit ec: ExecutionContext, materializer: Materializer): Future[(String, JsObject)] = {
-      value.entity.getDataBytes.runWith(Sink.fold(ByteString.empty)(_ ++ _), materializer).map {
+      value.entity.getDataBytes.runWith(Sink.fold[ByteString, ByteString](ByteString.empty)(_ ++ _), materializer).map {
         byteString =>
           val body = byteString.utf8String
           logger.debug(s"SE:\n```$body```")

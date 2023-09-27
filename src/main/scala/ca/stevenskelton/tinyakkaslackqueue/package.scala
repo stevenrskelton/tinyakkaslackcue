@@ -88,8 +88,8 @@ package object tinyakkaslackqueue {
 
     val Unset: SlackUserId = SlackUserId("")
 
-    implicit val reads = implicitly[Reads[String]].map(SlackUserId(_))
-    implicit val writes = new Writes[SlackUserId] {
+    implicit val reads: Reads[SlackUserId] = implicitly[Reads[String]].map(SlackUserId(_))
+    implicit val writes: Writes[SlackUserId] = new Writes[SlackUserId] {
       override def writes(o: SlackUserId): JsValue = JsString(o.value)
     }
   }
