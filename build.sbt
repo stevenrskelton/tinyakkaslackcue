@@ -4,9 +4,8 @@ version := "0.1.0-SNAPSHOT"
 organization := "ca.stevenskelton.tinyakkaslackqueue"
 
 scalaVersion := "3.3.1"
-crossScalaVersions ++= Seq("2.13.12", "3.3.1")
 
-val javaVersion = "16"
+val javaVersion = "17"
 
 lazy val akkaVersion = "2.6.20"
 lazy val akkaHttpVersion = "10.5.2"
@@ -18,24 +17,13 @@ lazy val app = (project in file("."))
         "-encoding",
         "UTF-8",
         "-feature",
-//        "-language:implicitConversions",
+        //        "-language:implicitConversions",
         // disabled during the migration
         // "-Xfatal-warnings"
-      ) ++
-        (CrossVersion.partialVersion(scalaVersion.value) match {
-          case Some((3, _)) => Seq(
-            "-unchecked",
-            "-source:3.0-migration"
-          )
-          case _ => Seq(
-            "-deprecation",
-            "-Xfatal-warnings",
-            "-Wunused:imports,privates,locals",
-            "-Wvalue-discard"
-          )
-        })
+        "-unchecked",
+      )
     },
-    javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion)
+    javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion),
   )
 
 libraryDependencies ++= Seq(
