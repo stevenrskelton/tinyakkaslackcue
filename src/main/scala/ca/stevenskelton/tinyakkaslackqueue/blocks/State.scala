@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks
 
 import ca.stevenskelton.tinyakkaslackqueue.views.task.ActionType
 import ca.stevenskelton.tinyakkaslackqueue.{SlackChannel, SlackUserId}
-import play.api.libs.json._
+import play.api.libs.json.*
 
 import java.time.{LocalDate, LocalTime}
 

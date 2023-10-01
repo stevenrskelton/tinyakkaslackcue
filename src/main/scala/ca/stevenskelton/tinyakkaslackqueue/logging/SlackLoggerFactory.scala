@@ -2,9 +2,9 @@ package ca.stevenskelton.tinyakkaslackqueue.logging
 
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{Materializer, OverflowStrategy}
-import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.*
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackConfig}
-import ca.stevenskelton.tinyakkaslackqueue.blocks._
+import ca.stevenskelton.tinyakkaslackqueue.blocks.*
 import ca.stevenskelton.tinyakkaslackqueue.timer.TextProgressBar
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
@@ -12,7 +12,7 @@ import org.slf4j.Logger
 import org.slf4j.event.{Level, LoggingEvent}
 
 import java.time.Duration
-import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.ExecutionContext.Implicits.*
 import scala.concurrent.duration.DurationInt
 
 object SlackLoggerFactory {

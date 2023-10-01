@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.api
 import ca.stevenskelton.tinyakkaslackqueue.util.DateUtils
 import com.typesafe.config.Config
 
-import java.time._
+import java.time.*
 import scala.jdk.CollectionConverters.ListHasAsScala
 
 object ScheduleConfiguration {
@@ -37,7 +37,7 @@ object ScheduleConfiguration {
         val days = if (instanceConfig.hasPath("day")) {
           val dayString = instanceConfig.getString("day")
           Seq(dayString.toIntOption.map(Left(_)).getOrElse(Right(parseDayString(dayString))))
-        } else if(instanceConfig.hasPath("days")){
+        } else if (instanceConfig.hasPath("days")) {
           instanceConfig.getStringList("days").asScala.map {
             dayString => dayString.toIntOption.map(Left(_)).getOrElse(Right(parseDayString(dayString)))
           }

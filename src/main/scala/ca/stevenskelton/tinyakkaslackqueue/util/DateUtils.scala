@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.util
 
-import java.time._
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 object DateUtils {

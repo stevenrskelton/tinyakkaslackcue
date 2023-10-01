@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
-import ca.stevenskelton.tinyakkaslackqueue._
+import ca.stevenskelton.tinyakkaslackqueue.*
 import ca.stevenskelton.tinyakkaslackqueue.views.SlackView
 import com.slack.api.methods.response.chat.{ChatPostMessageResponse, ChatUpdateResponse}
 import com.slack.api.methods.response.conversations.ConversationsRepliesResponse

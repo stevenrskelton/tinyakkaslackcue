@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
-import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory._
+import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.*
 import ca.stevenskelton.tinyakkaslackqueue.logging.SlackResponseException
 import org.slf4j.Logger
 import play.api.libs.json.OFormat

@@ -4,7 +4,7 @@ import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.{Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem}
-import ca.stevenskelton.tinyakkaslackqueue.logging._
+import ca.stevenskelton.tinyakkaslackqueue.logging.*
 import org.slf4j.Logger
 import org.slf4j.event.Level
 

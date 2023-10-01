@@ -3,7 +3,7 @@ package ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory
 import ca.stevenskelton.tinyakkaslackqueue.{SlackQueueThread, SlackTaskThread, SlackTs, TaskLogChannel}
 import com.slack.api.model.Message
 import org.slf4j.Logger
-import play.api.libs.json._
+import play.api.libs.json.*
 
 import java.time.ZonedDateTime
 import scala.util.control.NonFatal

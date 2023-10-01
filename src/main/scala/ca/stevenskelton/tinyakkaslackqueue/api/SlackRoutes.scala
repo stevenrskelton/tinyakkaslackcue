@@ -4,15 +4,15 @@ import akka.Done
 import akka.http.scaladsl.coding.Coders
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
-import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.blocks._
-import ca.stevenskelton.tinyakkaslackqueue.views._
+import ca.stevenskelton.tinyakkaslackqueue.*
+import ca.stevenskelton.tinyakkaslackqueue.blocks.*
+import ca.stevenskelton.tinyakkaslackqueue.views.*
 import com.typesafe.config.Config
 import org.slf4j.Logger
 import play.api.libs.json.{JsObject, Json}

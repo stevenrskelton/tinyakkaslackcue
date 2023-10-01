@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.views
 
-import ca.stevenskelton.tinyakkaslackqueue._
-import ca.stevenskelton.tinyakkaslackqueue.blocks._
+import ca.stevenskelton.tinyakkaslackqueue.*
+import ca.stevenskelton.tinyakkaslackqueue.blocks.*
 import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
 import org.slf4j.event.Level
 import play.api.libs.json.{JsObject, Json}

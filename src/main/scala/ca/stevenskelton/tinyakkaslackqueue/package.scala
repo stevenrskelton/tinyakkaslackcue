@@ -6,8 +6,8 @@ import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.methods.response.chat.ChatPostMessageResponse
 import com.slack.api.model.Message
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
 
 package object tinyakkaslackqueue {
 
