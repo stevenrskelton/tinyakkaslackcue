@@ -2,7 +2,7 @@ package ca.stevenskelton.tinyakkaslackqueue
 
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Keep, Source}
-import akka.stream.{KillSwitches, SystemMaterializer, UniqueKillSwitch}
+import akka.stream.{KillSwitches, Materializer, SystemMaterializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackConfig, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.timer.InteractiveJavaUtilTimer
@@ -21,21 +21,20 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.time.{LocalDateTime, ZoneId}
 import scala.concurrent.Future
 import scala.util.Try
-import org.scalamock.scalatest.MockFactory
 
-object TestData extends MockFactory {
+object TestData {
 
   val CreatedBy = SlackUserId("createdbyuserid")
   val SlackUser = new SlackUser(CreatedBy, "username", "name", "team")
   val slackTs = SlackTs("testTs")
 
-  implicit val logger = LoggerFactory.getLogger("Specs")
+  implicit val logger: Logger = LoggerFactory.getLogger("Specs")
   private val actorSystem = ActorSystem.create()
-  private implicit val materializer = SystemMaterializer(actorSystem).materializer
+  private implicit val materializer: Materializer = SystemMaterializer(actorSystem).materializer
 
   private val slackConfig1 = SlackConfig(ConfigFactory.defaultReference.resolve, logger, () => mock[MethodsClient])
 
-  implicit val slackClient = new SlackClient {
+  implicit val slackClient: SlackClient = new SlackClient {
     override def chatUpdate(text: String, slackMessage: tinyakkaslackqueue.SlackMessage): Try[ChatUpdateResponse] = ???
 
     override def chatUpdateBlocks(blocks: tinyakkaslackqueue.SlackBlocksAsString, slackPost: tinyakkaslackqueue.SlackMessage): Try[ChatUpdateResponse] = ???
@@ -86,7 +85,7 @@ object TestData extends MockFactory {
     override def taskOptions(slackPayload: SlackPayload): Seq[TaskOptionInput] = Nil
   }
 
-  implicit val slackTaskFactories = SlackFactories.initialize(SlackTaskFactories(
+  implicit val slackTaskFactories: SlackFactories = SlackFactories.initialize(SlackTaskFactories(
     new TestSlackTaskFactory("One"),
     new TestSlackTaskFactory("Two"),
     new TestSlackTaskFactory("Three")
