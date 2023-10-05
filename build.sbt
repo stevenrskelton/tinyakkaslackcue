@@ -16,11 +16,18 @@ lazy val app = (project in file("."))
       Seq(
         "-encoding",
         "UTF-8",
+        "-deprecation",
         "-feature",
-        //        "-language:implicitConversions",
-        // disabled during the migration
-        // "-Xfatal-warnings"
         "-unchecked",
+        "-language:experimental.macros",
+        "-language:higherKinds",
+        "-language:implicitConversions",
+        "-Ykind-projector",
+        //        "-Yexplicit-nulls",
+        "-Ysafe-init",
+        "-Wvalue-discard",
+        "-source:3.0-migration",
+        // "-Xfatal-warnings"
       )
     },
     javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion),
