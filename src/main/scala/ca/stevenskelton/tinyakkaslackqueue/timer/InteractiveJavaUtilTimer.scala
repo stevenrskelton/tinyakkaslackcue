@@ -1,7 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue.timer
 
-import akka.Done
-
 import java.time.{Instant, LocalDateTime, ZoneId, ZonedDateTime}
 import java.util
 import java.util.{Date, Timer, TimerTask}
@@ -11,7 +9,7 @@ import scala.util.{Failure, Success, Try}
 
 class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
 
-  private class InnerTimerTask(val task: T, onComplete: Try[Done] => Unit) extends TimerTask {
+  private class InnerTimerTask(val task: T, onComplete: Try[Unit] => Unit) extends TimerTask {
 
     @volatile var (isRunning, isComplete, hasFailed) = (false, false, false)
 
@@ -25,7 +23,7 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
       val result = try {
         task.run()
         isComplete = true
-        Success(Done)
+        Success(())
       } catch {
         case NonFatal(ex) =>
           hasFailed = true
@@ -54,7 +52,7 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
 
   private val allTimerTasks = java.util.Collections.newSetFromMap[InnerTimerTask](new util.WeakHashMap[InnerTimerTask, java.lang.Boolean]())
 
-  def schedule(task: T, onComplete: Try[Done] => Unit): ScheduledTask = {
+  def schedule(task: T, onComplete: Try[Unit] => Unit): ScheduledTask = {
     val innerTimerTask = new InnerTimerTask(task, onComplete)
     allTimerTasks.add(innerTimerTask)
     timer.schedule(innerTimerTask, 0)
@@ -65,7 +63,7 @@ class InteractiveJavaUtilTimer[S, T <: IdTask[S]] {
     timer.schedule(task, Date.from(time.toInstant))
   }
 
-  def schedule(task: T, time: ZonedDateTime, onComplete: Try[Done] => Unit): ScheduledTask = {
+  def schedule(task: T, time: ZonedDateTime, onComplete: Try[Unit] => Unit): ScheduledTask = {
     val innerTimerTask = new InnerTimerTask(task, onComplete)
     allTimerTasks.add(innerTimerTask)
     timer.schedule(innerTimerTask, Date.from(time.toInstant))

@@ -14,8 +14,7 @@ lazy val app = (project in file("."))
   .settings(
     scalacOptions ++= {
       Seq(
-        "-encoding",
-        "UTF-8",
+        "-encoding", "UTF-8",
         "-deprecation",
         "-feature",
         "-unchecked",
@@ -26,7 +25,7 @@ lazy val app = (project in file("."))
         //        "-Yexplicit-nulls",
         "-Ysafe-init",
         "-Wvalue-discard",
-        "-source:3.0-migration",
+//        "-source:3.0-migration",
         // "-Xfatal-warnings"
       )
     },

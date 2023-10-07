@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-import akka.Done
 import akka.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
@@ -89,10 +88,10 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
 
   queuePollingForScheduled(ZonedDateTime.now)
 
-  def onComplete(slackTask: SlackTask, result: Try[Done]): Unit = {
+  def onComplete(slackTask: SlackTask, result: Try[Unit]): Unit = {
     result match {
       case Failure(ex) =>
-      case Success(Done) =>
+      case Success(_) =>
       //        protected def humanReadableFormat(duration: Duration): String = {
       //          duration.toString.substring(2).replaceAll("(\\d[HMS])(?!$)", "$1 ").toLowerCase
       //        }

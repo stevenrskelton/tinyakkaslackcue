@@ -1,6 +1,5 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
-import akka.Done
 import akka.http.scaladsl.coding.Coders
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
@@ -39,12 +38,12 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
     }
   }
 
-  private def publishHomeTab(slackUserId: SlackUserId, slackHomeTab: SlackHomeTab)(implicit logger: Logger, slackFactories: SlackFactories): Future[Done] = {
+  private def publishHomeTab(slackUserId: SlackUserId, slackHomeTab: SlackHomeTab)(implicit logger: Logger, slackFactories: SlackFactories): Future[Unit] = {
     slackFactories.slackClient.viewsPublish(slackUserId, slackHomeTab).fold(ex => Future.failed(ex), {
       response =>
         if (response.isOk) {
           logger.debug(s"Created home view for ${slackUserId.value}")
-          Future.successful(Done)
+          Future.successful(())
         } else {
           logger.error(s"Home view creation failed: ${response.getError}")
           logger.error(s"\n```${slackHomeTab.toString}```\n")
@@ -165,7 +164,7 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
           Failure(ex)
       }
       val view = handler match {
-        case Success(SlackOkResponse) => Future.successful(Done)
+        case Success(SlackOkResponse) => Future.successful(())
         case Success(homeTab: SlackHomeTab) => publishHomeTab(slackPayload.user.id, homeTab)
         case Success(slackModal: SlackModal) =>
           slackFactories.slackClient.viewsOpen(slackPayload.triggerId, slackModal).foreach {
@@ -179,7 +178,7 @@ class SlackRoutes(slackTaskFactories: SlackTaskFactories, slackClient: SlackClie
                 }
               }
           }
-          Future.successful(Done)
+          Future.successful(())
         case Failure(ex) => Future.failed(ex)
       }
       complete {
