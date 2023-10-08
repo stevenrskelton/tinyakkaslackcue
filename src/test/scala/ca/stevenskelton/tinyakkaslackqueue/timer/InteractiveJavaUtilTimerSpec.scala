@@ -7,7 +7,7 @@ import org.scalatest.time.{Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 
-import java.time._
+import java.time.*
 import java.util.UUID
 
 class InteractiveJavaUtilTimerSpec extends AnyWordSpec

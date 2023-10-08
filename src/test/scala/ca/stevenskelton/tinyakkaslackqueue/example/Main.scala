@@ -4,18 +4,18 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes.NotFound
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.Route
 import akka.stream.{Materializer, SystemMaterializer}
 import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
-import ca.stevenskelton.tinyakkaslackqueue.api._
+import ca.stevenskelton.tinyakkaslackqueue.api.*
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackLogger, SlackLoggerFactory}
 import com.slack.api.Slack
 import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
-import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.ExecutionContext.Implicits.*
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 

@@ -7,6 +7,7 @@ import org.slf4j.helpers.MessageFormatter
 import org.slf4j.{Logger, Marker}
 
 import java.util
+import scala.collection.immutable.ArraySeq
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.util.{Failure, Success}
 
@@ -331,7 +332,7 @@ class SlackLogger(
     val throwableCandidate: Throwable = MessageFormatter.getThrowableCandidate(args.toArray)
     if (throwableCandidate != null) {
       val trimmedCopy: Array[AnyRef] = MessageFormatter.trimmedCopy(args.toArray)
-      recordEvent(level, marker, msg, trimmedCopy, throwableCandidate)
+      recordEvent(level, marker, msg, ArraySeq.unsafeWrapArray(trimmedCopy), throwableCandidate)
     }
     else {
       recordEvent(level, marker, msg, args, null)

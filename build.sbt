@@ -24,7 +24,7 @@ lazy val app = (project in file("."))
         "-Ykind-projector",
         //        "-Yexplicit-nulls",
         "-Ysafe-init",
-        "-Wvalue-discard",
+//        "-Wvalue-discard",
 //        "-source:3.0-migration",
         // "-Xfatal-warnings"
       )

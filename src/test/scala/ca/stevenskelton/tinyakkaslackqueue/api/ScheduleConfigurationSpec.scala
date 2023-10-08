@@ -6,7 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import java.time._
+import java.time.*
 
 class ScheduleConfigurationSpec extends AnyWordSpec
   with Matchers

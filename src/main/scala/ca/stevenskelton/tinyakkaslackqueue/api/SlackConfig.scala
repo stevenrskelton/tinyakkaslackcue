@@ -12,7 +12,8 @@ import org.slf4j.Logger
 import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
-import scala.util.Try
+import scala.util.{Try, boundary}
+import scala.util.boundary.break
 import scala.util.control.NonFatal
 
 object SlackConfig {
@@ -47,7 +48,7 @@ case class SlackConfig private(
                                 var allChannels: Seq[Conversation]
                               ) {
 
-  def clientOption: Option[MethodsClient] = {
+  def clientOption: Option[MethodsClient] = boundary {
     if (methodsClient.isDefined) methodsClient
     else {
       Try(loadMethodsClient()).toOption.flatMap {
@@ -61,7 +62,7 @@ case class SlackConfig private(
               } catch {
                 case NonFatal(ex) =>
                   logger.error("SlackClient failed botUserId", ex)
-                  return None
+                  break(None)
               }
             }
 
@@ -73,7 +74,7 @@ case class SlackConfig private(
                 }
               } catch {
                 case NonFatal(ex) => logger.error("SlackClient failed botChannel", ex)
-                  return None
+                  break(None)
               }
               allChannels.find(_.getName == botChannelName).map {
                 foundBotChannel =>

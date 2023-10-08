@@ -45,7 +45,7 @@ object TestData {
 
     override def viewsPublish(userId: tinyakkaslackqueue.SlackUserId, view: SlackView): Try[ViewsPublishResponse] = ???
 
-//    override def client: MethodsClient = ???
+    //    override def client: MethodsClient = ???
 
     override def viewsUpdate(viewId: String, slackView: SlackView): Try[ViewsUpdateResponse] = ???
 

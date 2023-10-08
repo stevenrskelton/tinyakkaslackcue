@@ -16,7 +16,8 @@ import play.api.libs.json.{JsValue, Json}
 import java.time.{ZoneId, ZonedDateTime}
 import java.util.TimerTask
 import scala.jdk.CollectionConverters.CollectionHasAsScala
-import scala.util.{Failure, Success, Try}
+import scala.util.boundary.break
+import scala.util.{Failure, Success, Try, boundary}
 
 object SlackFactories {
 
@@ -149,7 +150,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
     slackTaskInitialized => slackTaskInitialized.slackTaskFactory -> slackTaskInitialized.slackTaskMeta.map(_.taskLogChannel)
   }
 
-  def updateFactoryLogChannel(taskIndex: Int, slackChannel: TaskLogChannel): Boolean = {
+  def updateFactoryLogChannel(taskIndex: Int, slackChannel: TaskLogChannel): Boolean = boundary {
     slackTasks.drop(taskIndex).headOption.fold(false) {
       slackTaskInitialized =>
         slackTaskInitialized.slackTaskMeta.map {
@@ -160,7 +161,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
               slackTaskInitialized.slackTaskMeta = Some(SlackTaskMeta.skipHistory(taskIndex, slackClient, slackChannel, queueThread, slackTaskInitialized.slackTaskFactory))
             case Right(error) =>
               logger.error(s"Could not create slack history thread for ${slackTaskInitialized.slackTaskFactory.name.getText}: $error")
-              return false
+              break(false)
           }
         }
         slackClient.slackConfig.persistConfig(this)
