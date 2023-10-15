@@ -5,7 +5,7 @@ organization := "ca.stevenskelton.tinyakkaslackqueue"
 
 scalaVersion := "3.3.1"
 
-val javaVersion = "16"
+val javaVersion = "17"
 
 lazy val akkaVersion = "2.7.0"
 lazy val akkaHttpVersion = "10.5.2"
