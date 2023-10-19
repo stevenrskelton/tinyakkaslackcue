@@ -12,7 +12,7 @@ import org.slf4j.Logger
 import org.slf4j.event.{Level, LoggingEvent}
 
 import java.time.Duration
-import scala.concurrent.ExecutionContext.Implicits.*
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 object SlackLoggerFactory {

@@ -15,7 +15,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
-import scala.concurrent.ExecutionContext.Implicits.*
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
