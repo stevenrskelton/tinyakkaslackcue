@@ -12,9 +12,9 @@ import org.slf4j.Logger
 import play.api.libs.json.Json
 
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
-import scala.util.{Try, boundary}
 import scala.util.boundary.break
 import scala.util.control.NonFatal
+import scala.util.{Try, boundary}
 
 object SlackConfig {
   def apply(config: Config, logger: Logger, loadMethodsClient: () => MethodsClient): SlackConfig = {
