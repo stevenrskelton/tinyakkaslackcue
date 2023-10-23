@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactories, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.TaskHistory
 import ca.stevenskelton.tinyakkaslackqueue.blocks.{ActionId, DatePickerState, SelectState, TimePickerState}

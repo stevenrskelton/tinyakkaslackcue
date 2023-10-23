@@ -1,12 +1,12 @@
 package ca.stevenskelton.tinyakkaslackqueue.example
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes.NotFound
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
-import akka.http.scaladsl.server.Directives.*
-import akka.http.scaladsl.server.Route
-import akka.stream.{Materializer, SystemMaterializer}
+import org.apache.pekko.actor.ActorSystem
+//import org.apache.pekko.http.scaladsl.Http
+//import org.apache.pekko.http.scaladsl.model.StatusCodes.NotFound
+//import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
+//import org.apache.pekko.http.scaladsl.server.Directives.*
+//import org.apache.pekko.http.scaladsl.server.Route
+import org.apache.pekko.stream.{Materializer, SystemMaterializer}
 import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.api.*
 import ca.stevenskelton.tinyakkaslackqueue.logging.{SlackLogger, SlackLoggerFactory}
@@ -47,37 +47,37 @@ object Main extends App {
   implicit val slackFactories: SlackFactories = SlackFactories.initialize(slackTaskFactories, config)
   //  slackTaskFactories.slackTaskMetaFactories
 
-  val slackRoutes = new SlackRoutes(slackTaskFactories, slackClient, config)
-
-  val publicRoutes = concat(
-    path("slack" / "event")(slackRoutes.slackEventRoute),
-    path("slack" / "action")(slackRoutes.slackActionRoute)
-  )
-
-  val httpServer: Future[Http.ServerBinding] = Http()(httpActorSystem).newServerAt(host, port).bind(concat(publicRoutes, Route.seal {
-    extractRequestContext {
-      context =>
-        complete {
-          httpLogger.info(s"404 ${context.request.method.value} ${context.unmatchedPath}")
-          HttpResponse(NotFound, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Not Found"))
-        }
-    }
-  }))
-
-  httpServer.map {
-    httpBinding =>
-      val address = httpBinding.localAddress
-      httpLogger.info("HTTP server bound to {}:{}", address.getHostString, address.getPort)
-      httpBinding.whenTerminated.onComplete {
-        _ =>
-          httpActorSystem.terminate()
-          System.exit(0)
-      }
-  }.recover {
-    ex =>
-      httpLogger.error("Failed to bind endpoint, terminating system", ex)
-      httpActorSystem.terminate()
-      System.exit(1)
-  }
+//  val slackRoutes = new SlackRoutes(slackTaskFactories, slackClient, config)
+//
+//  val publicRoutes = concat(
+//    path("slack" / "event")(slackRoutes.slackEventRoute),
+//    path("slack" / "action")(slackRoutes.slackActionRoute)
+//  )
+//
+//  val httpServer: Future[Http.ServerBinding] = Http()(httpActorSystem).newServerAt(host, port).bind(concat(publicRoutes, Route.seal {
+//    extractRequestContext {
+//      context =>
+//        complete {
+//          httpLogger.info(s"404 ${context.request.method.value} ${context.unmatchedPath}")
+//          HttpResponse(NotFound, entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Not Found"))
+//        }
+//    }
+//  }))
+//
+//  httpServer.map {
+//    httpBinding =>
+//      val address = httpBinding.localAddress
+//      httpLogger.info("HTTP server bound to {}:{}", address.getHostString, address.getPort)
+//      httpBinding.whenTerminated.onComplete {
+//        _ =>
+//          httpActorSystem.terminate()
+//          System.exit(0)
+//      }
+//  }.recover {
+//    ex =>
+//      httpLogger.error("Failed to bind endpoint, terminating system", ex)
+//      httpActorSystem.terminate()
+//      System.exit(1)
+//  }
 
 }

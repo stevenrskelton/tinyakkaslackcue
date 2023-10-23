@@ -1,6 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.timer
 
-import akka.actor.Cancellable
+import org.apache.pekko.actor.Cancellable
 
 trait IdTask[T] extends Runnable with Cancellable {
   def id: T

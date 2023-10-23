@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue
 
-import akka.stream.scaladsl.{Keep, Sink}
-import akka.stream.{Materializer, UniqueKillSwitch}
+import org.apache.pekko.stream.scaladsl.{Keep, Sink}
+import org.apache.pekko.stream.{Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.taskhistory.{ErrorHistoryItem, SuccessHistoryItem}
 import ca.stevenskelton.tinyakkaslackqueue.logging.*

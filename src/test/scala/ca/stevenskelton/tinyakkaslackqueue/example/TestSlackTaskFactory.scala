@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.example
 
-import akka.stream.scaladsl.{Flow, Keep, Source}
-import akka.stream.{KillSwitches, Materializer, UniqueKillSwitch}
+import org.apache.pekko.stream.scaladsl.{Flow, Keep, Source}
+import org.apache.pekko.stream.{KillSwitches, Materializer, UniqueKillSwitch}
 import ca.stevenskelton.tinyakkaslackqueue.SlackPayload
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackTaskFactory}
 import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput

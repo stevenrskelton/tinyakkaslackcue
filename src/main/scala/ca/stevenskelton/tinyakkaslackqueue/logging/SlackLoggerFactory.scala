@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.logging
 
-import akka.stream.scaladsl.{Sink, Source}
-import akka.stream.{Materializer, OverflowStrategy}
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.stream.{Materializer, OverflowStrategy}
 import ca.stevenskelton.tinyakkaslackqueue.*
 import ca.stevenskelton.tinyakkaslackqueue.api.{SlackClient, SlackConfig}
 import ca.stevenskelton.tinyakkaslackqueue.blocks.*

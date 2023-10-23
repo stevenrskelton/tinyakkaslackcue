@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.logging
 
-import akka.stream.QueueOfferResult.{Dropped, QueueClosed}
-import akka.stream.scaladsl.SourceQueueWithComplete
+import org.apache.pekko.stream.QueueOfferResult.{Dropped, QueueClosed}
+import org.apache.pekko.stream.scaladsl.SourceQueueWithComplete
 import org.slf4j.event.{KeyValuePair, Level, LoggingEvent}
 import org.slf4j.helpers.MessageFormatter
 import org.slf4j.{Logger, Marker}

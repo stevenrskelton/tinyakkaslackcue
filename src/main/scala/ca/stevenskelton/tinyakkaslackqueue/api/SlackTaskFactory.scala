@@ -1,7 +1,7 @@
 package ca.stevenskelton.tinyakkaslackqueue.api
 
-import akka.stream.UniqueKillSwitch
-import akka.stream.scaladsl.Source
+import org.apache.pekko.stream.UniqueKillSwitch
+import org.apache.pekko.stream.scaladsl.Source
 import ca.stevenskelton.tinyakkaslackqueue.views.task.TaskOptionInput
 import ca.stevenskelton.tinyakkaslackqueue.{SlackPayload, SlackTaskInit}
 import com.slack.api.model.block.composition.MarkdownTextObject
