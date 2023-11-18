@@ -9,7 +9,7 @@ val javaVersion = "17"
 
 val pekkoVersion = "1.0.1"
 
-lazy val app = (project in file("."))
+lazy val tinyakkaslackqueue = (project in file("."))
   .settings(
     scalacOptions ++= {
       Seq(
