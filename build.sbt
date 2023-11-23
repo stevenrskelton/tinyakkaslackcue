@@ -23,8 +23,8 @@ lazy val tinyakkaslackqueue = (project in file("."))
         "-Ykind-projector",
         //        "-Yexplicit-nulls",
         "-Ysafe-init",
-//        "-Wvalue-discard",
-//        "-source:3.0-migration",
+        //        "-Wvalue-discard",
+        //        "-source:3.0-migration",
         // "-Xfatal-warnings"
       )
     },
