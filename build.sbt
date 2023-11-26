@@ -5,7 +5,7 @@ organization := "ca.stevenskelton.tinyakkaslackqueue"
 
 scalaVersion := "3.3.1"
 
-val javaVersion = "17"
+val javaVersion = "19"
 
 val pekkoVersion = "1.0.1"
 
