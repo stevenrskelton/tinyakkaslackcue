@@ -17,15 +17,9 @@ lazy val tinyakkaslackqueue = (project in file("."))
         "-deprecation",
         "-feature",
         "-unchecked",
-        "-language:experimental.macros",
-        "-language:higherKinds",
-        "-language:implicitConversions",
-        "-Ykind-projector",
-        //        "-Yexplicit-nulls",
         "-Ysafe-init",
-        //        "-Wvalue-discard",
-        //        "-source:3.0-migration",
-        // "-Xfatal-warnings"
+        "-Xfatal-warnings",
+        "-explain-types",
       )
     },
     javacOptions ++= Seq("-source", javaVersion, "-target", javaVersion),
