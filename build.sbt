@@ -5,7 +5,7 @@ organization := "ca.stevenskelton.tinyakkaslackqueue"
 
 scalaVersion := "3.3.1"
 
-val javaVersion = "19"
+val javaVersion = "21"
 
 val pekkoVersion = "1.0.2"
 
@@ -19,6 +19,7 @@ lazy val tinyakkaslackqueue = (project in file("."))
         "-unchecked",
         "-Ysafe-init",
         "-Xfatal-warnings",
+//        "-Wvalue-discard",
         "-explain-types",
       )
     },
