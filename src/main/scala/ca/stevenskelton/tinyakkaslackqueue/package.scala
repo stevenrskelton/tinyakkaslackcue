@@ -38,7 +38,7 @@ package object tinyakkaslackqueue {
   object SlackQueueThread {
     def apply(message: Message, channel: BotChannel): SlackQueueThread = SlackQueueThread(SlackTs(message.getTs), channel)
 
-    def create(slackTaskFactory: SlackTaskFactory[_, _])(implicit slackClient: SlackClient): Either[SlackQueueThread, String] = {
+    def create(slackTaskFactory: SlackTaskFactory[?,?])(implicit slackClient: SlackClient): Either[SlackQueueThread, String] = {
       val message = s"History: ${slackTaskFactory.name.getText}"
       slackClient.slackConfig.clientOption.map {
         client =>
@@ -103,7 +103,7 @@ package object tinyakkaslackqueue {
       (__ \ "id").read[String].map(SlackUserId(_)) and
         (__ \ "username").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "team_id").read[String])(SlackUser.apply _)
+        (__ \ "team_id").read[String])(SlackUser.apply)
   }
 
   case class SlackBlocksAsString(value: String) extends AnyVal
@@ -117,7 +117,7 @@ package object tinyakkaslackqueue {
   }
 
   object SlackAction {
-    implicit val rd: Reads[SlackAction] = ((__ \ "action_id").read[String].map(ActionId(_)) and __.read[State])(SlackAction.apply _)
+    implicit val rd: Reads[SlackAction] = ((__ \ "action_id").read[String].map(ActionId(_)) and __.read[State])(SlackAction.apply)
   }
 
 }

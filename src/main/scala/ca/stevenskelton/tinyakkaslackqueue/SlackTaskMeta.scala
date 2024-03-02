@@ -13,15 +13,15 @@ import scala.util.{Failure, Success, Try}
 
 object SlackTaskMeta {
 
-  def singleAppRunSlackDisabled(slackClient: SlackClient, factory: SlackTaskFactory[_, _]): SlackTaskMeta = {
+  def singleAppRunSlackDisabled(slackClient: SlackClient, factory: SlackTaskFactory[?,?]): SlackTaskMeta = {
     new SlackTaskMeta(0, slackClient, TaskLogChannel.Unset, SlackQueueThread(SlackTs.Empty, BotChannel.Unset), factory, scala.collection.mutable.SortedSet.empty)
   }
 
-  def skipHistory(index: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): SlackTaskMeta = {
+  def skipHistory(index: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[?,?])(implicit logger: Logger): SlackTaskMeta = {
     new SlackTaskMeta(index, slackClient, taskChannel, queueThread, factory, scala.collection.mutable.SortedSet.empty)
   }
 
-  def readHistory(id: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[_, _])(implicit logger: Logger): Option[SlackTaskMeta] = {
+  def readHistory(id: Int, slackClient: SlackClient, taskChannel: TaskLogChannel, queueThread: SlackQueueThread, factory: SlackTaskFactory[?,?])(implicit logger: Logger): Option[SlackTaskMeta] = {
     slackClient.threadReplies(queueThread).map {
       response =>
         val executedTasks = scala.collection.mutable.SortedSet.empty[TaskHistoryItem[TaskHistoryOutcomeItem]]
@@ -55,7 +55,7 @@ class SlackTaskMeta private(
                              val slackClient: SlackClient,
                              val taskLogChannel: TaskLogChannel,
                              val queueThread: SlackQueueThread,
-                             val factory: SlackTaskFactory[_, _],
+                             val factory: SlackTaskFactory[?,?],
                              executedTasks: scala.collection.mutable.SortedSet[TaskHistoryItem[TaskHistoryOutcomeItem]]
                            ) {
 

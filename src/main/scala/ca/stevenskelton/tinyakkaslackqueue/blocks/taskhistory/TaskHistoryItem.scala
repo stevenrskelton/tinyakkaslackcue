@@ -13,7 +13,7 @@ object TaskHistoryItem {
     override def compare(x: TaskHistoryItem[TaskHistoryOutcomeItem], y: TaskHistoryItem[TaskHistoryOutcomeItem]): Int = x.time.compareTo(y.time)
   }
 
-  def fromHistoryThreadMessage(message: Message, taskChannel: TaskLogChannel, historyThread: SlackQueueThread)(implicit logger: Logger): Option[TaskHistoryItem[_]] = {
+  def fromHistoryThreadMessage(message: Message, taskChannel: TaskLogChannel, historyThread: SlackQueueThread)(implicit logger: Logger): Option[TaskHistoryItem[?]] = {
     try {
       implicit val reads = TaskHistoryItem.reads(taskChannel, historyThread, ZonedDateTime.now())
       val text = message.getText
@@ -35,7 +35,7 @@ object TaskHistoryItem {
     }
   }
 
-  def reads(taskLogChannel: TaskLogChannel, historyThreadTs: SlackQueueThread, time: ZonedDateTime): Reads[TaskHistoryItem[_]] = {
+  def reads(taskLogChannel: TaskLogChannel, historyThreadTs: SlackQueueThread, time: ZonedDateTime): Reads[TaskHistoryItem[?]] = {
     (json: JsValue) => {
       val slackTaskThreadTs = new SlackTaskThread(SlackTs((json \ "ts").as[String]), taskLogChannel)
       (json \ "action").as[String] match {

@@ -5,7 +5,7 @@ object TextProgressBar {
   val SlackEmoji = new TextProgressBar(Array(":white_large_square:", ":black_small_square:", ":black_medium_square:", ":black_large_square:"))
 }
 
-class TextProgressBar(progressCharacters: Array[_]) {
+class TextProgressBar(progressCharacters: Array[?]) {
 
   def bar(progress: Float, width: Int): String = {
     require(0 <= progress && progress <= 1 && width > 0)

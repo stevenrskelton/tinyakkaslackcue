@@ -53,7 +53,7 @@ object SlackFactories {
   }
 }
 
-case class SlackTaskInitialized(slackTaskFactory: SlackTaskFactory[_, _], var slackTaskMeta: Option[SlackTaskMeta])
+case class SlackTaskInitialized(slackTaskFactory: SlackTaskFactory[?,?], var slackTaskMeta: Option[SlackTaskMeta])
 
 class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: Config)(implicit val logger: Logger, val slackClient: SlackClient, materializer: Materializer) {
 
@@ -146,7 +146,7 @@ class SlackFactories private(val slackTasks: Seq[SlackTaskInitialized], config: 
     slackTasks.flatMap(_.slackTaskMeta.map(_.history(allTasks)))
   }
 
-  def factoryLogChannels: Seq[(SlackTaskFactory[_, _], Option[TaskLogChannel])] = slackTasks.map {
+  def factoryLogChannels: Seq[(SlackTaskFactory[?,?], Option[TaskLogChannel])] = slackTasks.map {
     slackTaskInitialized => slackTaskInitialized.slackTaskFactory -> slackTaskInitialized.slackTaskMeta.map(_.taskLogChannel)
   }
 

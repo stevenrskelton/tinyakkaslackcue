@@ -25,7 +25,7 @@ abstract class TaskOptionInput(val actionId: ActionId, val label: String, text: 
           "emoji" -> true
         ),
         "action_id" -> actionId.value
-      ) ++ Json.obj(params: _*)
+      ) ++ Json.obj(params*)
     },
     "label" -> Json.obj(
       "type" -> "plain_text",
