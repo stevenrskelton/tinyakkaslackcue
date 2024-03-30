@@ -1,11 +1,6 @@
 package ca.stevenskelton.tinyakkaslackqueue.example
 
 import org.apache.pekko.actor.ActorSystem
-//import org.apache.pekko.http.scaladsl.Http
-//import org.apache.pekko.http.scaladsl.model.StatusCodes.NotFound
-//import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
-//import org.apache.pekko.http.scaladsl.server.Directives.*
-//import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.stream.{Materializer, SystemMaterializer}
 import ca.stevenskelton.tinyakkaslackqueue.SlackFactories
 import ca.stevenskelton.tinyakkaslackqueue.api.*
